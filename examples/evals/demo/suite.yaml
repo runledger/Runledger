@@ -14,4 +14,9 @@ budgets:
   max_tool_calls: 10
   max_tool_errors: 0
 
-baseline_path: null
+regression:
+  min_pass_rate: 1.0
+  max_avg_wall_ms_delta_pct: 0.2
+  max_p95_wall_ms_delta_pct: 0.2
+
+baseline_path: ../../../baselines/demo.json
