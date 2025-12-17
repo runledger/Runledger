@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunLedger | CI for tool-using agents</title>
+    <meta name="description" content="Deterministic evals, replayable tool calls, and merge gates that stop agent regressions before they ship.">
+    
+    <!-- Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#050607',
+                        surface: '#0A0C10',
+                        surfaceHighlight: '#12161C',
+                        border: '#1F242C',
+                        borderHighlight: '#343A46',
+                        accent: '#00F0FF', // Cyber Cyan
+                        accentDim: 'rgba(0, 240, 255, 0.1)',
+                        success: '#00FF94',
+                        error: '#FF0055',
+                        text: '#EDEDED',
+                        muted: '#889096',
+                        subtle: '#4B5563'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    },
+                    animation: {
+                        'blink': 'blink 1s step-end infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                    },
+                    keyframes: {
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        },
+                        scanline: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050607;
+            color: #EDEDED;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Shader Layer - Updated for Fog/Nebula */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -2;
+            opacity: 0.6; /* Increased opacity slightly as shader is darker now */
+            pointer-events: none;
+        }
+
+        /* Grid Background Pattern - Made subtler */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 80px 80px; /* Tighter grid */
+            z-index: -1;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+        }
+
+        /* Utility */
+        .glass {
+            background: rgba(5, 6, 7, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mono-num {
+            font-feature-settings: "tnum" on, "zero" on;
+        }
+
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom Selection */
+        ::selection {
+            background: #00F0FF;
+            color: #000;
+        }
+        
+        /* Gradient Text */
+        .text-glow {
+            text-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="selection:bg-accent selection:text-black">
+
+    <!-- Background Layers -->
+    <div id="canvas-container"></div>
+    <div class="grid-bg"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-border glass">
+        <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-2 h-2 bg-accent shadow-[0_0_10px_#00F0FF]"></div>
+                <span class="font-semibold tracking-tight text-sm text-white">RunLedger</span>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <a href="#" class="text-xs font-mono text-muted hover:text-white transition-colors">DOCS</a>
+                <a href="#" class="text-xs font-mono text-muted hover:text-white transition-colors">GITHUB</a>
+                <div class="h-4 w-px bg-border"></div>
+                <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                    <span class="text-[10px] font-mono text-muted uppercase tracking-widest">Systems Normal</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 pt-32 pb-24">
+
+        <!-- Hero Section -->
+        <section class="max-w-5xl mx-auto px-6 mb-32 text-center reveal active">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-borderHighlight bg-surfaceHighlight/50 mb-10 backdrop-blur-sm">
+                <span class="text-[10px] font-mono text-accent">BETA v0.9.2</span>
+                <span class="w-px h-3 bg-borderHighlight"></span>
+                <span class="text-[10px] font-mono text-muted">ACCEPTING EARLY ACCESS</span>
+            </div>
+            
+            <h1 class="text-5xl md:text-8xl font-semibold text-white tracking-tighter mb-8 leading-[0.95] text-glow">
+                CI for <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-gray-500">Tool-Using Agents</span>
+            </h1>
+            
+            <p class="text-xl md:text-2xl text-muted max-w-2xl mx-auto leading-relaxed font-light mb-12 tracking-tight">
+                Deterministic evals. Replayable tool calls.<br>
+                Merge gates that stop regressions <span class="text-white">before they ship.</span>
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#" class="group relative px-8 py-3 bg-white text-black font-semibold rounded-sm hover:bg-gray-200 transition-all flex items-center justify-center gap-2 overflow-hidden">
+                    <span class="relative z-10">View Demo Repo</span>
+                    <i data-lucide="arrow-up-right" class="w-4 h-4 relative z-10 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+                </a>
+                
+                <div class="relative group cursor-pointer" onclick="copyInstall()">
+                    <div class="absolute -inset-0.5 bg-gradient-to-r from-border to-borderHighlight rounded-sm opacity-50 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="relative px-6 py-3 bg-bg rounded-sm flex items-center gap-3 border border-border group-hover:border-white/20 transition-colors">
+                        <span class="font-mono text-sm text-accent">$</span>
+                        <span class="font-mono text-sm text-muted group-hover:text-white transition-colors">pipx install runledger</span>
+                        <i data-lucide="copy" class="w-3 h-3 text-subtle group-hover:text-white transition-colors ml-2"></i>
+                    </div>
+                    <div id="copy-toast" class="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-[10px] font-mono text-success opacity-0 transition-opacity">COPIED</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The "Console" (Interactive CI Panel) -->
+        <section class="max-w-5xl mx-auto px-6 mb-48 reveal" id="console-trigger">
+            <!-- Terminal Window -->
+            <div class="rounded-md border border-border bg-[#030405] shadow-2xl relative overflow-hidden group">
+                <!-- Top Bar -->
+                <div class="bg-surface border-b border-border px-4 h-10 flex items-center justify-between select-none">
+                    <div class="flex gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-borderHighlight group-hover:bg-[#FF5F56] transition-colors"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-borderHighlight group-hover:bg-[#FFBD2E] transition-colors"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-borderHighlight group-hover:bg-[#27C93F] transition-colors"></div>
+                    </div>
+                    <div class="text-[10px] font-mono text-muted opacity-50 tracking-widest">RUNLEDGER-CLI — WATCH</div>
+                    <div class="w-8"></div>
+                </div>
+
+                <!-- Terminal Content -->
+                <div class="p-6 font-mono text-sm leading-relaxed relative min-h-[300px]">
+                    <!-- Scanline Effect -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent h-20 w-full animate-scanline pointer-events-none z-10"></div>
+
+                    <!-- Output Area -->
+                    <div id="console-output" class="space-y-1">
+                        <!-- Initial lines injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="h-8 bg-surface border-t border-border flex items-center px-4 justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="git-branch" class="w-3 h-3 text-accent"></i>
+                            <span class="text-[10px] font-mono text-muted">feature/payment-agent</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-3 h-3 text-muted"></i>
+                            <span class="text-[10px] font-mono text-muted" id="timer">00:00:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 bg-accent animate-pulse rounded-full"></span>
+                        <span class="text-[10px] font-mono text-accent">LIVE</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Context Caption -->
+            <div class="mt-4 flex justify-between items-start opacity-60">
+                <p class="text-xs font-mono text-muted max-w-md">
+                    <span class="text-accent">Above:</span> Real-time replay of a tool-use chain. RunLedger mocks the `stripe_charge` API call and validates the schema of the agent's output.
+                </p>
+                <div class="text-[10px] font-mono border border-border px-2 py-1 rounded text-muted">
+                    MODE: STRICT
+                </div>
+            </div>
+        </section>
+
+        <!-- Value Proposition (Bento Grid) -->
+        <section class="max-w-6xl mx-auto px-6 mb-48">
+            <div class="grid md:grid-cols-3 gap-px bg-border border border-border">
+                
+                <!-- Tile 1 -->
+                <div class="bg-bg p-8 group hover:bg-surfaceHighlight/30 transition-colors duration-500 relative overflow-hidden reveal">
+                    <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                        <i data-lucide="rewind" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="font-mono text-xs text-accent mb-4 tracking-widest uppercase">01. Determinism</h3>
+                    <h2 class="text-xl font-medium text-white mb-3">Replay the Unplayable</h2>
+                    <p class="text-muted text-sm leading-6">
+                        LLMs are non-deterministic. Your tests shouldn't be. Record tool outputs once, replay them infinitely. Flaky network calls are mocked automatically.
+                    </p>
+                </div>
+
+                <!-- Tile 2 -->
+                <div class="bg-bg p-8 group hover:bg-surfaceHighlight/30 transition-colors duration-500 relative overflow-hidden reveal transition-delay-100">
+                    <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="font-mono text-xs text-success mb-4 tracking-widest uppercase">02. Guardrails</h3>
+                    <h2 class="text-xl font-medium text-white mb-3">Merge Gates</h2>
+                    <p class="text-muted text-sm leading-6">
+                        Define strict schemas for tool inputs. If an agent hallucinates a parameter or misses a required field, the PR is blocked.
+                    </p>
+                </div>
+
+                <!-- Tile 3 -->
+                <div class="bg-bg p-8 group hover:bg-surfaceHighlight/30 transition-colors duration-500 relative overflow-hidden reveal transition-delay-200">
+                    <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                        <i data-lucide="diff" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="font-mono text-xs text-error mb-4 tracking-widest uppercase">03. Regression</h3>
+                    <h2 class="text-xl font-medium text-white mb-3">Baseline Diffs</h2>
+                    <p class="text-muted text-sm leading-6">
+                        Visual diffs for chain-of-thought. See exactly where the logic diverged from the "golden run" when you tweaked the prompt.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Technical Integration (SVG Diagram) -->
+        <section class="max-w-4xl mx-auto px-6 mb-48 reveal">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-semibold text-white tracking-tight mb-4">Drop-in Reliability</h2>
+                <p class="text-muted">A middleware for your agent's cognitive loop.</p>
+            </div>
+
+            <div class="relative w-full aspect-[2/1] md:aspect-[3/1] bg-surface/30 border border-border rounded-lg p-8 flex items-center justify-center select-none">
+                
+                <!-- SVG Connections -->
+                <svg class="absolute inset-0 w-full h-full z-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#343A46" />
+                        </marker>
+                    </defs>
+                    <!-- Lines calculated to connect the centers roughly -->
+                    <line x1="20%" y1="50%" x2="40%" y2="50%" stroke="#1F242C" stroke-width="2" marker-end="url(#arrowhead)" />
+                    <line x1="60%" y1="50%" x2="80%" y2="50%" stroke="#1F242C" stroke-width="2" marker-end="url(#arrowhead)" />
+                </svg>
+
+                <div class="grid grid-cols-3 gap-8 md:gap-24 w-full z-10 relative">
+                    
+                    <!-- Box 1 -->
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-16 h-16 rounded bg-surface border border-borderHighlight flex items-center justify-center shadow-lg">
+                            <i data-lucide="box" class="text-white opacity-80"></i>
+                        </div>
+                        <span class="text-xs font-mono text-muted uppercase tracking-wider">Agent</span>
+                    </div>
+
+                    <!-- Box 2 (Active) -->
+                    <div class="flex flex-col items-center gap-3 relative">
+                        <div class="absolute -inset-4 bg-accent/5 rounded-full blur-xl"></div>
+                        <div class="w-20 h-20 rounded bg-bg border border-accent flex items-center justify-center shadow-[0_0_30px_rgba(0,240,255,0.1)] relative">
+                            <div class="w-2 h-2 bg-accent rounded-full absolute top-2 right-2 animate-pulse"></div>
+                            <span class="font-bold text-white tracking-tight">RL</span>
+                        </div>
+                        <span class="text-xs font-mono text-accent uppercase tracking-wider">RunLedger</span>
+                    </div>
+
+                    <!-- Box 3 -->
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-16 h-16 rounded bg-surface border border-borderHighlight flex items-center justify-center shadow-lg">
+                            <i data-lucide="server" class="text-white opacity-80"></i>
+                        </div>
+                        <span class="text-xs font-mono text-muted uppercase tracking-wider">LLM Provider</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Manifesto / Footer -->
+        <section class="max-w-2xl mx-auto px-6 pb-32 text-center reveal">
+            <h2 class="text-2xl font-medium text-white mb-6">Built for engineers who distrust hype.</h2>
+            <p class="text-muted leading-relaxed mb-10">
+                We believe AI agents are software, not magic. They require the same rigor, testing, and observability as the rest of your stack.
+            </p>
+            <div class="flex justify-center gap-8">
+                <a href="#" class="text-sm font-mono text-subtle hover:text-white transition-colors">GITHUB</a>
+                <a href="#" class="text-sm font-mono text-subtle hover:text-white transition-colors">DISCORD</a>
+                <a href="#" class="text-sm font-mono text-subtle hover:text-white transition-colors">TWITTER</a>
+            </div>
+            <div class="mt-16 pt-8 border-t border-border/50">
+                <p class="text-[10px] text-subtle font-mono">© 2024 RUNLEDGER SYSTEMS INC.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Shader Implementation (Atmospheric Nebula) -->
+    <script>
+        const canvasContainer = document.getElementById('canvas-container');
+        
+        // Scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); // Fullscreen Quad
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        canvasContainer.appendChild(renderer.domElement);
+
+        // Plane Geometry for Shader
+        const geometry = new THREE.PlaneGeometry(2, 2);
+
+        // Shader Material
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                color: { value: new THREE.Color(0x00F0FF) }
+            },
+            vertexShader: `
+                void main() {
+                    gl_Position = vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float time;
+                uniform vec2 resolution;
+                
+                // Simplex Noise
+                vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+                float snoise(vec2 v) {
+                    const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+                    vec2 i  = floor(v + dot(v, C.yy) );
+                    vec2 x0 = v - i + dot(i, C.xx);
+                    vec2 i1;
+                    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                    vec4 x12 = x0.xyxy + C.xxzz;
+                    x12.xy -= i1;
+                    i = mod289(i);
+                    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+                    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                    m = m*m ;
+                    m = m*m ;
+                    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                    vec3 h = abs(x) - 0.5;
+                    vec3 ox = floor(x + 0.5);
+                    vec3 a0 = x - ox;
+                    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+                    vec3 g;
+                    g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                    return 130.0 * dot(m, g);
+                }
+
+                void main() {
+                    vec2 uv = gl_FragCoord.xy / resolution.xy;
+                    float ratio = resolution.x / resolution.y;
+                    uv.x *= ratio;
+
+                    // Slow down time
+                    float t = time * 0.1;
+
+                    // Large scale noise for "fog"
+                    float noise1 = snoise(vec2(uv.x * 0.8 + t * 0.5, uv.y * 0.8 - t * 0.2));
+                    float noise2 = snoise(vec2(uv.x * 1.5 - t * 0.2, uv.y * 1.5 + t * 0.3));
+                    
+                    // Combine noises
+                    float finalNoise = (noise1 * 0.6 + noise2 * 0.4);
+                    
+                    // Vignette/Focus
+                    float dist = distance(uv, vec2(0.5 * ratio, 0.5));
+                    float mask = smoothstep(1.5, 0.2, dist);
+
+                    // Colors
+                    vec3 bg = vec3(0.02, 0.024, 0.03); // Deepest bg
+                    vec3 cloudColor = vec3(0.0, 0.2, 0.3); // Deep cyan/teal
+                    
+                    // Mix
+                    vec3 color = mix(bg, cloudColor, finalNoise * 0.2 * mask);
+                    
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `,
+            depthWrite: false
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        // Animation Loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            material.uniforms.time.value = clock.getElapsedTime();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize
+        window.addEventListener('resize', () => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            renderer.setSize(w, h);
+            material.uniforms.resolution.value.set(w, h);
+        });
+    </script>
+
+    <!-- Console Logic -->
+    <script>
+        lucide.createIcons();
+        
+        // Copy functionality
+        function copyInstall() {
+            navigator.clipboard.writeText('pipx install runledger');
+            const toast = document.getElementById('copy-toast');
+            toast.style.opacity = '1';
+            setTimeout(() => toast.style.opacity = '0', 2000);
+        }
+
+        // Advanced Console Simulation
+        const logs = [
+            { text: "$ runledger run ./agent_evals", type: "cmd", delay: 500 },
+            { text: "ℹ Loading configuration from runledger.toml...", type: "info", delay: 800 },
+            { text: "✔ Snapshot baseline loaded (hash: 7a9f2b)", type: "success", delay: 1100 },
+            { text: "▶ Starting replay session [id: 992-11a]", type: "info", delay: 1300 },
+            { text: "  • mocking tool: stripe_search_user", type: "dim", delay: 1500 },
+            { text: "  • mocking tool: get_usage_metrics", type: "dim", delay: 1700 },
+            { text: "⚠ Tool contract mismatch detected", type: "warning", delay: 2400 },
+            { text: "  > Expected 'user_id' (string), got undefined", type: "error", delay: 2500 },
+            { text: "✖ Regression check failed. Blocking merge.", type: "critical", delay: 2700 },
+            { text: "$ _", type: "cmd", delay: 3500, blink: true }
+        ];
+
+        const outputDiv = document.getElementById('console-output');
+        const trigger = document.getElementById('console-trigger');
+        let hasRun = false;
+
+        const observer = new IntersectionObserver((entries) => {
+            if(entries[0].isIntersecting && !hasRun) {
+                hasRun = true;
+                runSequence();
+            }
+        }, { threshold: 0.5 });
+        
+        observer.observe(trigger);
+
+        // Reveal Animation Observer
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        async function runSequence() {
+            const baseTime = Date.now();
+            
+            for (const log of logs) {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-start gap-3 font-mono text-xs";
+                    
+                    // Time string
+                    const ms = Date.now() - baseTime;
+                    const timeStr = `00:00.${Math.floor(ms/100).toString().padStart(2, '0')}`;
+                    
+                    let content = "";
+                    let colorClass = "text-text";
+
+                    if (log.type === 'cmd') {
+                        colorClass = "text-accent";
+                        content = `<span class="text-subtle select-none">$</span> ${log.text.replace('$ ', '')}`;
+                    } else if (log.type === 'success') {
+                        colorClass = "text-success";
+                        content = log.text;
+                    } else if (log.type === 'error') {
+                        colorClass = "text-error font-bold";
+                        content = log.text;
+                    } else if (log.type === 'warning') {
+                        colorClass = "text-yellow-400";
+                        content = log.text;
+                    } else if (log.type === 'critical') {
+                        colorClass = "text-error bg-error/10 px-2 py-1 rounded w-full border border-error/20";
+                        content = log.text;
+                    } else if (log.type === 'dim') {
+                        colorClass = "text-subtle";
+                        content = log.text;
+                    } else {
+                        content = log.text;
+                    }
+
+                    if (log.blink) {
+                        div.innerHTML = `<span class="text-subtle">${timeStr}</span> <span class="${colorClass}">${log.text.replace('_', '<span class="animate-blink">_</span>')}</span>`;
+                    } else {
+                        div.innerHTML = `<span class="text-subtle select-none w-16 opacity-50">${timeStr}</span> <div class="${colorClass}">${content}</div>`;
+                    }
+                    
+                    outputDiv.appendChild(div);
+                    outputDiv.scrollTop = outputDiv.scrollHeight;
+
+                }, log.delay);
+            }
+        }
+    </script>
+</body>
+</html>
