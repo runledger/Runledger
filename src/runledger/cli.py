@@ -74,10 +74,16 @@ def run(
     suite_result = run_suite(suite, cases)
     results = suite_result.cases
 
-    base_dir = Path(output_dir) if output_dir else Path(suite.output_dir or ".agentci/runs")
-    run_dir = create_run_dir(base_dir, suite.suite_name)
+    base_dir = Path(output_dir) if output_dir else Path(suite.output_dir or "runledger_out")
+    run_dir, run_id = create_run_dir(base_dir, suite.suite_name)
     write_run_log(run_dir, results)
-    write_summary(run_dir, suite.suite_name, results)
+    write_summary(
+        run_dir,
+        suite=suite,
+        suite_path=(suite_path if suite_path.is_file() else suite_path / "suite.yaml"),
+        suite_result=suite_result,
+        run_id=run_id,
+    )
     write_junit(run_dir, suite.suite_name, results)
 
     passed = suite_result.passed
