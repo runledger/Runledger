@@ -2,11 +2,23 @@
 
 Below is a prioritized backlog Codex can execute as a sequence of PRs. Each task includes: goal, concrete files/modules, key behaviors, and acceptance criteria. Start with **Phase 1** to get a working replay-only vertical slice end-to-end.
 
+
+## Status
+
+- Completed: Tasks 1-13 (Phase 1)
+
+## Notes
+
+- Schema paths are resolved relative to the suite directory.
+- Cassette paths are resolved relative to the suite directory.
+- Demo suite lives under examples/evals/demo and runs via `runledger run examples/evals/demo`.
+- Artifacts are written under `.agentci/runs/<suite>/<timestamp>`.
+
 ---
 
 # Phase 1 — Replay-only vertical slice (end-to-end MVP)
 
-## Task 1 — Repository scaffolding + packaging
+## Task 1 [DONE] — Repository scaffolding + packaging
 
 **Goal:** A pip-installable Python CLI with a stable module layout and dev tooling.
 
@@ -44,7 +56,7 @@ Below is a prioritized backlog Codex can execute as a sequence of PRs. Each task
 
 ---
 
-## Task 2 — Define internal data models for suite + cases (Pydantic)
+## Task 2 [DONE] — Define internal data models for suite + cases (Pydantic)
 
 **Goal:** Strong config validation early; YAML errors become actionable.
 
@@ -94,7 +106,7 @@ Below is a prioritized backlog Codex can execute as a sequence of PRs. Each task
 
 ---
 
-## Task 3 — YAML loader (suite + cases)
+## Task 3 [DONE] — YAML loader (suite + cases)
 
 **Goal:** Load a suite + all case files deterministically.
 
@@ -120,7 +132,7 @@ Below is a prioritized backlog Codex can execute as a sequence of PRs. Each task
 
 ---
 
-## Task 4 — Protocol message models + strict JSONL I/O (stdout-only)
+## Task 4 [DONE] — Protocol message models + strict JSONL I/O (stdout-only)
 
 **Goal:** Runner and agent communicate reliably with newline-delimited JSON on stdout; logs go to stderr.
 
@@ -159,7 +171,7 @@ Below is a prioritized backlog Codex can execute as a sequence of PRs. Each task
 
 ---
 
-## Task 5 — Subprocess management (spawn agent, send/receive messages)
+## Task 5 [DONE] — Subprocess management (spawn agent, send/receive messages)
 
 **Goal:** Robustly run an agent command and exchange protocol messages with timeouts.
 
@@ -188,7 +200,7 @@ Below is a prioritized backlog Codex can execute as a sequence of PRs. Each task
 
 ---
 
-## Task 6 — Canonical JSON utility (for tool-call matching)
+## Task 6 [DONE] — Canonical JSON utility (for tool-call matching)
 
 **Goal:** Deterministic matching for cassette replay.
 
@@ -214,7 +226,7 @@ Below is a prioritized backlog Codex can execute as a sequence of PRs. Each task
 
 ---
 
-## Task 7 — Cassette format + replay lookup
+## Task 7 [DONE] — Cassette format + replay lookup
 
 **Goal:** Replay tool calls deterministically from a recorded cassette.
 
@@ -257,7 +269,7 @@ Each line is an entry:
 
 ---
 
-## Task 8 — Runner engine (single case, replay mode)
+## Task 8 [DONE] — Runner engine (single case, replay mode)
 
 **Goal:** Execute one case end-to-end: task_start → tool loop → final_output → assertions → artifacts.
 
@@ -289,7 +301,7 @@ Each line is an entry:
 
 ---
 
-## Task 9 — Assertion engine (MVP assertions)
+## Task 9 [DONE] — Assertion engine (MVP assertions)
 
 **Goal:** Deterministic pass/fail without LLM judges.
 
@@ -326,7 +338,7 @@ Each line is an entry:
 
 ---
 
-## Task 10 — Artifacts: run.jsonl, summary.json, junit.xml
+## Task 10 [DONE] — Artifacts: run.jsonl, summary.json, junit.xml
 
 **Goal:** Produce standard outputs and fail CI via exit code.
 
@@ -361,7 +373,7 @@ Each line is an entry:
 
 ---
 
-## Task 11 — CLI `run` command (wires everything together)
+## Task 11 [DONE] — CLI `run` command (wires everything together)
 
 **Goal:** Users can run `cli run ./evals/demo` and get artifacts + correct exit code.
 
@@ -392,7 +404,7 @@ Each line is an entry:
 
 ---
 
-## Task 12 — Example agent (Python) + example eval suite + cassette
+## Task 12 [DONE] — Example agent (Python) + example eval suite + cassette
 
 **Goal:** A demo that proves the runner works without any external APIs.
 
@@ -419,7 +431,7 @@ Each line is an entry:
 
 ---
 
-## Task 13 — Integration test for the full vertical slice
+## Task 13 [DONE] — Integration test for the full vertical slice
 
 **Goal:** Prevent regressions in the runner itself.
 
@@ -679,5 +691,8 @@ Each line is an entry:
 4. Tasks **9–11** (assertions + artifacts + CLI run)
 5. Tasks **12–13** (example agent + integration tests)
 6. Then Phase 2/3/4/5/6 in order.
+
+
+
 
 

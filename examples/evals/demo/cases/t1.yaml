@@ -1,0 +1,12 @@
+id: t1
+description: "triage a login ticket"
+input:
+  ticket: "login issue"
+cassette: cassettes/t1.jsonl
+
+assertions:
+  - type: required_fields
+    fields: ["category", "reply"]
+
+budgets:
+  max_wall_ms: 5000
