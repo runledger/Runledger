@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string"
+    },
+    "reply": {
+      "type": "string"
+    },
+    "next_steps": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "category",
+    "reply",
+    "next_steps"
+  ]
+}

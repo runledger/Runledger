@@ -32,9 +32,9 @@ RunLedger stops that by:
 ```bash
 pipx install runledger
 runledger init
-runledger run ./evals --mode record
-runledger baseline promote --from <RUN_DIR> --to baselines/<suite>.json
-runledger run ./evals --mode replay
+runledger run ./evals/demo --mode record
+runledger baseline promote --from <RUN_DIR> --to baselines/demo.json
+runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 ```
 
 Artifacts are written to `runledger_out/<suite>/<run_id>/`:
