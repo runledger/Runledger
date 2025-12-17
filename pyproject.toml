@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "runledger"
+version = "0.1.0"
+description = "CI for tool-using agents: deterministic eval suites with record/replay, hard assertions, budgets, and PR regression gates."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "RunLedger" }
+]
+keywords = [
+  "llm",
+  "agents",
+  "evaluation",
+  "ci",
+  "github-actions",
+  "replay",
+  "testing",
+  "junit",
+  "jsonschema"
+]
+dependencies = [
+  "typer>=0.9.0",
+  "rich>=13.0.0",
+  "pydantic>=2.0.0",
+  "pyyaml>=6.0.0",
+  "jsonschema>=4.0.0",
+  "jinja2>=3.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0.0",
+  "pytest-timeout>=2.1.0",
+  "ruff>=0.1.0",
+  "mypy>=1.0.0",
+]
+
+[project.scripts]
+runledger = "runledger.cli:app"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_configs = true
