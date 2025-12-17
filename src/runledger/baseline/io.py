@@ -15,8 +15,12 @@ def load_baseline(path: Path) -> BaselineSummary:
 
 def write_baseline(path: Path, baseline: BaselineSummary) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
+    data = baseline.model_dump()
+    cases = data.get("cases")
+    if isinstance(cases, list):
+        data["cases"] = sorted(cases, key=lambda case: str(case.get("id", "")))
     path.write_text(
-        json.dumps(baseline.model_dump(), indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+        json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return path

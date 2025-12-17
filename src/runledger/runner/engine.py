@@ -9,6 +9,8 @@ from typing import Any
 from runledger.assertions.engine import apply_assertions, count_assertions
 from runledger.cassette.loader import load_cassette
 from runledger.cassette.match import find_match, format_mismatch_error
+from runledger.cassette.models import CassetteEntry
+from runledger.cassette.writer import append_entry
 from runledger.config.models import CaseConfig, SuiteConfig
 from runledger.protocol.messages import (
     FinalOutputMessage,
@@ -19,6 +21,7 @@ from runledger.protocol.messages import (
     ToolResultMessage,
 )
 from runledger.runner.subprocess import AgentProcess, AgentProcessError
+from runledger.tools.registry import resolve_tools
 
 from .budgets import check_budgets, merge_budgets
 from .models import CaseResult, Failure, SuiteResult
@@ -35,8 +38,8 @@ def _event(case_id: str, event_type: str, **fields: Any) -> dict[str, Any]:
 
 
 def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
-    if suite.mode != "replay":
-        raise ValueError("Only replay mode supported in MVP")
+    if suite.mode not in {"replay", "record", "live"}:
+        raise ValueError(f"Unsupported mode: {suite.mode}")
 
     trace: list[dict[str, Any]] = []
     start = time.monotonic()
@@ -51,38 +54,62 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
     failed_assertions: list[dict[str, str]] | None = None
 
     cassette_path = Path(case.cassette)
+    cassette_entries: list[CassetteEntry] = []
     cassette_sha256: str | None = None
-    if cassette_path.is_file():
-        try:
-            cassette_sha256 = hashlib.sha256(cassette_path.read_bytes()).hexdigest()
-        except OSError:
-            cassette_sha256 = None
-
-    try:
-        cassette_entries = load_cassette(cassette_path)
-    except Exception as exc:
-        failure = Failure(type="cassette_error", message=str(exc))
-        wall_ms = int((time.monotonic() - start) * 1000)
-        trace.append(_event(case.id, "case_end", passed=False, wall_ms=wall_ms))
-        return CaseResult(
-            case_id=case.id,
-            passed=False,
-            output=None,
-            trace=trace,
-            wall_ms=wall_ms,
-            tool_calls=tool_calls,
-            tool_errors=tool_errors,
-            tool_calls_by_name=tool_calls_by_name,
-            tool_errors_by_name=tool_errors_by_name,
-            assertions_total=assertions_total,
-            assertions_failed=assertions_failed,
-            failed_assertions=failed_assertions,
-            replay_cassette_path=str(cassette_path),
-            replay_cassette_sha256=cassette_sha256,
-            failure=failure,
-        )
-
     allowed_tools = set(suite.tool_registry)
+    tool_registry = None
+
+    if suite.mode == "replay":
+        try:
+            cassette_entries = load_cassette(cassette_path)
+        except Exception as exc:
+            failure = Failure(type="cassette_error", message=str(exc))
+            wall_ms = int((time.monotonic() - start) * 1000)
+            trace.append(_event(case.id, "case_end", passed=False, wall_ms=wall_ms))
+            return CaseResult(
+                case_id=case.id,
+                passed=False,
+                output=None,
+                trace=trace,
+                wall_ms=wall_ms,
+                tool_calls=tool_calls,
+                tool_errors=tool_errors,
+                tool_calls_by_name=tool_calls_by_name,
+                tool_errors_by_name=tool_errors_by_name,
+                assertions_total=assertions_total,
+                assertions_failed=assertions_failed,
+                failed_assertions=failed_assertions,
+                replay_cassette_path=str(cassette_path),
+                replay_cassette_sha256=cassette_sha256,
+                failure=failure,
+            )
+    else:
+        try:
+            tool_registry = resolve_tools(allowed_tools, suite.tool_module)
+        except Exception as exc:
+            failure = Failure(type="tool_registry_error", message=str(exc))
+            wall_ms = int((time.monotonic() - start) * 1000)
+            trace.append(_event(case.id, "case_end", passed=False, wall_ms=wall_ms))
+            return CaseResult(
+                case_id=case.id,
+                passed=False,
+                output=None,
+                trace=trace,
+                wall_ms=wall_ms,
+                tool_calls=tool_calls,
+                tool_errors=tool_errors,
+                tool_calls_by_name=tool_calls_by_name,
+                tool_errors_by_name=tool_errors_by_name,
+                assertions_total=assertions_total,
+                assertions_failed=assertions_failed,
+                failed_assertions=failed_assertions,
+                replay_cassette_path=str(cassette_path) if suite.mode == "record" else None,
+                replay_cassette_sha256=cassette_sha256,
+                failure=failure,
+            )
+        if suite.mode == "record":
+            cassette_path.parent.mkdir(parents=True, exist_ok=True)
+            cassette_path.write_text("", encoding="utf-8")
     task_start = TaskStartMessage(type="task_start", task_id=case.id, input=case.input)
     trace.append(_event(case.id, "task_start", task_id=case.id, input=case.input))
 
@@ -110,18 +137,51 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                             message=f"Tool not allowed: {message.name}",
                         )
                         break
-                    entry = find_match(cassette_entries, message.name, message.args)
-                    if entry is None:
-                        failure = Failure(
-                            type="cassette_mismatch",
-                            message=format_mismatch_error(
-                                cassette_entries,
-                                message.name,
-                                message.args,
-                            ),
-                        )
-                        break
-                    if not entry.ok:
+                    if suite.mode == "replay":
+                        entry = find_match(cassette_entries, message.name, message.args)
+                        if entry is None:
+                            failure = Failure(
+                                type="cassette_mismatch",
+                                message=format_mismatch_error(
+                                    cassette_entries,
+                                    message.name,
+                                    message.args,
+                                ),
+                            )
+                            break
+                        ok = entry.ok
+                        result = entry.result
+                        error = entry.error
+                    else:
+                        assert tool_registry is not None
+                        tool = tool_registry.get(message.name)
+                        if tool is None:
+                            failure = Failure(
+                                type="tool_not_registered",
+                                message=f"Tool not registered: {message.name}",
+                            )
+                            break
+                        try:
+                            result = tool.call(message.args)
+                            ok = True
+                            error = None
+                        except Exception as exc:
+                            result = None
+                            ok = False
+                            error = str(exc)
+                        if suite.mode == "record":
+                            append_entry(
+                                cassette_path,
+                                CassetteEntry(
+                                    tool=message.name,
+                                    args=message.args,
+                                    ok=ok,
+                                    result=result,
+                                    error=error,
+                                ),
+                            )
+
+                    if not ok:
                         tool_errors += 1
                         tool_errors_by_name[message.name] = (
                             tool_errors_by_name.get(message.name, 0) + 1
@@ -129,9 +189,9 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                     tool_result = ToolResultMessage(
                         type="tool_result",
                         call_id=message.call_id,
-                        ok=entry.ok,
-                        result=entry.result,
-                        error=entry.error,
+                        ok=ok,
+                        result=result,
+                        error=error,
                     )
                     agent.send(tool_result)
                     trace.append(
@@ -222,6 +282,12 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
     passed = failure is None
     trace.append(_event(case.id, "case_end", passed=passed, wall_ms=wall_ms))
 
+    if cassette_path.is_file():
+        try:
+            cassette_sha256 = hashlib.sha256(cassette_path.read_bytes()).hexdigest()
+        except OSError:
+            cassette_sha256 = None
+
     return CaseResult(
         case_id=case.id,
         passed=passed,
@@ -235,7 +301,7 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
         assertions_total=assertions_total,
         assertions_failed=assertions_failed,
         failed_assertions=failed_assertions,
-        replay_cassette_path=str(cassette_path),
+        replay_cassette_path=str(cassette_path) if suite.mode in {"replay", "record"} else None,
         replay_cassette_sha256=cassette_sha256,
         failure=failure,
     )

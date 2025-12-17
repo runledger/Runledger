@@ -37,10 +37,12 @@ def test_demo_replay_success() -> None:
     summary_path = run_path / "summary.json"
     junit_path = run_path / "junit.xml"
     run_log_path = run_path / "run.jsonl"
+    report_path = run_path / "report.html"
 
     assert summary_path.is_file()
     assert junit_path.is_file()
     assert run_log_path.is_file()
+    assert report_path.is_file()
 
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert summary["aggregates"]["cases_pass"] == 1

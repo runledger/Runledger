@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunLedger Docs | Deterministic Agent CI</title>
+    <meta name="description" content="Quickstart and core concepts for RunLedger: suites, cases, cassettes, assertions, budgets, baselines, and artifacts.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Icons (Pinned Version) -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#020408',
+                        card: '#0A0C12',
+                        border: '#1E2230',
+                        borderHover: '#30364A',
+                        primary: '#3B82F6',
+                        primaryGlow: 'rgba(59, 130, 246, 0.5)',
+                        accent: '#06B6D4',
+                        textMain: '#F8FAFC',
+                        textMuted: '#94A3B8',
+                        codeBg: '#0D1117'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'float': 'float 6s ease-in-out infinite',
+                        'stream': 'stream 1.5s linear infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        stream: {
+                            '0%': { backgroundPosition: '-100% 0' },
+                            '100%': { backgroundPosition: '200% 0' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #020408;
+            color: #F8FAFC;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(10, 12, 18, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-card {
+            background: #0A0C12;
+            border: 1px solid #1E2230;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            border-color: #3B82F6;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.15);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+            transition: left 0.5s;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #020408; }
+        ::-webkit-scrollbar-thumb { background: #1E2230; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+    </style>
+</head>
+<body class="relative">
+
+    <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-primary/20 via-transparent to-accent/20 blur-3xl opacity-60 pointer-events-none"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-panel h-16">
+        <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                </div>
+                <span class="font-bold tracking-tight text-white text-lg">RunLedger</span>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8">
+                <a href="docs.html" class="text-sm font-medium text-white">Docs</a>
+                <a href="reference.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Reference</a>
+                <a href="integrations.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integrations</a>
+                <a href="pricing.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Pricing</a>
+                <a href="changelog.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Changelog</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="community.html" class="hidden md:block text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
+                <a href="#quickstart" class="px-4 py-2 bg-white text-bg font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors shadow-lg shadow-white/10">
+                    Get Started
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden text-textMuted hover:text-white focus:outline-none" aria-label="Toggle menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 w-full bg-[#0A0C12] border-b border-white/5 py-4 px-6 flex flex-col gap-4 shadow-2xl">
+            <a href="docs.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Docs</a>
+            <a href="reference.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Reference</a>
+            <a href="integrations.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integrations</a>
+            <a href="pricing.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Pricing</a>
+            <a href="changelog.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Changelog</a>
+            <hr class="border-white/5">
+            <a href="community.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
+        </div>
+    </nav>
+
+    <main class="relative z-10 pt-28 pb-24">
+        <section class="max-w-6xl mx-auto px-6 mb-20">
+            <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 mb-6 animate-fade-in">
+                        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        <span class="text-xs font-semibold text-primary tracking-wide">DOCUMENTATION</span>
+                    </div>
+                    <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight mb-6">Ship deterministic agent CI in hours, not weeks.</h1>
+                    <p class="text-lg text-textMuted leading-relaxed mb-8">
+                        This guide covers the core workflow: define suites, record tool calls, replay in CI, and gate merges with strict assertions.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#quickstart" class="px-6 py-3 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">Quickstart</a>
+                        <a href="reference.html" class="px-6 py-3 bg-card border border-border text-white font-semibold rounded-lg hover:border-textMuted transition-colors">CLI Reference</a>
+                    </div>
+                    <div class="mt-8 flex flex-wrap items-center gap-4 text-xs text-textMuted">
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span> Replay-first CI</div>
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent"></span> Tool call cassettes</div>
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Hard assertions</div>
+                    </div>
+                </div>
+                <div class="bg-card border border-border rounded-xl p-6 shadow-2xl">
+                    <div class="text-xs font-mono text-textMuted mb-4">quickstart.sh</div>
+                    <pre class="font-mono text-sm text-textMain leading-6 whitespace-pre-wrap">pipx install runledger
+runledger init
+runledger run ./evals --mode record
+runledger run ./evals --mode replay
+open .agentci/runs/**/report.html</pre>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <span class="text-[10px] font-mono text-primary bg-primary/10 px-2 py-1 rounded">record once</span>
+                        <span class="text-[10px] font-mono text-accent bg-accent/10 px-2 py-1 rounded">replay forever</span>
+                        <span class="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">gate merges</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quickstart" class="max-w-6xl mx-auto px-6 mb-20">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-white">Quickstart</h2>
+                <a href="reference.html#cli" class="text-sm text-textMuted hover:text-white transition-colors">See all commands</a>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="feature-card p-6 rounded-xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center">
+                            <i data-lucide="download" class="w-5 h-5 text-primary"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">Install</h3>
+                    </div>
+                    <p class="text-sm text-textMuted mb-4">Use pipx for a clean global install and isolated environments.</p>
+                    <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">pipx install runledger</code>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-primary"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">Bootstrap</h3>
+                    </div>
+                    <p class="text-sm text-textMuted mb-4">Generate a demo suite with a sample agent and cassette.</p>
+                    <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">runledger init</code>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center">
+                            <i data-lucide="play" class="w-5 h-5 text-primary"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">Replay</h3>
+                    </div>
+                    <p class="text-sm text-textMuted mb-4">Run deterministic evals and publish artifacts to CI.</p>
+                    <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">runledger run ./evals --mode replay</code>
+                </div>
+            </div>
+        </section>
+
+        <section id="concepts" class="max-w-6xl mx-auto px-6 mb-20">
+            <h2 class="text-2xl font-bold text-white mb-8">Core Concepts</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-2">Suites</h3>
+                    <p class="text-sm text-textMuted">A suite bundles cases, tool registry, and budgets into a single CI unit.</p>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-2">Cases</h3>
+                    <p class="text-sm text-textMuted">Each case defines a task input and a cassette for deterministic replay.</p>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-2">Cassettes</h3>
+                    <p class="text-sm text-textMuted">Record tool inputs and outputs once, then reuse them in CI.</p>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-2">Assertions</h3>
+                    <p class="text-sm text-textMuted">Validate JSON output with schemas, required fields, and tool contracts.</p>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-2">Budgets</h3>
+                    <p class="text-sm text-textMuted">Enforce hard caps on latency, tool calls, and error rates.</p>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-2">Baselines</h3>
+                    <p class="text-sm text-textMuted">Track regressions and gate PRs when success rate drops.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="assertions" class="max-w-6xl mx-auto px-6 mb-20">
+            <div class="grid lg:grid-cols-[1fr_1fr] gap-10 items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-4">Assertions and budgets are hard gates.</h2>
+                    <p class="text-sm text-textMuted mb-6">Use JSON Schema and required fields for deterministic checks, then layer budgets for latency and tool usage.</p>
+                    <ul class="space-y-3 text-sm text-textMuted">
+                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> JSON schema validation for final output</li>
+                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> Required fields and regex guards</li>
+                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> Budget caps for wall time and tool calls</li>
+                    </ul>
+                </div>
+                <div class="bg-card border border-border rounded-xl p-6">
+                    <div class="text-xs font-mono text-textMuted mb-4">suite.yaml</div>
+                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">assertions:
+  - type: json_schema
+    schema_path: schema.json
+  - type: required_fields
+    fields: ["category", "reply"]
+
+budgets:
+  max_wall_ms: 20000
+  max_tool_calls: 10
+  max_tool_errors: 0</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="artifacts" class="max-w-6xl mx-auto px-6 mb-20">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-white">Artifacts and reporting</h2>
+                <a href="reference.html#protocol" class="text-sm text-textMuted hover:text-white transition-colors">Protocol details</a>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-3">Run logs</h3>
+                    <p class="text-sm text-textMuted mb-4">Every event is captured to JSONL for auditing and diffs.</p>
+                    <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">run.jsonl</code>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-3">CI output</h3>
+                    <p class="text-sm text-textMuted mb-4">JUnit and summary JSON integrate directly with CI dashboards.</p>
+                    <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">junit.xml</code>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-3">Shareable report</h3>
+                    <p class="text-sm text-textMuted mb-4">A static HTML report that opens anywhere, no server needed.</p>
+                    <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">report.html</code>
+                </div>
+                <div class="feature-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-3">Summary metrics</h3>
+                    <p class="text-sm text-textMuted mb-4">Use summary.json for baseline diffs and regression gates.</p>
+                    <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">summary.json</code>
+                </div>
+            </div>
+        </section>
+
+        <section class="max-w-5xl mx-auto px-6">
+            <div class="bg-card border border-border rounded-2xl p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Ready for the CLI deep dive?</h3>
+                    <p class="text-sm text-textMuted">Explore every command, config field, and protocol message.</p>
+                </div>
+                <a href="reference.html" class="px-6 py-3 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">Open Reference</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-border bg-card">
+        <div class="max-w-7xl mx-auto px-6 py-12 grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
+            <div class="space-y-4">
+                <a href="index.html" class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    </div>
+                    <span class="font-bold text-white text-sm">RunLedger</span>
+                </a>
+                <p class="text-sm text-textMuted">Deterministic evals and replayable tool calls for CI-grade agents.</p>
+                <div class="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    ALL SYSTEMS OPERATIONAL
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-white mb-3">Product</h3>
+                <ul class="space-y-2 text-sm text-textMuted">
+                    <li><a href="index.html" class="hover:text-white transition-colors">Overview</a></li>
+                    <li><a href="index.html#features" class="hover:text-white transition-colors">Features</a></li>
+                    <li><a href="integrations.html" class="hover:text-white transition-colors">Integrations</a></li>
+                    <li><a href="pricing.html" class="hover:text-white transition-colors">Pricing</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-white mb-3">Docs</h3>
+                <ul class="space-y-2 text-sm text-textMuted">
+                    <li><a href="docs.html" class="hover:text-white transition-colors">Documentation</a></li>
+                    <li><a href="docs.html#quickstart" class="hover:text-white transition-colors">Quickstart</a></li>
+                    <li><a href="reference.html" class="hover:text-white transition-colors">CLI Reference</a></li>
+                    <li><a href="reference.html#protocol" class="hover:text-white transition-colors">Protocol</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-white mb-3">Community</h3>
+                <ul class="space-y-2 text-sm text-textMuted">
+                    <li><a href="community.html" class="hover:text-white transition-colors">Community</a></li>
+                    <li><a href="community.html#contributing" class="hover:text-white transition-colors">Contributing</a></li>
+                    <li><a href="community.html#support" class="hover:text-white transition-colors">Support</a></li>
+                    <li><a href="changelog.html" class="hover:text-white transition-colors">Changelog</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-white mb-3">Company</h3>
+                <ul class="space-y-2 text-sm text-textMuted">
+                    <li><a href="about.html" class="hover:text-white transition-colors">About</a></li>
+                    <li><a href="about.html#mission" class="hover:text-white transition-colors">Mission</a></li>
+                    <li><a href="about.html#principles" class="hover:text-white transition-colors">Principles</a></li>
+                    <li><a href="security.html" class="hover:text-white transition-colors">Security</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-textMuted">
+            <span>(c) 2025 RunLedger. MIT Licensed.</span>
+            <div class="flex items-center gap-6">
+                <a href="security.html" class="hover:text-white transition-colors">Security</a>
+                <a href="community.html#contact" class="hover:text-white transition-colors">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('mobile-menu-btn');
+            const menu = document.getElementById('mobile-menu');
+
+            if (btn && menu) {
+                btn.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');
+                });
+            }
+
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

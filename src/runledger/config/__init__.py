@@ -1,3 +1,3 @@
-from .models import AssertionSpec, BudgetSpec, CaseConfig, SuiteConfig
+from .models import AssertionSpec, BudgetSpec, CaseConfig, RegressionSpec, SuiteConfig
 
-__all__ = ["AssertionSpec", "BudgetSpec", "CaseConfig", "SuiteConfig"]
+__all__ = ["AssertionSpec", "BudgetSpec", "CaseConfig", "RegressionSpec", "SuiteConfig"]

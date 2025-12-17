@@ -1,0 +1,1 @@
+<testsuite name="golden" tests="2" failures="1" time="0.300"><testcase name="case_a" time="0.100" /><testcase name="case_b" time="0.200"><failure message="missing field">assertion_failed</failure></testcase></testsuite>
