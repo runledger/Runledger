@@ -19,7 +19,8 @@ from runledger.protocol.messages import (
 )
 from runledger.runner.subprocess import AgentProcess, AgentProcessError
 
-from .models import CaseResult, Failure
+from .budgets import check_budgets, merge_budgets
+from .models import CaseResult, Failure, SuiteResult
 
 
 def _event(case_id: str, event_type: str, **fields: Any) -> dict[str, Any]:
@@ -167,6 +168,27 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
             )
 
     wall_ms = int((time.monotonic() - start) * 1000)
+    effective_budget = merge_budgets(suite.budgets, case.budgets)
+    if failure is None and effective_budget is not None:
+        budget_failures = check_budgets(
+            effective_budget,
+            wall_ms=wall_ms,
+            tool_calls=tool_calls,
+            tool_errors=tool_errors,
+        )
+        if budget_failures:
+            message = "; ".join(
+                f"{item['field']} limit={item['limit']} actual={item['actual']}"
+                for item in budget_failures
+            )
+            failure = Failure(type="budget_exceeded", message=f"Budget exceeded: {message}")
+            trace.append(
+                _event(
+                    case.id,
+                    "budget_failure",
+                    failures=budget_failures,
+                )
+            )
     passed = failure is None
     trace.append(_event(case.id, "case_end", passed=passed, wall_ms=wall_ms))
 
@@ -179,4 +201,29 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
         tool_calls=tool_calls,
         tool_errors=tool_errors,
         failure=failure,
+    )
+
+
+def run_suite(suite: SuiteConfig, cases: list[CaseConfig]) -> SuiteResult:
+    results = [run_case(suite, case) for case in cases]
+    total_cases = len(results)
+    passed_cases = sum(1 for result in results if result.passed)
+    failed_cases = total_cases - passed_cases
+    success_rate = (passed_cases / total_cases) if total_cases else 0.0
+    total_tool_calls = sum(result.tool_calls for result in results)
+    total_tool_errors = sum(result.tool_errors for result in results)
+    total_wall_ms = sum(result.wall_ms for result in results)
+    passed = failed_cases == 0
+
+    return SuiteResult(
+        suite_name=suite.suite_name,
+        cases=results,
+        passed=passed,
+        total_cases=total_cases,
+        passed_cases=passed_cases,
+        failed_cases=failed_cases,
+        success_rate=success_rate,
+        total_tool_calls=total_tool_calls,
+        total_tool_errors=total_tool_errors,
+        total_wall_ms=total_wall_ms,
     )
