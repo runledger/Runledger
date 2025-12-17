@@ -7,6 +7,7 @@ from runledger.config.models import AssertionSpec, CaseConfig, SuiteConfig
 from .base import AssertionFailure
 from .json_schema import apply_json_schema
 from .required_fields import apply_required_fields
+from .tool_contract import apply_call_order, apply_must_call, apply_must_not_call
 
 
 def _spec_to_dict(spec: AssertionSpec | dict[str, Any]) -> dict[str, Any]:
@@ -31,7 +32,6 @@ def apply_assertions(
     suite: SuiteConfig,
     case: CaseConfig,
 ) -> list[AssertionFailure]:
-    _ = trace
     if output is None:
         return [
             AssertionFailure(
@@ -65,6 +65,39 @@ def apply_assertions(
                 )
                 continue
             failures.extend(apply_json_schema(output, schema_path))
+        elif assertion_type == "must_call":
+            tools = spec.get("tools")
+            if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
+                failures.append(
+                    AssertionFailure(
+                        type="must_call",
+                        message="must_call assertion requires a list of tool names",
+                    )
+                )
+                continue
+            failures.extend(apply_must_call(trace, tools))
+        elif assertion_type == "must_not_call":
+            tools = spec.get("tools")
+            if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
+                failures.append(
+                    AssertionFailure(
+                        type="must_not_call",
+                        message="must_not_call assertion requires a list of tool names",
+                    )
+                )
+                continue
+            failures.extend(apply_must_not_call(trace, tools))
+        elif assertion_type == "call_order":
+            order = spec.get("order")
+            if not isinstance(order, list) or not all(isinstance(t, str) for t in order):
+                failures.append(
+                    AssertionFailure(
+                        type="call_order",
+                        message="call_order assertion requires an ordered list of tool names",
+                    )
+                )
+                continue
+            failures.extend(apply_call_order(trace, order))
         else:
             failures.append(
                 AssertionFailure(

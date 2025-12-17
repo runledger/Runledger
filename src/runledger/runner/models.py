@@ -27,3 +27,10 @@ class SuiteResult:
     suite_name: str
     cases: list[CaseResult]
     passed: bool
+    total_cases: int
+    passed_cases: int
+    failed_cases: int
+    success_rate: float
+    total_tool_calls: int
+    total_tool_errors: int
+    total_wall_ms: int

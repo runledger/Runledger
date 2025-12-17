@@ -11,8 +11,7 @@ from runledger.artifacts.junit import write_junit
 from runledger.artifacts.run_log import write_run_log
 from runledger.artifacts.summary import create_run_dir, write_summary
 from runledger.config.loader import load_cases, load_suite
-from runledger.runner.engine import run_case
-from runledger.runner.models import CaseResult
+from runledger.runner.engine import run_suite
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 console = Console()
@@ -72,9 +71,8 @@ def run(
             raise typer.Exit(code=1)
         cases = filtered
 
-    results: list[CaseResult] = []
-    for item in cases:
-        results.append(run_case(suite, item))
+    suite_result = run_suite(suite, cases)
+    results = suite_result.cases
 
     base_dir = Path(output_dir) if output_dir else Path(suite.output_dir or ".agentci/runs")
     run_dir = create_run_dir(base_dir, suite.suite_name)
@@ -82,7 +80,7 @@ def run(
     write_summary(run_dir, suite.suite_name, results)
     write_junit(run_dir, suite.suite_name, results)
 
-    passed = all(result.passed for result in results)
+    passed = suite_result.passed
     table = Table(title="RunLedger Results", show_lines=False)
     table.add_column("Case")
     table.add_column("Status")

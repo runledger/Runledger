@@ -457,7 +457,7 @@ Each line is an entry:
 
 # Phase 2 — Multi-case, budgets, tool contracts (core usability)
 
-## Task 14 — Multi-case suite execution + aggregation
+## Task 14 [DONE]— Multi-case suite execution + aggregation
 
 **Goal:** Run all cases in suite with stable ordering and aggregated metrics.
 
@@ -478,7 +478,7 @@ Each line is an entry:
 
 ---
 
-## Task 15 — Budget enforcement (case + suite)
+## Task 15 [DONE]— Budget enforcement (case + suite)
 
 **Goal:** Fail cases when budgets exceeded.
 
@@ -498,7 +498,7 @@ Each line is an entry:
 
 ---
 
-## Task 16 — Tool contract assertions (must/must-not/order)
+## Task 16 [DONE]— Tool contract assertions (must/must-not/order)
 
 **Goal:** Deterministic behavioral checks beyond output shape.
 
@@ -691,6 +691,7 @@ Each line is an entry:
 4. Tasks **9–11** (assertions + artifacts + CLI run)
 5. Tasks **12–13** (example agent + integration tests)
 6. Then Phase 2/3/4/5/6 in order.
+
 
 
 
