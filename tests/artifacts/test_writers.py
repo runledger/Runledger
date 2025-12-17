@@ -7,7 +7,8 @@ import xml.etree.ElementTree as ET
 from runledger.artifacts.junit import write_junit
 from runledger.artifacts.run_log import write_run_log
 from runledger.artifacts.summary import create_run_dir, write_summary
-from runledger.runner.models import CaseResult, Failure
+from runledger.config.models import SuiteConfig
+from runledger.runner.models import CaseResult, Failure, SuiteResult
 
 
 def _case_result(case_id: str, passed: bool) -> CaseResult:
@@ -44,16 +45,42 @@ def test_write_run_log(tmp_path: Path) -> None:
 
 def test_write_summary_and_junit(tmp_path: Path) -> None:
     base_dir = tmp_path / "runs"
-    run_dir = create_run_dir(base_dir, "demo")
+    run_dir, run_id = create_run_dir(base_dir, "demo", run_id="test-run")
     cases = [_case_result("c1", True), _case_result("c2", False)]
+    suite = SuiteConfig(
+        suite_name="demo",
+        agent_command=["python", "agent.py"],
+        mode="replay",
+        cases_path="cases",
+        tool_registry=["search_docs"],
+    )
+    suite_result = SuiteResult(
+        suite_name="demo",
+        cases=cases,
+        passed=False,
+        total_cases=2,
+        passed_cases=1,
+        failed_cases=1,
+        success_rate=0.5,
+        total_tool_calls=2,
+        total_tool_errors=0,
+        total_wall_ms=246,
+    )
 
-    summary_path = write_summary(run_dir, "demo", cases)
+    summary_path = write_summary(
+        run_dir,
+        suite=suite,
+        suite_path=tmp_path / "suite.yaml",
+        suite_result=suite_result,
+        run_id=run_id,
+    )
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
 
-    assert summary["suite_name"] == "demo"
-    assert summary["total_cases"] == 2
-    assert summary["passed"] == 1
-    assert summary["failed"] == 1
+    assert summary["schema_version"] == 1
+    assert summary["suite"]["name"] == "demo"
+    assert summary["aggregates"]["cases_total"] == 2
+    assert summary["aggregates"]["cases_pass"] == 1
+    assert summary["aggregates"]["cases_fail"] == 1
 
     junit_path = write_junit(run_dir, "demo", cases)
     root = ET.fromstring(junit_path.read_text(encoding="utf-8"))

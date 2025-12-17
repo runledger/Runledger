@@ -26,6 +26,13 @@ def _merge_assertions(
     return merged
 
 
+def count_assertions(
+    suite_assertions: Iterable[AssertionSpec],
+    case_assertions: Iterable[AssertionSpec] | None,
+) -> int:
+    return len(_merge_assertions(suite_assertions, case_assertions))
+
+
 def apply_assertions(
     output: dict[str, Any] | None,
     trace: list[dict[str, Any]],

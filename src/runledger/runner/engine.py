@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import hashlib
 import time
 from pathlib import Path
 from typing import Any
 
-from runledger.assertions.engine import apply_assertions
+from runledger.assertions.engine import apply_assertions, count_assertions
 from runledger.cassette.loader import load_cassette
 from runledger.cassette.match import find_match, format_mismatch_error
 from runledger.config.models import CaseConfig, SuiteConfig
@@ -41,11 +42,24 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
     start = time.monotonic()
     tool_calls = 0
     tool_errors = 0
+    tool_calls_by_name: dict[str, int] = {}
+    tool_errors_by_name: dict[str, int] = {}
     output: dict[str, Any] | None = None
     failure: Failure | None = None
+    assertions_total = count_assertions(suite.assertions, case.assertions)
+    assertions_failed = 0
+    failed_assertions: list[dict[str, str]] | None = None
+
+    cassette_path = Path(case.cassette)
+    cassette_sha256: str | None = None
+    if cassette_path.is_file():
+        try:
+            cassette_sha256 = hashlib.sha256(cassette_path.read_bytes()).hexdigest()
+        except OSError:
+            cassette_sha256 = None
 
     try:
-        cassette_entries = load_cassette(Path(case.cassette))
+        cassette_entries = load_cassette(cassette_path)
     except Exception as exc:
         failure = Failure(type="cassette_error", message=str(exc))
         wall_ms = int((time.monotonic() - start) * 1000)
@@ -58,6 +72,13 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
             wall_ms=wall_ms,
             tool_calls=tool_calls,
             tool_errors=tool_errors,
+            tool_calls_by_name=tool_calls_by_name,
+            tool_errors_by_name=tool_errors_by_name,
+            assertions_total=assertions_total,
+            assertions_failed=assertions_failed,
+            failed_assertions=failed_assertions,
+            replay_cassette_path=str(cassette_path),
+            replay_cassette_sha256=cassette_sha256,
             failure=failure,
         )
 
@@ -81,6 +102,8 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                             args=message.args,
                         )
                     )
+                    tool_calls += 1
+                    tool_calls_by_name[message.name] = tool_calls_by_name.get(message.name, 0) + 1
                     if message.name not in allowed_tools:
                         failure = Failure(
                             type="tool_not_allowed",
@@ -98,9 +121,11 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                             ),
                         )
                         break
-                    tool_calls += 1
                     if not entry.ok:
                         tool_errors += 1
+                        tool_errors_by_name[message.name] = (
+                            tool_errors_by_name.get(message.name, 0) + 1
+                        )
                     tool_result = ToolResultMessage(
                         type="tool_result",
                         call_id=message.call_id,
@@ -155,6 +180,11 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
     if failure is None and output is not None:
         assertion_failures = apply_assertions(output, trace, suite, case)
         if assertion_failures:
+            assertions_failed = len(assertion_failures)
+            failed_assertions = [
+                {"type": failure.type, "message": failure.message}
+                for failure in assertion_failures
+            ]
             failure = Failure(
                 type="assertion_failed",
                 message="\n".join(f.message for f in assertion_failures),
@@ -200,6 +230,13 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
         wall_ms=wall_ms,
         tool_calls=tool_calls,
         tool_errors=tool_errors,
+        tool_calls_by_name=tool_calls_by_name,
+        tool_errors_by_name=tool_errors_by_name,
+        assertions_total=assertions_total,
+        assertions_failed=assertions_failed,
+        failed_assertions=failed_assertions,
+        replay_cassette_path=str(cassette_path),
+        replay_cassette_sha256=cassette_sha256,
         failure=failure,
     )
 

@@ -43,8 +43,8 @@ def test_demo_replay_success() -> None:
     assert run_log_path.is_file()
 
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
-    assert summary["passed"] == 1
-    assert summary["failed"] == 0
+    assert summary["aggregates"]["cases_pass"] == 1
+    assert summary["aggregates"]["cases_fail"] == 0
 
 
 def test_demo_replay_schema_failure() -> None:

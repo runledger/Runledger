@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RunLedger | CI for tool-using agents</title>
+    <title>RunLedger | The CI Standard for Agents</title>
     <meta name="description" content="Deterministic evals, replayable tool calls, and merge gates that stop agent regressions before they ship.">
     
-    <!-- Fonts: Inter & JetBrains Mono -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Icons (Pinned Version) -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
     
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Three.js (Pinned Version) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,18 +24,25 @@
             theme: {
                 extend: {
                     colors: {
-                        bg: '#050607',
-                        surface: '#0A0C10',
-                        surfaceHighlight: '#12161C',
-                        border: '#1F242C',
-                        borderHighlight: '#343A46',
-                        accent: '#00F0FF', // Cyber Cyan
-                        accentDim: 'rgba(0, 240, 255, 0.1)',
-                        success: '#00FF94',
-                        error: '#FF0055',
-                        text: '#EDEDED',
-                        muted: '#889096',
-                        subtle: '#4B5563'
+                        bg: '#020408', /* Midnight Void */
+                        card: '#0A0C12',
+                        border: '#1E2230',
+                        borderHover: '#30364A',
+                        
+                        primary: '#3B82F6', /* Electric Blue */
+                        primaryGlow: 'rgba(59, 130, 246, 0.5)',
+                        
+                        accent: '#06B6D4', /* Cyan */
+                        
+                        textMain: '#F8FAFC',
+                        textMuted: '#94A3B8',
+                        
+                        codeBg: '#0D1117',
+                        
+                        diffAdd: 'rgba(35, 134, 54, 0.15)',
+                        diffAddText: '#3FB950',
+                        diffDel: 'rgba(218, 54, 51, 0.15)',
+                        diffDelText: '#F85149',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -43,19 +50,43 @@
                     },
                     backgroundImage: {
                         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'hero-glow': 'conic-gradient(from 180deg at 50% 50%, #1E293B 0deg, #0F172A 180deg, #1E293B 360deg)',
                     },
                     animation: {
-                        'blink': 'blink 1s step-end infinite',
-                        'scanline': 'scanline 8s linear infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'flow': 'flow 2s linear infinite',
+                        'flow-slow': 'flow 15s linear infinite',
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'grow-bar': 'growBar 2s ease-out infinite',
+                        'scroll-logs': 'scrollLogs 10s linear infinite',
+                        'stream': 'stream 1.5s linear infinite',
                     },
                     keyframes: {
-                        blink: {
-                            '0%, 100%': { opacity: '1' },
-                            '50%': { opacity: '0' },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' },
                         },
-                        scanline: {
-                            '0%': { transform: 'translateY(-100%)' },
-                            '100%': { transform: 'translateY(100%)' },
+                        flow: {
+                            '0%': { strokeDashoffset: '24' },
+                            '100%': { strokeDashoffset: '0' },
+                        },
+                        stream: {
+                            '0%': { backgroundPosition: '-100% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        growBar: {
+                            '0%': { width: '0%' },
+                            '60%': { width: '85%' },
+                            '100%': { width: '85%' }
+                        },
+                        scrollLogs: {
+                            '0%': { transform: 'translateY(0)' },
+                            '100%': { transform: 'translateY(-50%)' }
                         }
                     }
                 }
@@ -65,521 +96,779 @@
 
     <style>
         body {
-            background-color: #050607;
-            color: #EDEDED;
-            overflow-x: hidden;
+            background-color: #020408;
+            color: #F8FAFC;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
-        /* Shader Layer - Updated for Fog/Nebula */
-        #canvas-container {
-            position: fixed;
+        /* The Living Line */
+        .living-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                transparent, 
+                #1E2230 10%, 
+                #1E2230 90%, 
+                transparent
+            );
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .living-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to bottom, transparent, #3B82F6, transparent);
+            animation: drop 8s ease-in-out infinite;
+            filter: blur(2px);
+        }
+
+        /* Reduced Motion for Line */
+        @media (prefers-reduced-motion: reduce) {
+            .living-line::after {
+                animation: none;
+                display: none;
+            }
+            .animate-float, .animate-flow, .animate-pulse-slow, .animate-grow-bar, .animate-scroll-logs, .animate-stream {
+                animation: none;
+            }
+        }
+
+        @keyframes drop {
+            0% { top: -200px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Card Glow Effect on Hover */
+        .feature-card {
+            background: #0A0C12;
+            border: 1px solid #1E2230;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        .feature-card:hover {
+            border-color: #3B82F6;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.15);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+            transition: left 0.5s;
+        }
+        .feature-card:hover::before {
+            left: 100%;
+        }
+
+        /* Glass Panel */
+        .glass-panel {
+            background: rgba(10, 12, 18, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Syntax Highlighting */
+        .token-key { color: #7EE787; }
+        .token-str { color: #A5D6FF; }
+        .token-num { color: #D2A8FF; }
+        .token-kw  { color: #FF7B72; }
+        .token-comment { color: #8B949E; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #020408; }
+        ::-webkit-scrollbar-thumb { background: #1E2230; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+
+        #three-canvas {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100vh;
-            z-index: -2;
-            opacity: 0.6; /* Increased opacity slightly as shader is darker now */
+            z-index: 0;
+            opacity: 0.4;
             pointer-events: none;
-        }
-
-        /* Grid Background Pattern - Made subtler */
-        .grid-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 80px 80px; /* Tighter grid */
-            z-index: -1;
-            pointer-events: none;
-            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-        }
-
-        /* Utility */
-        .glass {
-            background: rgba(5, 6, 7, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .mono-num {
-            font-feature-settings: "tnum" on, "zero" on;
-        }
-
-        /* Scroll Reveal */
-        .reveal {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Custom Selection */
-        ::selection {
-            background: #00F0FF;
-            color: #000;
+            mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
         }
         
-        /* Gradient Text */
-        .text-glow {
-            text-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+        .dashed-flow {
+            stroke-dasharray: 4 4;
+            animation: flow 1s linear infinite;
         }
     </style>
 </head>
-<body class="selection:bg-accent selection:text-black">
+<body class="relative">
 
-    <!-- Background Layers -->
-    <div id="canvas-container"></div>
-    <div class="grid-bg"></div>
-    
+    <!-- 3D Background for Hero -->
+    <div id="three-canvas" aria-hidden="true"></div>
+
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-border glass">
-        <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+    <nav class="fixed top-0 w-full z-50 glass-panel h-16">
+        <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-2 h-2 bg-accent shadow-[0_0_10px_#00F0FF]"></div>
-                <span class="font-semibold tracking-tight text-sm text-white">RunLedger</span>
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                </div>
+                <span class="font-bold tracking-tight text-white text-lg">RunLedger</span>
             </div>
             
-            <div class="flex items-center gap-6">
-                <a href="#" class="text-xs font-mono text-muted hover:text-white transition-colors">DOCS</a>
-                <a href="#" class="text-xs font-mono text-muted hover:text-white transition-colors">GITHUB</a>
-                <div class="h-4 w-px bg-border"></div>
-                <span class="flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
-                    <span class="text-[10px] font-mono text-muted uppercase tracking-widest">Systems Normal</span>
-                </span>
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#features" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Features</a>
+                <a href="#demo" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Demo</a>
+                <a href="#integration" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integration</a>
             </div>
+
+            <div class="flex items-center gap-4">
+                <a href="#" class="hidden md:block text-sm font-medium text-textMuted hover:text-white transition-colors">Sign In</a>
+                <a href="#" class="px-4 py-2 bg-white text-bg font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors shadow-lg shadow-white/10">
+                    Get Started
+                </a>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-textMuted hover:text-white focus:outline-none" aria-label="Toggle menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 w-full bg-[#0A0C12] border-b border-white/5 py-4 px-6 flex flex-col gap-4 shadow-2xl">
+            <a href="#features" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Features</a>
+            <a href="#demo" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Demo</a>
+            <a href="#integration" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integration</a>
+            <hr class="border-white/5">
+            <a href="#" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Sign In</a>
         </div>
     </nav>
 
-    <main class="relative z-10 pt-32 pb-24">
+    <!-- Main Content -->
+    <main class="relative z-10 pt-32">
+        
+        <!-- The Living Line -->
+        <div class="hidden lg:block living-line h-[3500px]"></div>
 
-        <!-- Hero Section -->
-        <section class="max-w-5xl mx-auto px-6 mb-32 text-center reveal active">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-borderHighlight bg-surfaceHighlight/50 mb-10 backdrop-blur-sm">
-                <span class="text-[10px] font-mono text-accent">BETA v0.9.2</span>
-                <span class="w-px h-3 bg-borderHighlight"></span>
-                <span class="text-[10px] font-mono text-muted">ACCEPTING EARLY ACCESS</span>
-            </div>
-            
-            <h1 class="text-5xl md:text-8xl font-semibold text-white tracking-tighter mb-8 leading-[0.95] text-glow">
-                CI for <br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-gray-500">Tool-Using Agents</span>
-            </h1>
-            
-            <p class="text-xl md:text-2xl text-muted max-w-2xl mx-auto leading-relaxed font-light mb-12 tracking-tight">
-                Deterministic evals. Replayable tool calls.<br>
-                Merge gates that stop regressions <span class="text-white">before they ship.</span>
-            </p>
+        <!-- HERO SECTION -->
+        <section id="hero" class="max-w-7xl mx-auto px-6 mb-32 relative">
+            <div class="text-center relative z-10 max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 mb-8 animate-fade-in backdrop-blur-md">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    <span class="text-xs font-semibold text-primary tracking-wide">CI FOR TOOL-USING AGENTS</span>
+                </div>
 
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="#" class="group relative px-8 py-3 bg-white text-black font-semibold rounded-sm hover:bg-gray-200 transition-all flex items-center justify-center gap-2 overflow-hidden">
-                    <span class="relative z-10">View Demo Repo</span>
-                    <i data-lucide="arrow-up-right" class="w-4 h-4 relative z-10 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
-                </a>
+                <h1 class="text-5xl md:text-7xl font-bold text-white tracking-tight mb-8 leading-[1.1]">
+                    RunLedger<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">CI for tool-using agents.</span>
+                </h1>
                 
-                <div class="relative group cursor-pointer" onclick="copyInstall()">
-                    <div class="absolute -inset-0.5 bg-gradient-to-r from-border to-borderHighlight rounded-sm opacity-50 group-hover:opacity-100 transition duration-500"></div>
-                    <div class="relative px-6 py-3 bg-bg rounded-sm flex items-center gap-3 border border-border group-hover:border-white/20 transition-colors">
-                        <span class="font-mono text-sm text-accent">$</span>
-                        <span class="font-mono text-sm text-muted group-hover:text-white transition-colors">pipx install runledger</span>
-                        <i data-lucide="copy" class="w-3 h-3 text-subtle group-hover:text-white transition-colors ml-2"></i>
-                    </div>
-                    <div id="copy-toast" class="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-[10px] font-mono text-success opacity-0 transition-opacity">COPIED</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- The "Console" (Interactive CI Panel) -->
-        <section class="max-w-5xl mx-auto px-6 mb-48 reveal" id="console-trigger">
-            <!-- Terminal Window -->
-            <div class="rounded-md border border-border bg-[#030405] shadow-2xl relative overflow-hidden group">
-                <!-- Top Bar -->
-                <div class="bg-surface border-b border-border px-4 h-10 flex items-center justify-between select-none">
-                    <div class="flex gap-2">
-                        <div class="w-2.5 h-2.5 rounded-full bg-borderHighlight group-hover:bg-[#FF5F56] transition-colors"></div>
-                        <div class="w-2.5 h-2.5 rounded-full bg-borderHighlight group-hover:bg-[#FFBD2E] transition-colors"></div>
-                        <div class="w-2.5 h-2.5 rounded-full bg-borderHighlight group-hover:bg-[#27C93F] transition-colors"></div>
-                    </div>
-                    <div class="text-[10px] font-mono text-muted opacity-50 tracking-widest">RUNLEDGER-CLI — WATCH</div>
-                    <div class="w-8"></div>
-                </div>
-
-                <!-- Terminal Content -->
-                <div class="p-6 font-mono text-sm leading-relaxed relative min-h-[300px]">
-                    <!-- Scanline Effect -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent h-20 w-full animate-scanline pointer-events-none z-10"></div>
-
-                    <!-- Output Area -->
-                    <div id="console-output" class="space-y-1">
-                        <!-- Initial lines injected by JS -->
-                    </div>
-                </div>
-
-                <!-- Status Bar -->
-                <div class="h-8 bg-surface border-t border-border flex items-center px-4 justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="git-branch" class="w-3 h-3 text-accent"></i>
-                            <span class="text-[10px] font-mono text-muted">feature/payment-agent</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="clock" class="w-3 h-3 text-muted"></i>
-                            <span class="text-[10px] font-mono text-muted" id="timer">00:00:00</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 bg-accent animate-pulse rounded-full"></span>
-                        <span class="text-[10px] font-mono text-accent">LIVE</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Context Caption -->
-            <div class="mt-4 flex justify-between items-start opacity-60">
-                <p class="text-xs font-mono text-muted max-w-md">
-                    <span class="text-accent">Above:</span> Real-time replay of a tool-use chain. RunLedger mocks the `stripe_charge` API call and validates the schema of the agent's output.
+                <p class="text-xl text-white font-medium leading-relaxed mb-4 max-w-2xl mx-auto">
+                    Control the chaos of probabilistic software.
                 </p>
-                <div class="text-[10px] font-mono border border-border px-2 py-1 rounded text-muted">
-                    MODE: STRICT
-                </div>
-            </div>
-        </section>
-
-        <!-- Value Proposition (Bento Grid) -->
-        <section class="max-w-6xl mx-auto px-6 mb-48">
-            <div class="grid md:grid-cols-3 gap-px bg-border border border-border">
                 
-                <!-- Tile 1 -->
-                <div class="bg-bg p-8 group hover:bg-surfaceHighlight/30 transition-colors duration-500 relative overflow-hidden reveal">
-                    <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                        <i data-lucide="rewind" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <h3 class="font-mono text-xs text-accent mb-4 tracking-widest uppercase">01. Determinism</h3>
-                    <h2 class="text-xl font-medium text-white mb-3">Replay the Unplayable</h2>
-                    <p class="text-muted text-sm leading-6">
-                        LLMs are non-deterministic. Your tests shouldn't be. Record tool outputs once, replay them infinitely. Flaky network calls are mocked automatically.
-                    </p>
+                <p class="text-lg text-textMuted leading-relaxed mb-12 max-w-2xl mx-auto">
+                    RunLedger acts as a flight recorder and gatekeeper for your agents. 
+                    <span class="text-white">Deterministic evals</span>, <span class="text-white">replayable tool calls</span>, and <span class="text-white">schema enforcement</span> in one CLI.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+                    <button class="relative group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-bg rounded-lg" onclick="copyCmd()" aria-label="Copy install command">
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
+                        <div class="relative h-14 px-6 bg-card rounded-lg flex items-center gap-4 border border-border">
+                            <span class="font-mono text-sm text-textMuted select-none">$</span>
+                            <span class="font-mono text-sm text-white">pipx install runledger</span>
+                            <i data-lucide="copy" class="w-4 h-4 text-textMuted group-hover:text-white transition-colors"></i>
+                        </div>
+                    </button>
+                    <a href="#demo" class="h-14 px-8 bg-white text-bg font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-bg">
+                        View Live Demo
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
                 </div>
 
-                <!-- Tile 2 -->
-                <div class="bg-bg p-8 group hover:bg-surfaceHighlight/30 transition-colors duration-500 relative overflow-hidden reveal transition-delay-100">
-                    <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                        <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                <!-- Hero Schematic -->
+                <div class="max-w-3xl mx-auto border border-border bg-card/50 rounded-xl p-8 backdrop-blur-sm shadow-2xl animate-fade-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between text-xs font-mono text-textMuted mb-6 px-4">
+                        <span>INPUT STREAM</span>
+                        <span>INTERCEPTION LAYER</span>
+                        <span>PRODUCTION</span>
                     </div>
-                    <h3 class="font-mono text-xs text-success mb-4 tracking-widest uppercase">02. Guardrails</h3>
-                    <h2 class="text-xl font-medium text-white mb-3">Merge Gates</h2>
-                    <p class="text-muted text-sm leading-6">
-                        Define strict schemas for tool inputs. If an agent hallucinates a parameter or misses a required field, the PR is blocked.
-                    </p>
-                </div>
-
-                <!-- Tile 3 -->
-                <div class="bg-bg p-8 group hover:bg-surfaceHighlight/30 transition-colors duration-500 relative overflow-hidden reveal transition-delay-200">
-                    <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                        <i data-lucide="diff" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <h3 class="font-mono text-xs text-error mb-4 tracking-widest uppercase">03. Regression</h3>
-                    <h2 class="text-xl font-medium text-white mb-3">Baseline Diffs</h2>
-                    <p class="text-muted text-sm leading-6">
-                        Visual diffs for chain-of-thought. See exactly where the logic diverged from the "golden run" when you tweaked the prompt.
-                    </p>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Technical Integration (SVG Diagram) -->
-        <section class="max-w-4xl mx-auto px-6 mb-48 reveal">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-semibold text-white tracking-tight mb-4">Drop-in Reliability</h2>
-                <p class="text-muted">A middleware for your agent's cognitive loop.</p>
-            </div>
-
-            <div class="relative w-full aspect-[2/1] md:aspect-[3/1] bg-surface/30 border border-border rounded-lg p-8 flex items-center justify-center select-none">
-                
-                <!-- SVG Connections -->
-                <svg class="absolute inset-0 w-full h-full z-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                            <polygon points="0 0, 10 3.5, 0 7" fill="#343A46" />
-                        </marker>
-                    </defs>
-                    <!-- Lines calculated to connect the centers roughly -->
-                    <line x1="20%" y1="50%" x2="40%" y2="50%" stroke="#1F242C" stroke-width="2" marker-end="url(#arrowhead)" />
-                    <line x1="60%" y1="50%" x2="80%" y2="50%" stroke="#1F242C" stroke-width="2" marker-end="url(#arrowhead)" />
-                </svg>
-
-                <div class="grid grid-cols-3 gap-8 md:gap-24 w-full z-10 relative">
                     
-                    <!-- Box 1 -->
-                    <div class="flex flex-col items-center gap-3">
-                        <div class="w-16 h-16 rounded bg-surface border border-borderHighlight flex items-center justify-center shadow-lg">
-                            <i data-lucide="box" class="text-white opacity-80"></i>
+                    <div class="relative h-20 flex items-center">
+                        <!-- Connecting Line -->
+                        <div class="absolute top-1/2 left-0 w-full h-px bg-border"></div>
+                        
+                        <!-- Animated Flow Dots -->
+                        <div class="absolute top-1/2 left-0 w-full h-px overflow-hidden">
+                            <div class="absolute top-0 left-0 w-20 h-px bg-gradient-to-r from-transparent via-primary to-transparent animate-[flow_2s_linear_infinite]" style="animation-duration: 2s; width: 100%;"></div>
                         </div>
-                        <span class="text-xs font-mono text-muted uppercase tracking-wider">Agent</span>
+
+                        <!-- Step 1: Agent -->
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 bg-card z-10 p-2 border border-border rounded-lg shadow-lg">
+                            <i data-lucide="bot" class="w-5 h-5 text-textMuted"></i>
+                            <span class="text-[10px] font-bold">AGENT</span>
+                        </div>
+
+                        <!-- Step 2: RunLedger Gate -->
+                        <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
+                            <div class="w-32 h-14 bg-[#0F172A] border border-primary rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.2)] relative">
+                                <div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                                <span class="text-white font-bold text-sm tracking-wide">RunLedger</span>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: LLM -->
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 bg-card z-10 p-2 border border-border rounded-lg shadow-lg">
+                            <i data-lucide="server" class="w-5 h-5 text-textMuted"></i>
+                            <span class="text-[10px] font-bold">LLM API</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISUAL EVIDENCE SECTION -->
+        <section id="demo" class="max-w-7xl mx-auto px-6 mb-40 relative">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                
+                <!-- Left: Comparison UI -->
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                    <div class="relative rounded-xl border border-border bg-[#05070A] overflow-hidden shadow-2xl">
+                        
+                        <!-- Header -->
+                        <div class="h-10 bg-[#0F1117] border-b border-border flex items-center px-4 justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-mono text-textMuted">regressions.diff</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-[10px] text-red-500 font-mono font-bold">FAIL</div>
+                            </div>
+                        </div>
+
+                        <!-- Diff Content -->
+                        <div class="p-0 font-mono text-xs leading-6">
+                            <!-- Baseline -->
+                            <div class="grid grid-cols-2 border-b border-border/50">
+                                <div class="p-2 text-center text-[10px] text-textMuted border-r border-border/50 bg-[#0A0C12]">BASELINE (main)</div>
+                                <div class="p-2 text-center text-[10px] text-textMuted bg-[#0A0C12]">CURRENT (PR #124)</div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2">
+                                <!-- Left Code -->
+                                <div class="p-4 border-r border-border/50 bg-[#0D1117] overflow-x-auto">
+                                    <div class="opacity-50">1  {</div>
+                                    <div>2    <span class="token-key">"tool"</span>: <span class="token-str">"stripe_refund"</span>,</div>
+                                    <div>3    <span class="token-key">"args"</span>: {</div>
+                                    <div>4      <span class="token-key">"id"</span>: <span class="token-str">"ch_1Mc..."</span>,</div>
+                                    <div class="bg-diffDel text-diffDelText -mx-4 px-4 border-l-2 border-diffDelText">5      <span class="token-key">"reason"</span>: <span class="token-str">"fraud"</span></div>
+                                    <div class="opacity-50">6    }</div>
+                                    <div class="opacity-50">7  }</div>
+                                </div>
+                                
+                                <!-- Right Code -->
+                                <div class="p-4 bg-[#0D1117] overflow-x-auto relative">
+                                    <div class="opacity-50">1  {</div>
+                                    <div>2    <span class="token-key">"tool"</span>: <span class="token-str">"stripe_refund"</span>,</div>
+                                    <div>3    <span class="token-key">"args"</span>: {</div>
+                                    <div>4      <span class="token-key">"id"</span>: <span class="token-str">"ch_1Mc..."</span>,</div>
+                                    
+                                    <!-- Missing line visual -->
+                                    <div class="h-6 w-full bg-border/20 my-0.5 flex items-center justify-center">
+                                        <span class="text-[10px] text-textMuted opacity-50">MISSING ARGUMENT</span>
+                                    </div>
+                                    
+                                    <div class="opacity-50">6    }</div>
+                                    <div class="opacity-50">7  }</div>
+
+                                    <!-- Floating Tooltip -->
+                                    <div class="absolute top-20 right-4 bg-card border border-red-500/30 shadow-2xl p-3 rounded-lg animate-pulse-slow max-w-[180px]">
+                                        <div class="flex items-center gap-2 mb-1 text-red-400">
+                                            <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+                                            <span class="text-[10px] font-bold">Schema Error</span>
+                                        </div>
+                                        <p class="text-[10px] text-textMuted">Field 'reason' is required in StripeRefundSchema.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Explanation -->
+                <div class="pl-8 lg:pl-0">
+                    <h3 class="text-primary font-mono text-sm font-semibold tracking-wide uppercase mb-4">Regression Blocking</h3>
+                    <h2 class="text-3xl font-bold text-white mb-6">Catch drift before it costs you.</h2>
+                    <p class="text-textMuted leading-relaxed mb-8">
+                        LLMs are probabilistic, but your tool interfaces are strict. RunLedger enforces Pydantic schemas and compares execution traces against known baselines.
+                    </p>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                <i data-lucide="git-branch" class="w-4 h-4 text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-medium mb-1">Trace comparison</h4>
+                                <p class="text-sm text-textMuted">Diff the full execution trace (messages, tool calls, outputs).</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded bg-accent/10 flex items-center justify-center shrink-0">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-accent"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-medium mb-1">Schema Enforcement</h4>
+                                <p class="text-sm text-textMuted">Fail the build if an agent hallucinates a parameter.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES GRID -->
+        <section id="features" class="max-w-7xl mx-auto px-6 mb-40">
+            <div class="text-center mb-20">
+                <h2 class="text-3xl font-bold text-white mb-4">The Developer Infrastructure for Agents</h2>
+                <p class="text-textMuted">Built for teams shipping to production, not just prototyping.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 relative z-10">
+                
+                <!-- Card 1: Deterministic Replay -->
+                <div class="feature-card p-6 rounded-xl flex flex-col h-full">
+                    <div class="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative p-4 flex flex-col justify-center">
+                        <!-- Visual: Timeline Replay -->
+                        <div class="flex items-center justify-between mb-3 opacity-50">
+                            <span class="text-[10px] font-mono text-textMuted">Live Run</span>
+                            <div class="flex-1 mx-2 h-1 bg-border rounded-full relative">
+                                <div class="absolute h-full w-[80%] bg-blue-500/30 rounded-full"></div>
+                            </div>
+                            <span class="text-[10px] font-mono text-textMuted">240ms</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                                <span class="text-[10px] font-mono text-white font-bold">Replay</span>
+                            </div>
+                            <div class="flex-1 mx-2 h-1 bg-border rounded-full">
+                                <div class="h-full w-[5%] bg-primary rounded-full"></div>
+                            </div>
+                            <span class="text-[10px] font-mono text-primary font-bold">0ms</span>
+                        </div>
+                        <div class="absolute right-4 top-4 text-[10px] font-mono text-textMuted border border-border px-1.5 rounded bg-card">CACHED</div>
                     </div>
 
-                    <!-- Box 2 (Active) -->
-                    <div class="flex flex-col items-center gap-3 relative">
-                        <div class="absolute -inset-4 bg-accent/5 rounded-full blur-xl"></div>
-                        <div class="w-20 h-20 rounded bg-bg border border-accent flex items-center justify-center shadow-[0_0_30px_rgba(0,240,255,0.1)] relative">
-                            <div class="w-2 h-2 bg-accent rounded-full absolute top-2 right-2 animate-pulse"></div>
-                            <span class="font-bold text-white tracking-tight">RL</span>
+                    <h3 class="text-lg font-bold text-white mb-3">Deterministic Replay</h3>
+                    <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
+                        Network calls (Stripe, Postgres) are recorded once. In CI, we replay the recording. Tests are instant and deterministic.
+                    </p>
+                    <div class="mt-auto pt-4 border-t border-border">
+                        <code class="text-xs font-mono text-primary bg-primary/5 px-2 py-1 rounded">@record_replay</code>
+                    </div>
+                </div>
+
+                <!-- Card 2: Flight Recorder -->
+                <div class="feature-card p-6 rounded-xl flex flex-col h-full">
+                    <div class="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative">
+                        <!-- Visual: Scrolling Terminal -->
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0D1117] z-10"></div>
+                        <div class="p-3 font-mono text-[9px] space-y-2 opacity-80 animate-scroll-logs">
+                            <!-- Log Lines -->
+                            <div class="flex gap-2"><span class="text-blue-400">[INFO]</span> <span class="text-textMuted">Agent initialized</span></div>
+                            <div class="flex gap-2"><span class="text-yellow-400">[TOOL]</span> <span class="text-textMuted">Calling search_users...</span></div>
+                            <div class="flex gap-2"><span class="text-textMuted">[DEBUG]</span> <span class="text-textMuted">Payload size: 2kb</span></div>
+                            <div class="flex gap-2"><span class="text-green-400">[OK]</span> <span class="text-textMuted">Tool output received</span></div>
+                            <div class="flex gap-2"><span class="text-blue-400">[INFO]</span> <span class="text-textMuted">Reasoning step 2...</span></div>
+                            <div class="flex gap-2"><span class="text-yellow-400">[TOOL]</span> <span class="text-textMuted">Calling update_db...</span></div>
+                             <div class="flex gap-2"><span class="text-green-400">[OK]</span> <span class="text-textMuted">Commit successful</span></div>
                         </div>
-                        <span class="text-xs font-mono text-accent uppercase tracking-wider">RunLedger</span>
                     </div>
 
-                    <!-- Box 3 -->
-                    <div class="flex flex-col items-center gap-3">
-                        <div class="w-16 h-16 rounded bg-surface border border-borderHighlight flex items-center justify-center shadow-lg">
-                            <i data-lucide="server" class="text-white opacity-80"></i>
+                    <h3 class="text-lg font-bold text-white mb-3">Flight Recorder</h3>
+                    <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
+                        We capture agent messages, tool calls, tool outputs, and structured logs to build a complete trace of execution.
+                    </p>
+                    <div class="mt-auto pt-4 border-t border-border">
+                        <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">runledger record</code>
+                    </div>
+                </div>
+
+                <!-- Card 3: Gates -->
+                <div class="feature-card p-6 rounded-xl flex flex-col h-full">
+                    <div class="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative p-4 flex flex-col justify-center gap-4">
+                        <!-- Visual: Budget Bar -->
+                        <div>
+                            <div class="flex justify-between mb-1.5">
+                                <span class="text-[10px] font-mono text-textMuted">Latency Budget</span>
+                                <span class="text-[10px] font-mono text-white">420ms / 500ms</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-border rounded-full overflow-hidden">
+                                <div class="h-full bg-emerald-500 w-[84%]"></div>
+                            </div>
                         </div>
-                        <span class="text-xs font-mono text-muted uppercase tracking-wider">LLM Provider</span>
+                        <div>
+                            <div class="flex justify-between mb-1.5">
+                                <span class="text-[10px] font-mono text-textMuted">Token Budget</span>
+                                <span class="text-[10px] font-mono text-red-400 font-bold">FAIL</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-border rounded-full overflow-hidden relative">
+                                <!-- The Limit Line -->
+                                <div class="absolute right-[20%] top-0 h-full w-0.5 bg-white z-10"></div>
+                                <div class="h-full bg-red-500 animate-grow-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-white mb-3">Cost & Latency Gates</h3>
+                    <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
+                        Set budgets for token usage and latency. If a prompt change causes your agent to loop or ramble, the test fails.
+                    </p>
+                    <div class="mt-auto pt-4 border-t border-border">
+                        <code class="text-xs font-mono text-emerald-500 bg-emerald-500/5 px-2 py-1 rounded">budget: 500ms</code>
                     </div>
                 </div>
 
             </div>
         </section>
 
-        <!-- Manifesto / Footer -->
-        <section class="max-w-2xl mx-auto px-6 pb-32 text-center reveal">
-            <h2 class="text-2xl font-medium text-white mb-6">Built for engineers who distrust hype.</h2>
-            <p class="text-muted leading-relaxed mb-10">
-                We believe AI agents are software, not magic. They require the same rigor, testing, and observability as the rest of your stack.
-            </p>
-            <div class="flex justify-center gap-8">
-                <a href="#" class="text-sm font-mono text-subtle hover:text-white transition-colors">GITHUB</a>
-                <a href="#" class="text-sm font-mono text-subtle hover:text-white transition-colors">DISCORD</a>
-                <a href="#" class="text-sm font-mono text-subtle hover:text-white transition-colors">TWITTER</a>
-            </div>
-            <div class="mt-16 pt-8 border-t border-border/50">
-                <p class="text-[10px] text-subtle font-mono">© 2024 RUNLEDGER SYSTEMS INC.</p>
+        <!-- DIAGRAM SECTION -->
+        <section id="integration" class="max-w-5xl mx-auto px-6 mb-40">
+            <div class="bg-card border border-border rounded-2xl p-12 relative overflow-hidden">
+                <!-- BG Pattern -->
+                <div class="absolute inset-0 opacity-[0.05]" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row items-center gap-16">
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-bold text-white mb-4">Drop-in Middleware</h2>
+                        <p class="text-textMuted mb-6">
+                            RunLedger works with any agent framework. Wrap your agent as a subprocess runner—minimal changes.
+                        </p>
+                        <ul class="space-y-2 font-mono text-xs text-textMain">
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-primary"></i>
+                                LangChain / LangGraph
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-primary"></i>
+                                LlamaIndex
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-primary"></i>
+                                AutoGen / CrewAI
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-primary"></i>
+                                Raw Python / Node.js
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Schematic (Robust Flexbox Implementation) -->
+                    <div class="flex-1 flex justify-center w-full">
+                        <div class="flex items-center w-full max-w-md relative">
+                            
+                            <!-- Node 1: Your Code -->
+                            <div class="flex flex-col items-center gap-3 relative z-10 shrink-0">
+                                <div class="w-16 h-16 bg-bg border border-border rounded-xl flex items-center justify-center shadow-lg group hover:border-textMuted transition-colors">
+                                    <i data-lucide="box" class="w-6 h-6 text-textMuted group-hover:text-white transition-colors"></i>
+                                </div>
+                                <span class="font-mono text-[10px] text-textMuted uppercase tracking-wider">Client</span>
+                            </div>
+
+                            <!-- Connector 1 -->
+                            <div class="flex-1 h-px bg-border relative mx-2">
+                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-[stream_1.5s_linear_infinite]" style="background-size: 200% 100%;"></div>
+                            </div>
+
+                            <!-- Node 2: RunLedger Proxy -->
+                            <div class="flex flex-col items-center gap-3 relative z-10 shrink-0">
+                                <div class="w-20 h-20 bg-[#0F172A] border border-primary rounded-xl flex items-center justify-center shadow-[0_0_40px_rgba(59,130,246,0.15)] relative animate-float">
+                                    <!-- Inner Pulse -->
+                                    <div class="absolute inset-0 bg-primary/10 rounded-xl animate-pulse-slow"></div>
+                                    <div class="text-center relative z-10">
+                                        <div class="font-bold text-white text-base tracking-tight">RL</div>
+                                        <div class="text-[9px] text-primary font-mono mt-0.5 tracking-widest">PROXY</div>
+                                    </div>
+                                </div>
+                                <span class="font-mono text-[10px] text-primary font-bold uppercase tracking-wider">RunLedger</span>
+                            </div>
+
+                            <!-- Connector 2 -->
+                            <div class="flex-1 h-px bg-border relative mx-2">
+                                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-[stream_1.5s_linear_infinite]" style="animation-delay: 0.5s; background-size: 200% 100%;"></div>
+                            </div>
+
+                            <!-- Node 3: LLM API -->
+                            <div class="flex flex-col items-center gap-3 relative z-10 shrink-0">
+                                <div class="w-16 h-16 bg-bg border border-border rounded-xl flex items-center justify-center shadow-lg group hover:border-textMuted transition-colors">
+                                    <i data-lucide="cloud" class="w-6 h-6 text-textMuted group-hover:text-white transition-colors"></i>
+                                </div>
+                                <span class="font-mono text-[10px] text-textMuted uppercase tracking-wider">LLM API</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- CTA -->
+        <section class="max-w-4xl mx-auto px-6 pb-32 text-center">
+            <div class="relative inline-block">
+                <div class="absolute -inset-10 bg-primary/20 blur-3xl rounded-full opacity-20 pointer-events-none"></div>
+                <h2 class="text-4xl font-bold text-white mb-8 relative z-10">Ship agents with confidence.</h2>
+            </div>
+            
+            <div class="flex justify-center gap-6 relative z-10">
+                <a href="#" class="px-8 py-4 bg-white text-bg font-bold rounded-lg hover:bg-gray-200 transition-colors shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-bg">
+                    Get Started Free
+                </a>
+                <a href="#" class="px-8 py-4 bg-card border border-border text-white font-medium rounded-lg hover:border-textMuted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-bg">
+                    Read the Manifesto
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-border bg-card">
+            <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    </div>
+                    <span class="font-bold text-white text-sm">RunLedger</span>
+                    <span class="text-xs text-textMuted ml-2">© 2025</span>
+                </div>
+                
+                <div class="flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    ALL SYSTEMS OPERATIONAL
+                </div>
+
+                <div class="flex gap-8 text-sm text-textMuted">
+                    <a href="#" class="hover:text-white transition-colors">Twitter</a>
+                    <a href="#" class="hover:text-white transition-colors">GitHub</a>
+                    <a href="#" class="hover:text-white transition-colors">Discord</a>
+                </div>
+            </div>
+        </footer>
 
     </main>
 
-    <!-- Shader Implementation (Atmospheric Nebula) -->
+    <!-- Three.js Visuals -->
     <script>
-        const canvasContainer = document.getElementById('canvas-container');
-        
-        // Scene
-        const scene = new THREE.Scene();
-        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); // Fullscreen Quad
-
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        canvasContainer.appendChild(renderer.domElement);
-
-        // Plane Geometry for Shader
-        const geometry = new THREE.PlaneGeometry(2, 2);
-
-        // Shader Material
-        const material = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0 },
-                resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-                color: { value: new THREE.Color(0x00F0FF) }
-            },
-            vertexShader: `
-                void main() {
-                    gl_Position = vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform float time;
-                uniform vec2 resolution;
-                
-                // Simplex Noise
-                vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-                vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-                vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
-                float snoise(vec2 v) {
-                    const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
-                    vec2 i  = floor(v + dot(v, C.yy) );
-                    vec2 x0 = v - i + dot(i, C.xx);
-                    vec2 i1;
-                    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-                    vec4 x12 = x0.xyxy + C.xxzz;
-                    x12.xy -= i1;
-                    i = mod289(i);
-                    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
-                    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-                    m = m*m ;
-                    m = m*m ;
-                    vec3 x = 2.0 * fract(p * C.www) - 1.0;
-                    vec3 h = abs(x) - 0.5;
-                    vec3 ox = floor(x + 0.5);
-                    vec3 a0 = x - ox;
-                    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
-                    vec3 g;
-                    g.x  = a0.x  * x0.x  + h.x  * x0.y;
-                    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-                    return 130.0 * dot(m, g);
-                }
-
-                void main() {
-                    vec2 uv = gl_FragCoord.xy / resolution.xy;
-                    float ratio = resolution.x / resolution.y;
-                    uv.x *= ratio;
-
-                    // Slow down time
-                    float t = time * 0.1;
-
-                    // Large scale noise for "fog"
-                    float noise1 = snoise(vec2(uv.x * 0.8 + t * 0.5, uv.y * 0.8 - t * 0.2));
-                    float noise2 = snoise(vec2(uv.x * 1.5 - t * 0.2, uv.y * 1.5 + t * 0.3));
-                    
-                    // Combine noises
-                    float finalNoise = (noise1 * 0.6 + noise2 * 0.4);
-                    
-                    // Vignette/Focus
-                    float dist = distance(uv, vec2(0.5 * ratio, 0.5));
-                    float mask = smoothstep(1.5, 0.2, dist);
-
-                    // Colors
-                    vec3 bg = vec3(0.02, 0.024, 0.03); // Deepest bg
-                    vec3 cloudColor = vec3(0.0, 0.2, 0.3); // Deep cyan/teal
-                    
-                    // Mix
-                    vec3 color = mix(bg, cloudColor, finalNoise * 0.2 * mask);
-                    
-                    gl_FragColor = vec4(color, 1.0);
-                }
-            `,
-            depthWrite: false
-        });
-
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-
-        // Animation Loop
-        const clock = new THREE.Clock();
-        function animate() {
-            requestAnimationFrame(animate);
-            material.uniforms.time.value = clock.getElapsedTime();
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Resize
-        window.addEventListener('resize', () => {
-            const w = window.innerWidth;
-            const h = window.innerHeight;
-            renderer.setSize(w, h);
-            material.uniforms.resolution.value.set(w, h);
-        });
-    </script>
-
-    <!-- Console Logic -->
-    <script>
-        lucide.createIcons();
-        
-        // Copy functionality
-        function copyInstall() {
-            navigator.clipboard.writeText('pipx install runledger');
-            const toast = document.getElementById('copy-toast');
-            toast.style.opacity = '1';
-            setTimeout(() => toast.style.opacity = '0', 2000);
-        }
-
-        // Advanced Console Simulation
-        const logs = [
-            { text: "$ runledger run ./agent_evals", type: "cmd", delay: 500 },
-            { text: "ℹ Loading configuration from runledger.toml...", type: "info", delay: 800 },
-            { text: "✔ Snapshot baseline loaded (hash: 7a9f2b)", type: "success", delay: 1100 },
-            { text: "▶ Starting replay session [id: 992-11a]", type: "info", delay: 1300 },
-            { text: "  • mocking tool: stripe_search_user", type: "dim", delay: 1500 },
-            { text: "  • mocking tool: get_usage_metrics", type: "dim", delay: 1700 },
-            { text: "⚠ Tool contract mismatch detected", type: "warning", delay: 2400 },
-            { text: "  > Expected 'user_id' (string), got undefined", type: "error", delay: 2500 },
-            { text: "✖ Regression check failed. Blocking merge.", type: "critical", delay: 2700 },
-            { text: "$ _", type: "cmd", delay: 3500, blink: true }
-        ];
-
-        const outputDiv = document.getElementById('console-output');
-        const trigger = document.getElementById('console-trigger');
-        let hasRun = false;
-
-        const observer = new IntersectionObserver((entries) => {
-            if(entries[0].isIntersecting && !hasRun) {
-                hasRun = true;
-                runSequence();
-            }
-        }, { threshold: 0.5 });
-        
-        observer.observe(trigger);
-
-        // Reveal Animation Observer
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if(entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, { threshold: 0.1 });
-        
-        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-        async function runSequence() {
-            const baseTime = Date.now();
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile Menu Logic
+            const btn = document.getElementById('mobile-menu-btn');
+            const menu = document.getElementById('mobile-menu');
             
-            for (const log of logs) {
-                setTimeout(() => {
-                    const div = document.createElement('div');
-                    div.className = "flex items-start gap-3 font-mono text-xs";
-                    
-                    // Time string
-                    const ms = Date.now() - baseTime;
-                    const timeStr = `00:00.${Math.floor(ms/100).toString().padStart(2, '0')}`;
-                    
-                    let content = "";
-                    let colorClass = "text-text";
-
-                    if (log.type === 'cmd') {
-                        colorClass = "text-accent";
-                        content = `<span class="text-subtle select-none">$</span> ${log.text.replace('$ ', '')}`;
-                    } else if (log.type === 'success') {
-                        colorClass = "text-success";
-                        content = log.text;
-                    } else if (log.type === 'error') {
-                        colorClass = "text-error font-bold";
-                        content = log.text;
-                    } else if (log.type === 'warning') {
-                        colorClass = "text-yellow-400";
-                        content = log.text;
-                    } else if (log.type === 'critical') {
-                        colorClass = "text-error bg-error/10 px-2 py-1 rounded w-full border border-error/20";
-                        content = log.text;
-                    } else if (log.type === 'dim') {
-                        colorClass = "text-subtle";
-                        content = log.text;
-                    } else {
-                        content = log.text;
-                    }
-
-                    if (log.blink) {
-                        div.innerHTML = `<span class="text-subtle">${timeStr}</span> <span class="${colorClass}">${log.text.replace('_', '<span class="animate-blink">_</span>')}</span>`;
-                    } else {
-                        div.innerHTML = `<span class="text-subtle select-none w-16 opacity-50">${timeStr}</span> <div class="${colorClass}">${content}</div>`;
-                    }
-                    
-                    outputDiv.appendChild(div);
-                    outputDiv.scrollTop = outputDiv.scrollHeight;
-
-                }, log.delay);
+            if(btn && menu) {
+                btn.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');
+                });
             }
+
+            // Check for reduced motion
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Ensure THREE is loaded before using it
+            if (!prefersReducedMotion && typeof THREE !== 'undefined') {
+                // --- 3D Background Logic: "The Stabilizer" ---
+                const container = document.getElementById('three-canvas');
+                const scene = new THREE.Scene();
+                // Fog for depth - Increased density for better fade
+                scene.fog = new THREE.FogExp2(0x020408, 0.0035);
+
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 30;
+                camera.position.y = 10;
+                camera.lookAt(0,0,0);
+
+                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                container.appendChild(renderer.domElement);
+
+                // Particles System - Reduced count for subtlety
+                const particleCount = 400; 
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                const originalPositions = new Float32Array(particleCount * 3);
+                const colors = new Float32Array(particleCount * 3);
+
+                const color1 = new THREE.Color(0x3B82F6); // Blue
+                const color2 = new THREE.Color(0x06B6D4); // Cyan
+
+                for(let i = 0; i < particleCount; i++) {
+                    // Create a structured grid (The "Ledger") - spread wider
+                    const x = (Math.random() - 0.5) * 120;
+                    const y = (Math.random() - 0.5) * 15; // Flatter plane
+                    const z = (Math.random() - 0.5) * 80;
+                    
+                    positions[i*3] = x;
+                    positions[i*3+1] = y;
+                    positions[i*3+2] = z;
+
+                    originalPositions[i*3] = x;
+                    originalPositions[i*3+1] = y;
+                    originalPositions[i*3+2] = z;
+
+                    // Mix colors
+                    const mixedColor = i % 2 === 0 ? color1 : color2;
+                    colors[i*3] = mixedColor.r;
+                    colors[i*3+1] = mixedColor.g;
+                    colors[i*3+2] = mixedColor.b;
+                }
+
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({
+                    size: 0.15, // Smaller particles
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.5, // Lower opacity
+                    blending: THREE.AdditiveBlending
+                });
+
+                const points = new THREE.Points(geometry, material);
+                scene.add(points);
+
+                // Animation Vars
+                let time = 0;
+                let animationId;
+                let isAnimating = true;
+                
+                // Loop
+                function animate() {
+                    if (!isAnimating) return;
+                    
+                    animationId = requestAnimationFrame(animate);
+                    time += 0.0015; // Much slower time
+
+                    // Rotate entire system slowly
+                    points.rotation.y = time * 0.05;
+
+                    const positions = points.geometry.attributes.position.array;
+                    
+                    // Wave effect - Gentle undulation
+                    for(let i = 0; i < particleCount; i++) {
+                        const y = originalPositions[i*3+1];
+                        const x = originalPositions[i*3];
+                        
+                        // Calculate wave - lower frequency
+                        const wave = Math.sin(x * 0.05 + time * 1.5) * 1.5;
+                        
+                        // Apply "Stabilization": Points near center move less
+                        const dist = Math.sqrt(x*x);
+                        const stability = Math.max(0, 1 - dist/60); // 1 at center, 0 at edges
+                        
+                        // Center is stable (Ledger), Edges are chaotic (Agents)
+                        positions[i*3+1] = y + wave * (1 - stability * 0.8);
+                    }
+                    
+                    points.geometry.attributes.position.needsUpdate = true;
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                // Resize
+                window.addEventListener('resize', () => {
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                });
+
+                // Mouse interaction (Very Subtle tilt)
+                document.addEventListener('mousemove', (e) => {
+                    const x = (e.clientX / window.innerWidth) * 2 - 1;
+                    const y = -(e.clientY / window.innerHeight) * 2 + 1;
+                    
+                    // Smooth lerp for camera - significantly damped
+                    camera.position.x += (x * 2 - camera.position.x) * 0.02;
+                    camera.position.y += (y * 2 + 10 - camera.position.y) * 0.02;
+                    camera.lookAt(0,0,0);
+                });
+
+                // --- Performance Optimizations ---
+                
+                // 1. Intersection Observer: Stop animating when Hero is out of view
+                const heroSection = document.getElementById('hero');
+                if (heroSection) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                if (!isAnimating) {
+                                    isAnimating = true;
+                                    animate();
+                                }
+                            } else {
+                                isAnimating = false;
+                                cancelAnimationFrame(animationId);
+                            }
+                        });
+                    }, { threshold: 0 });
+                    observer.observe(heroSection);
+                }
+
+                // 2. Visibility Change: Stop animating when tab is hidden
+                document.addEventListener("visibilitychange", () => {
+                    if (document.hidden) {
+                        isAnimating = false;
+                        cancelAnimationFrame(animationId);
+                    } else {
+                        // Only restart if hero is also visible (checked by observer usually, but simple restart here is safe)
+                        isAnimating = true;
+                        animate();
+                    }
+                });
+            }
+        });
+
+        // --- Interactions ---
+        // Ensure Lucide icons load even if deferred
+        document.addEventListener('DOMContentLoaded', () => {
+             if (window.lucide) {
+                lucide.createIcons();
+             }
+        });
+        // Fallback in case load happens after DOMContentLoaded
+        window.addEventListener('load', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+
+        function copyCmd() {
+            navigator.clipboard.writeText('pipx install runledger');
+            const el = document.querySelector('[onclick="copyCmd()"] span:nth-child(2)');
+            const original = el.innerText;
+            el.innerText = "Copied!";
+            el.classList.add('text-white');
+            setTimeout(() => {
+                el.innerText = original;
+                el.classList.remove('text-white');
+            }, 2000);
         }
     </script>
 </body>
