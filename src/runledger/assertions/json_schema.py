@@ -30,11 +30,22 @@ def apply_json_schema(output: dict[str, Any], schema_path: str) -> list[Assertio
 
     first = errors[0]
     path = "/".join(str(part) for part in first.path) or "<root>"
-    message = f"Schema validation failed at {path}: {first.message}"
+    details: dict[str, object] = {"path": path, "error": first.message}
+    if first.validator == "required" and isinstance(first.validator_value, list):
+        missing = []
+        if isinstance(first.instance, dict):
+            missing = [field for field in first.validator_value if field not in first.instance]
+        if missing:
+            message = f"Schema validation failed at {path}: missing required field(s): {', '.join(missing)}"
+            details["missing"] = missing
+        else:
+            message = f"Schema validation failed at {path}: {first.message}"
+    else:
+        message = f"Schema validation failed at {path}: {first.message}"
     return [
         AssertionFailure(
             type="json_schema",
             message=message,
-            details={"path": path, "error": first.message},
+            details=details,
         )
     ]

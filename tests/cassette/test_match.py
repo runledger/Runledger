@@ -42,5 +42,5 @@ def test_format_mismatch_error_includes_available_entries(tmp_path: Path) -> Non
     message = format_mismatch_error(entries, "missing_tool", {"q": "oops"})
 
     assert "Requested tool: missing_tool" in message
-    assert "Available entries" in message
+    assert "Closest matches" in message
     assert "search_docs" in message

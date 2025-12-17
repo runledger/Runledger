@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import shutil
 from pathlib import Path
 from typing import Optional
 
 import typer
+import yaml
 from rich.console import Console
 from rich.table import Table
 
@@ -99,10 +101,208 @@ def _print_regression(regression: dict[str, object]) -> None:
 
 @app.command()
 def init(
-    path: str = typer.Argument(".", help="Directory to create evals in"),
+    path: str = typer.Option(
+        "./evals",
+        "--path",
+        help="Directory to create evals in",
+    ),
+    suite: str = typer.Option("demo", help="Suite name to generate"),
+    template: str = typer.Option("support-triage", help="Template name"),
+    force: bool = typer.Option(False, "--force", help="Overwrite existing suite files"),
+    language: str = typer.Option("python", help="Agent language (python only in v0.1)"),
 ) -> None:
     """Initialize an example eval suite."""
-    console.print(f"[yellow]init[/yellow] is not implemented yet. Target: {path}")
+    if template != "support-triage":
+        console.print(f"[red]Unknown template:[/red] {template}")
+        raise typer.Exit(code=1)
+    if language != "python":
+        console.print(f"[red]Unsupported language:[/red] {language}")
+        raise typer.Exit(code=1)
+
+    base_dir = Path(path).resolve()
+    evals_dir = base_dir / suite
+    cases_dir = evals_dir / "cases"
+    cassettes_dir = evals_dir / "cassettes"
+    agent_dir = evals_dir / "agent"
+    baselines_dir = base_dir.parent / "baselines"
+    agent_path = agent_dir / "agent.py"
+
+    if evals_dir.exists():
+        if not force:
+            console.print(f"[red]Target already exists:[/red] {evals_dir}")
+            raise typer.Exit(code=1)
+        shutil.rmtree(evals_dir)
+    if baselines_dir.exists():
+        baseline_file = baselines_dir / f"{suite}.json"
+        if baseline_file.exists() and force:
+            baseline_file.unlink()
+
+    agent_dir.mkdir(parents=True, exist_ok=True)
+    cases_dir.mkdir(parents=True, exist_ok=True)
+    cassettes_dir.mkdir(parents=True, exist_ok=True)
+    baselines_dir.mkdir(parents=True, exist_ok=True)
+
+    agent_path.write_text(
+        "\n".join(
+            [
+                "import json",
+                "import sys",
+                "",
+                "def send(payload):",
+                "    sys.stdout.write(json.dumps(payload) + \"\\n\")",
+                "    sys.stdout.flush()",
+                "",
+                "for line in sys.stdin:",
+                "    line = line.strip()",
+                "    if not line:",
+                "        continue",
+                "    msg = json.loads(line)",
+                "    if msg.get(\"type\") == \"task_start\":",
+                "        ticket = msg.get(\"input\", {}).get(\"ticket\", \"\")",
+                "        send({\"type\": \"tool_call\", \"name\": \"search_docs\", \"call_id\": \"c1\", \"args\": {\"q\": ticket}})",
+                "    elif msg.get(\"type\") == \"tool_result\":",
+                "        send({\"type\": \"final_output\", \"output\": {\"category\": \"account\", \"reply\": \"Reset password instructions sent.\"}})",
+                "        break",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    schema_path = evals_dir / "schema.json"
+    schema_path.write_text(
+        json.dumps(
+            {
+                "type": "object",
+                "properties": {
+                    "category": {"type": "string"},
+                    "reply": {"type": "string"},
+                },
+                "required": ["category", "reply"],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    cassette_path = cassettes_dir / "t1.jsonl"
+    cassette_path.write_text(
+        json.dumps(
+            {
+                "tool": "search_docs",
+                "args": {"q": "reset password"},
+                "ok": True,
+                "result": {"hits": [{"title": "Reset password", "snippet": "Use the reset link."}]},
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    case_path = cases_dir / "t1.yaml"
+    case_path.write_text(
+        yaml.safe_dump(
+            {
+                "id": "t1",
+                "description": "triage a login ticket",
+                "input": {"ticket": "reset password"},
+                "cassette": "cassettes/t1.jsonl",
+                "assertions": [
+                    {"type": "required_fields", "fields": ["category", "reply"]},
+                ],
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    suite_path = evals_dir / "suite.yaml"
+    suite_path.write_text(
+        yaml.safe_dump(
+            {
+                "suite_name": suite,
+                "agent_command": ["python", "agent/agent.py"],
+                "mode": "replay",
+                "cases_path": "cases",
+                "tool_registry": ["search_docs"],
+                "assertions": [
+                    {"type": "json_schema", "schema_path": "schema.json"},
+                ],
+                "budgets": {
+                    "max_wall_ms": 20000,
+                    "max_tool_calls": 1,
+                    "max_tool_errors": 0,
+                },
+                "regression": {
+                    "min_pass_rate": 1.0,
+                },
+                "baseline_path": f"../../baselines/{suite}.json",
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        suite_config = load_suite(suite_path)
+        cases = load_cases(evals_dir, suite_config.cases_path)
+        suite_run = suite_config.model_copy(
+            update={"agent_command": ["python", str(agent_path)]}
+        )
+        suite_result = run_suite(suite_run, cases)
+        run_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        summary = build_summary(
+            suite=suite_config,
+            suite_path=suite_path,
+            suite_result=suite_result,
+            run_id=run_id,
+            generated_at=datetime.now(timezone.utc),
+        )
+        baseline = BaselineSummary.model_validate(summary)
+        write_baseline(baselines_dir / f"{suite}.json", baseline)
+    except Exception as exc:
+        console.print(f"[red]Failed to generate baseline:[/red] {exc}")
+        raise typer.Exit(code=1)
+
+    console.print(f"Created eval suite at: {evals_dir}")
+    console.print(f"Created baseline at: {baselines_dir / f'{suite}.json'}")
+    console.print("")
+    console.print("Next steps:")
+    console.print(
+        f"  runledger run {evals_dir} --mode replay --baseline {baselines_dir / f'{suite}.json'}"
+    )
+    console.print(f"  open runledger_out/{suite}/<run_id>/report.html")
+    console.print("")
+    console.print("GitHub Actions snippet:")
+    console.print(
+        "\n".join(
+            [
+                "name: runledger-evals",
+                "on:",
+                "  pull_request:",
+                "",
+                "jobs:",
+                "  evals:",
+                "    runs-on: ubuntu-latest",
+                "    steps:",
+                "      - uses: actions/checkout@v4",
+                "      - name: Install RunLedger",
+                "        run: |",
+                "          python -m pip install --upgrade pip",
+                "          python -m pip install runledger",
+                "      - name: Run deterministic evals",
+                f"        run: runledger run {evals_dir} --mode replay",
+                "      - name: Upload artifacts",
+                "        uses: actions/upload-artifact@v4",
+                "        with:",
+                "          name: runledger-artifacts",
+                "          path: runledger_out/**",
+            ]
+        )
+    )
 
 
 @app.command()
@@ -118,6 +318,10 @@ def run(
     output_dir: Optional[str] = typer.Option(
         None,
         help="Output directory override",
+    ),
+    baseline: Optional[str] = typer.Option(
+        None,
+        help="Baseline path override",
     ),
     case: Optional[str] = typer.Option(
         None,
@@ -170,9 +374,13 @@ def run(
     )
 
     regression = None
-    if suite.baseline_path:
+    baseline_path = (
+        Path(baseline)
+        if baseline
+        else (Path(suite.baseline_path) if suite.baseline_path else None)
+    )
+    if baseline_path:
         try:
-            baseline_path = Path(suite.baseline_path)
             baseline = load_baseline(baseline_path)
             current = BaselineSummary.model_validate(summary_base)
             regression = compute_regression(

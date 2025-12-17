@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RunLedger Reference | CLI and Config</title>
-    <meta name="description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
-    <meta name="robots" content="index,follow">
+    <title>RunLedger | Page Not Found</title>
+    <meta name="description" content="The page you are looking for does not exist.">
+    <meta name="robots" content="noindex,follow">
     <meta name="theme-color" content="#020408">
-    <link rel="canonical" href="https://runleder.io/reference.html">
+    <link rel="canonical" href="https://runleder.io/404.html">
 
-    <meta property="og:title" content="RunLedger Reference | CLI and Config">
-    <meta property="og:description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
+    <meta property="og:title" content="RunLedger | Page Not Found">
+    <meta property="og:description" content="The page you are looking for does not exist.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="RunLedger">
-    <meta property="og:url" content="https://runleder.io/reference.html">
+    <meta property="og:url" content="https://runleder.io/404.html">
     <meta property="og:image" content="https://runleder.io/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@runledger">
-    <meta name="twitter:title" content="RunLedger Reference | CLI and Config">
-    <meta name="twitter:description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
+    <meta name="twitter:title" content="RunLedger | Page Not Found">
+    <meta name="twitter:description" content="The page you are looking for does not exist.">
     <meta name="twitter:image" content="https://runleder.io/og-image.png">
 
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -46,9 +46,8 @@
 </head>
 <body class="relative">
 
-    <div class="absolute -top-40 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-primary/20 via-transparent to-transparent blur-3xl opacity-60 pointer-events-none"></div>
+    <div class="absolute -top-40 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-primary/20 via-transparent to-accent/20 blur-3xl opacity-70 pointer-events-none"></div>
 
-    <!-- Navigation -->
     <nav class="fixed top-0 w-full z-50 glass-panel h-16">
         <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-3">
@@ -62,7 +61,7 @@
 
             <div class="hidden md:flex items-center gap-8">
                 <a href="docs.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Docs</a>
-                <a href="reference.html" class="text-sm font-medium text-white">Reference</a>
+                <a href="reference.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Reference</a>
                 <a href="integrations.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integrations</a>
                 <a href="pricing.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Pricing</a>
                 <a href="changelog.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Changelog</a>
@@ -91,116 +90,16 @@
     </nav>
 
     <main class="relative z-10 pt-28 pb-24">
-        <section class="max-w-6xl mx-auto px-6 mb-16">
+        <section class="max-w-4xl mx-auto px-6 text-center">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 mb-6 animate-fade-in">
                 <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                <span class="text-xs font-semibold text-primary tracking-wide">REFERENCE</span>
+                <span class="text-xs font-semibold text-primary tracking-wide">404</span>
             </div>
-            <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight mb-6">CLI, config, and protocol reference.</h1>
-            <p class="text-lg text-textMuted leading-relaxed max-w-3xl">Every command, every field, and every message type your agent needs to speak in production.</p>
-        </section>
-
-        <section id="cli" class="max-w-6xl mx-auto px-6 mb-20">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-2xl font-bold text-white">CLI commands</h2>
-                <a href="docs.html#quickstart" class="text-sm text-textMuted hover:text-white transition-colors">Quickstart</a>
-            </div>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="feature-card p-6 rounded-xl">
-                    <h3 class="text-lg font-semibold text-white mb-2">run</h3>
-                    <p class="text-sm text-textMuted mb-4">Execute a suite in replay or record mode and write artifacts.</p>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">runledger run ./evals --mode replay
-runledger run ./evals --mode record --case t1</pre>
-                </div>
-                <div class="feature-card p-6 rounded-xl">
-                    <h3 class="text-lg font-semibold text-white mb-2">diff</h3>
-                    <p class="text-sm text-textMuted mb-4">Compare a run directory against a baseline file.</p>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">runledger diff --baseline baselines/support.json --run runledger_out/demo/2025-01-01</pre>
-                </div>
-                <div class="feature-card p-6 rounded-xl">
-                    <h3 class="text-lg font-semibold text-white mb-2">baseline promote</h3>
-                    <p class="text-sm text-textMuted mb-4">Promote a successful run to a baseline file for regression gates.</p>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">runledger baseline promote --from runledger_out/demo/2025-01-01 --to baselines/demo.json</pre>
-                </div>
-                <div class="feature-card p-6 rounded-xl">
-                    <h3 class="text-lg font-semibold text-white mb-2">init</h3>
-                    <p class="text-sm text-textMuted mb-4">Create a demo agent, eval suite, and example cassette.</p>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">runledger init</pre>
-                </div>
-            </div>
-        </section>
-
-        <section id="suite-config" class="max-w-6xl mx-auto px-6 mb-20">
-            <h2 class="text-2xl font-bold text-white mb-6">suite.yaml</h2>
-            <div class="grid lg:grid-cols-[1fr_0.9fr] gap-8">
-                <div class="bg-card border border-border rounded-xl p-6">
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">suite_name: support-triage
-agent_command: ["python", "agent.py"]
-mode: replay
-cases_path: cases
-tool_registry:
-  - search_docs
-  - create_issue
-assertions:
-  - type: json_schema
-    schema_path: schema.json
-budgets:
-  max_wall_ms: 20000
-  max_tool_calls: 10
-baseline_path: baselines/support-triage.json</pre>
-                </div>
-                <div class="space-y-4 text-sm text-textMuted">
-                    <p><span class="text-white font-semibold">suite_name</span> is the stable CI identifier.</p>
-                    <p><span class="text-white font-semibold">agent_command</span> launches your agent as a subprocess.</p>
-                    <p><span class="text-white font-semibold">tool_registry</span> restricts which tools can be invoked.</p>
-                    <p><span class="text-white font-semibold">assertions</span> and <span class="text-white font-semibold">budgets</span> apply to all cases by default.</p>
-                    <p><span class="text-white font-semibold">baseline_path</span> enables regression gating in CI.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="case-config" class="max-w-6xl mx-auto px-6 mb-20">
-            <h2 class="text-2xl font-bold text-white mb-6">cases/*.yaml</h2>
-            <div class="grid lg:grid-cols-[1fr_0.9fr] gap-8">
-                <div class="bg-card border border-border rounded-xl p-6">
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">id: t1
-description: "triage a login ticket"
-input:
-  ticket: "User cannot login"
-  context:
-    plan: "pro"
-cassette: cassettes/t1.jsonl
-assertions:
-  - type: required_fields
-    fields: ["category", "reply"]
-budgets:
-  max_wall_ms: 5000</pre>
-                </div>
-                <div class="space-y-4 text-sm text-textMuted">
-                    <p><span class="text-white font-semibold">input</span> is forwarded verbatim to the agent.</p>
-                    <p><span class="text-white font-semibold">cassette</span> is required for replay mode.</p>
-                    <p><span class="text-white font-semibold">assertions</span> override or extend suite defaults.</p>
-                    <p><span class="text-white font-semibold">budgets</span> can be customized per case.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="protocol" class="max-w-6xl mx-auto px-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-white">Protocol messages</h2>
-                <span class="text-xs text-textMuted">stdin/stdout JSONL</span>
-            </div>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="bg-card border border-border rounded-xl p-6">
-                    <div class="text-xs font-mono text-textMuted mb-4">Runner to Agent</div>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">{ "type": "task_start", "task_id": "t1", "input": { "ticket": "..." } }
-{ "type": "tool_result", "call_id": "c1", "ok": true, "result": { "hits": [] } }</pre>
-                </div>
-                <div class="bg-card border border-border rounded-xl p-6">
-                    <div class="text-xs font-mono text-textMuted mb-4">Agent to Runner</div>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">{ "type": "tool_call", "name": "search_docs", "call_id": "c1", "args": { "q": "..." } }
-{ "type": "final_output", "output": { "category": "billing", "reply": "..." } }</pre>
-                </div>
+            <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight mb-6">Page not found</h1>
+            <p class="text-lg text-textMuted leading-relaxed mb-10">The page you are looking for does not exist. Try the docs or head back to the homepage.</p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="index.html" class="px-6 py-3 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">Go home</a>
+                <a href="docs.html" class="px-6 py-3 bg-card border border-border text-white font-semibold rounded-lg hover:border-textMuted transition-colors">Open docs</a>
             </div>
         </section>
     </main>
@@ -274,7 +173,6 @@ budgets:
     </footer>
 </body>
 </html>
-
 
 
 

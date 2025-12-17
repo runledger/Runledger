@@ -1,63 +1,74 @@
 # RunLedger
 
-**CI for tool-using agents:** deterministic eval suites + record/replay tool calls + hard assertions + budgets + PR regression gates.
+[![CI](https://github.com/ZackMitchell910/runledger/actions/workflows/ci.yml/badge.svg)](https://github.com/ZackMitchell910/runledger/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/runledger)](https://pypi.org/project/runledger/)
+[![License](https://img.shields.io/github/license/ZackMitchell910/runledger)](LICENSE)
 
-> Treat agents like software: repeatable tests, baselines, diffs, budgets, and merge gates -- not "it worked once."
+**CI for tool-using agents.** Deterministic eval suites with record/replay tool calls, hard assertions, budgets, and PR regression gates.
+
+RunLedger is a **CI harness**, not an "eval metrics framework":
+- **DeepEval-style tools** help you *score* behavior.
+- **RunLedger** helps you *ship safely* by making agent tests deterministic and merge-gated.
 
 ---
 
-## What this is
+## Why RunLedger (in one minute)
 
-This repo provides:
+Agents regress silently:
+- prompt changes
+- tool signature drift
+- model updates
+- external APIs / web volatility
 
-- A **CLI** that runs **deterministic, pass/fail evaluation suites** against an agent under test (any language).
-- **Record/replay tool calls** ("cassettes") so CI runs are stable and fast.
-- **Hard assertions** (JSONSchema, required fields, regex, tool contracts) and **budgets** (latency, tool calls/errors, tokens/cost when available).
-- **Regression gating** vs a baseline: fail CI when success rate drops or budgets spike.
-- **Artifacts**: `run.jsonl`, `summary.json`, `junit.xml`, `report.html`.
-
-### What this is not
-
-- Not a generic tracing/observability platform.
-- Not "LLM-judge only" scoring as your merge gate.
-- Not a hosted monitoring product (though the artifacts are designed to support one later).
+RunLedger stops that by:
+- **recording tool calls once** and **replaying in CI**
+- enforcing **contracts** (schema, tool allowlist/order, budgets)
+- gating PRs via **baselines + diffs** (exit codes + JUnit + HTML report)
 
 ---
 
 ## Quickstart (5 minutes)
 
-### Install
-
 ```bash
 pipx install runledger
-# or: pip install runledger
-```
-
-### Initialize example evals
-
-```bash
 runledger init
-# creates ./evals and a minimal demo agent + suite
-```
-
-### Run locally (record once)
-
-```bash
 runledger run ./evals --mode record
-```
-
-### Run deterministically (replay)
-
-```bash
+runledger baseline promote --from <RUN_DIR> --to baselines/<suite>.json
 runledger run ./evals --mode replay
 ```
 
-### Open the report
+Artifacts are written to `runledger_out/<suite>/<run_id>/`:
 
-```bash
-# report path is printed at end of run
-open .agentci/runs/**/report.html
-```
+- `report.html`, `summary.json`, `junit.xml`, `run.jsonl`
+
+---
+
+## FAQ: Why not just use DeepEval?
+
+DeepEval is excellent for *evaluation metrics* and benchmarking.
+RunLedger is focused on *CI determinism for tool-using agents*:
+
+- Record tool calls once -> replay in CI (stable, fast, no flaky external dependencies)
+- Merge gates based on hard contracts (schema/tool/budgets), not "LLM-judge vibes"
+- Baselines-as-code (diffs + promotions) that fit cleanly into PR workflows
+
+If you already use DeepEval, keep it - RunLedger can be the harness that makes agent tests CI-grade.
+
+---
+
+## When to use RunLedger vs DeepEval
+
+Use **RunLedger** when you need:
+
+- deterministic CI for tool-using agents (web/APIs/DBs)
+- hard pass/fail contracts (schema/tool order/budgets)
+- baselines + PR regression gates
+
+Use **DeepEval** when you need:
+
+- rich evaluation metrics / model-graded scoring / benchmarking workflows
+
+Use **both** if you want DeepEval scoring inside a deterministic CI harness.
 
 ---
 
@@ -244,6 +255,11 @@ Typical workflow:
 * establish a baseline from a known-good run
 * run replay mode on every PR and gate merges on regressions
 
+```bash
+runledger baseline promote --from runledger_out/<suite>/<run_id> --to baselines/<suite>.json
+runledger run ./evals/<suite> --mode replay --baseline baselines/<suite>.json
+```
+
 ---
 
 ## Output artifacts
@@ -265,8 +281,6 @@ These files are intentionally stable so they can be:
 
 ## GitHub Actions (example)
 
-> Replace `<OWNER>/<REPO>` and `<VERSION>` with your action reference.
-
 ```yaml
 name: agent-evals
 on:
@@ -279,17 +293,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run deterministic evals (replay)
-        uses: <OWNER>/<REPO>@<VERSION>
+        uses: ZackMitchell910/runledger@v0.1.0
         with:
-          path: ./evals
+          path: ./evals/demo
           mode: replay
-          baseline: ./baselines/support-triage.json
 
       - name: Upload eval artifacts
         uses: actions/upload-artifact@v4
         with:
           name: agent-eval-artifacts
-          path: .agentci/runs/**
+          path: runledger_out/**
 ```
 
 ---
@@ -304,13 +317,35 @@ jobs:
 
 ---
 
+## Docs
+
+- `docs/quickstart.md` -- install + first run
+- `docs/assertions.md` -- assertions, tool contracts, budgets
+- `docs/baselines.md` -- baselines, diffing, promotion
+- `docs/ci.md` -- CI setup with GitHub Actions
+- `docs/contracts.md` -- public contracts (YAML, protocol, artifacts)
+- `docs/troubleshooting.md` -- common errors and fixes
+
+---
+
 ## Roadmap
 
 * `init` templates for Python (OpenAI SDK), LangGraph/LangChain, and Node/TS
 * richer budgets (tokens/cost) via optional `task_metrics`
-* baseline promotion workflow + PR comments bot
+* PR comments bot for regression summaries
 * plugin system for custom assertions
 * HTML report trace viewer improvements
+
+---
+
+## Commercial Support
+
+RunLedger is MIT-licensed and free to self-host. For teams that want done-for-you implementation or ongoing maintenance, we offer:
+
+- Hardening Sprint (fixed-scope implementation to get deterministic CI running fast)
+- Assurance (monthly retainer for cassette and case updates, budget tuning, and incident response)
+
+Contact: [runleder.io/community.html#contact](https://runleder.io/community.html#contact)
 
 ---
 

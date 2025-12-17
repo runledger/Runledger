@@ -24,8 +24,11 @@ def apply_must_call(trace: list[dict[str, object]], tools: list[str]) -> list[As
     return [
         AssertionFailure(
             type="must_call",
-            message=f"Missing required tool calls: {', '.join(missing)}",
-            details={"missing": missing},
+            message=(
+                f"Missing required tool calls: {', '.join(missing)}. "
+                f"Observed: {', '.join(calls) if calls else '<none>'}"
+            ),
+            details={"missing": missing, "observed_calls": calls},
         )
     ]
 
@@ -38,8 +41,11 @@ def apply_must_not_call(trace: list[dict[str, object]], tools: list[str]) -> lis
     return [
         AssertionFailure(
             type="must_not_call",
-            message=f"Forbidden tool calls observed: {', '.join(forbidden)}",
-            details={"forbidden": forbidden},
+            message=(
+                f"Forbidden tool calls observed: {', '.join(forbidden)}. "
+                f"Observed: {', '.join(calls) if calls else '<none>'}"
+            ),
+            details={"forbidden": forbidden, "observed_calls": calls},
         )
     ]
 

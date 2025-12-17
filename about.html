@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RunLedger Reference | CLI and Config</title>
-    <meta name="description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
+    <title>About RunLedger | Mission and Principles</title>
+    <meta name="description" content="Why RunLedger exists and the principles behind deterministic CI for agents.">
     <meta name="robots" content="index,follow">
     <meta name="theme-color" content="#020408">
-    <link rel="canonical" href="https://runleder.io/reference.html">
+    <link rel="canonical" href="https://runleder.io/about.html">
 
-    <meta property="og:title" content="RunLedger Reference | CLI and Config">
-    <meta property="og:description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
+    <meta property="og:title" content="About RunLedger | Mission and Principles">
+    <meta property="og:description" content="Why RunLedger exists and the principles behind deterministic CI for agents.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="RunLedger">
-    <meta property="og:url" content="https://runleder.io/reference.html">
+    <meta property="og:url" content="https://runleder.io/about.html">
     <meta property="og:image" content="https://runleder.io/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@runledger">
-    <meta name="twitter:title" content="RunLedger Reference | CLI and Config">
-    <meta name="twitter:description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
+    <meta name="twitter:title" content="About RunLedger | Mission and Principles">
+    <meta name="twitter:description" content="Why RunLedger exists and the principles behind deterministic CI for agents.">
     <meta name="twitter:image" content="https://runleder.io/og-image.png">
 
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -46,7 +46,7 @@
 </head>
 <body class="relative">
 
-    <div class="absolute -top-40 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-primary/20 via-transparent to-transparent blur-3xl opacity-60 pointer-events-none"></div>
+    <div class="absolute -top-40 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-primary/20 via-transparent to-accent/20 blur-3xl opacity-60 pointer-events-none"></div>
 
     <!-- Navigation -->
     <nav class="fixed top-0 w-full z-50 glass-panel h-16">
@@ -62,7 +62,7 @@
 
             <div class="hidden md:flex items-center gap-8">
                 <a href="docs.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Docs</a>
-                <a href="reference.html" class="text-sm font-medium text-white">Reference</a>
+                <a href="reference.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Reference</a>
                 <a href="integrations.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integrations</a>
                 <a href="pricing.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Pricing</a>
                 <a href="changelog.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Changelog</a>
@@ -94,112 +94,51 @@
         <section class="max-w-6xl mx-auto px-6 mb-16">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 mb-6 animate-fade-in">
                 <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                <span class="text-xs font-semibold text-primary tracking-wide">REFERENCE</span>
+                <span class="text-xs font-semibold text-primary tracking-wide">ABOUT</span>
             </div>
-            <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight mb-6">CLI, config, and protocol reference.</h1>
-            <p class="text-lg text-textMuted leading-relaxed max-w-3xl">Every command, every field, and every message type your agent needs to speak in production.</p>
+            <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight mb-6">Deterministic CI for agents.</h1>
+            <p class="text-lg text-textMuted leading-relaxed max-w-3xl">RunLedger exists to make agent behavior repeatable, testable, and safe to ship. We believe agent systems deserve the same rigor as any other software.</p>
         </section>
 
-        <section id="cli" class="max-w-6xl mx-auto px-6 mb-20">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-2xl font-bold text-white">CLI commands</h2>
-                <a href="docs.html#quickstart" class="text-sm text-textMuted hover:text-white transition-colors">Quickstart</a>
+        <section id="mission" class="max-w-6xl mx-auto px-6 mb-20">
+            <div class="bg-card border border-border rounded-2xl p-10">
+                <h2 class="text-2xl font-bold text-white mb-4">Mission</h2>
+                <p class="text-sm text-textMuted leading-relaxed">Give teams a deterministic harness for tool-using agents: replayable tools, hard assertions, and budgets that stop regressions before they ship.</p>
             </div>
+        </section>
+
+        <section id="principles" class="max-w-6xl mx-auto px-6 mb-20">
+            <h2 class="text-2xl font-bold text-white mb-8">Principles</h2>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="feature-card p-6 rounded-xl">
-                    <h3 class="text-lg font-semibold text-white mb-2">run</h3>
-                    <p class="text-sm text-textMuted mb-4">Execute a suite in replay or record mode and write artifacts.</p>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">runledger run ./evals --mode replay
-runledger run ./evals --mode record --case t1</pre>
+                    <h3 class="text-lg font-semibold text-white mb-2">Determinism over vibes</h3>
+                    <p class="text-sm text-textMuted">Record tool outputs once and replay them to keep CI stable.</p>
                 </div>
                 <div class="feature-card p-6 rounded-xl">
-                    <h3 class="text-lg font-semibold text-white mb-2">diff</h3>
-                    <p class="text-sm text-textMuted mb-4">Compare a run directory against a baseline file.</p>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">runledger diff --baseline baselines/support.json --run runledger_out/demo/2025-01-01</pre>
+                    <h3 class="text-lg font-semibold text-white mb-2">Hard assertions</h3>
+                    <p class="text-sm text-textMuted">Agent output is validated by schemas, not intuition.</p>
                 </div>
                 <div class="feature-card p-6 rounded-xl">
-                    <h3 class="text-lg font-semibold text-white mb-2">baseline promote</h3>
-                    <p class="text-sm text-textMuted mb-4">Promote a successful run to a baseline file for regression gates.</p>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">runledger baseline promote --from runledger_out/demo/2025-01-01 --to baselines/demo.json</pre>
+                    <h3 class="text-lg font-semibold text-white mb-2">Budgets as guardrails</h3>
+                    <p class="text-sm text-textMuted">Latency, tool calls, and cost are enforced as merge gates.</p>
                 </div>
                 <div class="feature-card p-6 rounded-xl">
-                    <h3 class="text-lg font-semibold text-white mb-2">init</h3>
-                    <p class="text-sm text-textMuted mb-4">Create a demo agent, eval suite, and example cassette.</p>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">runledger init</pre>
+                    <h3 class="text-lg font-semibold text-white mb-2">Artifacts are contracts</h3>
+                    <p class="text-sm text-textMuted">Stable outputs make regressions easy to diff and review.</p>
                 </div>
             </div>
         </section>
 
-        <section id="suite-config" class="max-w-6xl mx-auto px-6 mb-20">
-            <h2 class="text-2xl font-bold text-white mb-6">suite.yaml</h2>
+        <section class="max-w-6xl mx-auto px-6">
             <div class="grid lg:grid-cols-[1fr_0.9fr] gap-8">
-                <div class="bg-card border border-border rounded-xl p-6">
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">suite_name: support-triage
-agent_command: ["python", "agent.py"]
-mode: replay
-cases_path: cases
-tool_registry:
-  - search_docs
-  - create_issue
-assertions:
-  - type: json_schema
-    schema_path: schema.json
-budgets:
-  max_wall_ms: 20000
-  max_tool_calls: 10
-baseline_path: baselines/support-triage.json</pre>
+                <div class="bg-card border border-border rounded-2xl p-10">
+                    <h2 class="text-2xl font-bold text-white mb-4">Where we are going</h2>
+                    <p class="text-sm text-textMuted mb-6">Next milestones focus on record mode, richer HTML reports, and baseline workflows for teams.</p>
+                    <a href="changelog.html" class="inline-flex items-center gap-2 text-sm text-primary hover:text-white transition-colors">See the roadmap <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
                 </div>
-                <div class="space-y-4 text-sm text-textMuted">
-                    <p><span class="text-white font-semibold">suite_name</span> is the stable CI identifier.</p>
-                    <p><span class="text-white font-semibold">agent_command</span> launches your agent as a subprocess.</p>
-                    <p><span class="text-white font-semibold">tool_registry</span> restricts which tools can be invoked.</p>
-                    <p><span class="text-white font-semibold">assertions</span> and <span class="text-white font-semibold">budgets</span> apply to all cases by default.</p>
-                    <p><span class="text-white font-semibold">baseline_path</span> enables regression gating in CI.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="case-config" class="max-w-6xl mx-auto px-6 mb-20">
-            <h2 class="text-2xl font-bold text-white mb-6">cases/*.yaml</h2>
-            <div class="grid lg:grid-cols-[1fr_0.9fr] gap-8">
-                <div class="bg-card border border-border rounded-xl p-6">
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">id: t1
-description: "triage a login ticket"
-input:
-  ticket: "User cannot login"
-  context:
-    plan: "pro"
-cassette: cassettes/t1.jsonl
-assertions:
-  - type: required_fields
-    fields: ["category", "reply"]
-budgets:
-  max_wall_ms: 5000</pre>
-                </div>
-                <div class="space-y-4 text-sm text-textMuted">
-                    <p><span class="text-white font-semibold">input</span> is forwarded verbatim to the agent.</p>
-                    <p><span class="text-white font-semibold">cassette</span> is required for replay mode.</p>
-                    <p><span class="text-white font-semibold">assertions</span> override or extend suite defaults.</p>
-                    <p><span class="text-white font-semibold">budgets</span> can be customized per case.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="protocol" class="max-w-6xl mx-auto px-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-white">Protocol messages</h2>
-                <span class="text-xs text-textMuted">stdin/stdout JSONL</span>
-            </div>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="bg-card border border-border rounded-xl p-6">
-                    <div class="text-xs font-mono text-textMuted mb-4">Runner to Agent</div>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">{ "type": "task_start", "task_id": "t1", "input": { "ticket": "..." } }
-{ "type": "tool_result", "call_id": "c1", "ok": true, "result": { "hits": [] } }</pre>
-                </div>
-                <div class="bg-card border border-border rounded-xl p-6">
-                    <div class="text-xs font-mono text-textMuted mb-4">Agent to Runner</div>
-                    <pre class="font-mono text-xs text-textMain leading-6 whitespace-pre-wrap">{ "type": "tool_call", "name": "search_docs", "call_id": "c1", "args": { "q": "..." } }
-{ "type": "final_output", "output": { "category": "billing", "reply": "..." } }</pre>
+                <div class="feature-card p-6 rounded-2xl">
+                    <h3 class="text-lg font-semibold text-white mb-3">Why it matters</h3>
+                    <p class="text-sm text-textMuted">Agent regressions are easy to miss and expensive to debug. Deterministic evals make failures actionable and auditable.</p>
                 </div>
             </div>
         </section>

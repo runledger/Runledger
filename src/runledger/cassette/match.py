@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from difflib import SequenceMatcher
 from typing import Iterable
 
 from runledger.util.canonical_json import canonical_dumps
@@ -24,20 +25,37 @@ def format_mismatch_error(
     entries: Iterable[CassetteEntry], tool_name: str, args: dict[str, object]
 ) -> str:
     target_args = canonical_dumps(redact(args))
-    available = []
-    for entry in entries:
+    all_entries = list(entries)
+    if not all_entries:
+        return (
+            "Cassette mismatch.\n"
+            f"Requested tool: {tool_name}\n"
+            f"Requested args: {target_args}\n"
+            "No cassette entries found."
+        )
+
+    candidates = [entry for entry in all_entries if entry.tool == tool_name]
+    if not candidates:
+        candidates = all_entries
+
+    scored = []
+    for entry in candidates:
         preview = canonical_dumps(redact(entry.args))
+        score = SequenceMatcher(None, target_args, preview).ratio()
+        scored.append((score, entry, preview))
+
+    scored.sort(key=lambda item: item[0], reverse=True)
+    closest = []
+    for score, entry, preview in scored[:5]:
         if len(preview) > 160:
             preview = preview[:157] + "..."
-        available.append(f"- {entry.tool} args={preview}")
-    if not available:
-        available_text = "No cassette entries found."
-    else:
-        available_text = "\n".join(available)
+        closest.append(f"- {entry.tool} args={preview} score={score:.2f}")
+
+    available_text = "\n".join(closest)
 
     return (
         "Cassette mismatch.\n"
         f"Requested tool: {tool_name}\n"
         f"Requested args: {target_args}\n"
-        f"Available entries:\n{available_text}"
+        f"Closest matches:\n{available_text}"
     )

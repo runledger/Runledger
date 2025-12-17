@@ -4,216 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RunLedger | The CI Standard for Agents</title>
-    <meta name="description" content="Deterministic evals, replayable tool calls, and merge gates that stop agent regressions before they ship.">
-    
+    <meta name="description" content="CI harness for tool-using agents with deterministic replay, hard contracts, baselines, and PR gates.">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#020408">
+    <link rel="canonical" href="https://runleder.io/">
+
+    <meta property="og:title" content="RunLedger | The CI Standard for Agents">
+    <meta property="og:description" content="CI harness for tool-using agents with deterministic replay, hard contracts, baselines, and PR gates.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RunLedger">
+    <meta property="og:url" content="https://runleder.io/">
+    <meta property="og:image" content="https://runleder.io/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@runledger">
+    <meta name="twitter:title" content="RunLedger | The CI Standard for Agents">
+    <meta name="twitter:description" content="CI harness for tool-using agents with deterministic replay, hard contracts, baselines, and PR gates.">
+    <meta name="twitter:image" content="https://runleder.io/og-image.png">
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="site.webmanifest">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    
+
+    <link rel="stylesheet" href="site.css">
+
     <!-- Icons (Pinned Version) -->
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
-    
+
     <!-- Three.js (Pinned Version) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
-
     <!-- Tailwind -->
+    <script src="site.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bg: '#020408', /* Midnight Void */
-                        card: '#0A0C12',
-                        border: '#1E2230',
-                        borderHover: '#30364A',
-                        
-                        primary: '#3B82F6', /* Electric Blue */
-                        primaryGlow: 'rgba(59, 130, 246, 0.5)',
-                        
-                        accent: '#06B6D4', /* Cyan */
-                        
-                        textMain: '#F8FAFC',
-                        textMuted: '#94A3B8',
-                        
-                        codeBg: '#0D1117',
-                        
-                        diffAdd: 'rgba(35, 134, 54, 0.15)',
-                        diffAddText: '#3FB950',
-                        diffDel: 'rgba(218, 54, 51, 0.15)',
-                        diffDelText: '#F85149',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                        'hero-glow': 'conic-gradient(from 180deg at 50% 50%, #1E293B 0deg, #0F172A 180deg, #1E293B 360deg)',
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'flow': 'flow 2s linear infinite',
-                        'flow-slow': 'flow 15s linear infinite',
-                        'fade-in': 'fadeIn 0.8s ease-out forwards',
-                        'grow-bar': 'growBar 2s ease-out infinite',
-                        'scroll-logs': 'scrollLogs 10s linear infinite',
-                        'stream': 'stream 1.5s linear infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-6px)' },
-                        },
-                        flow: {
-                            '0%': { strokeDashoffset: '24' },
-                            '100%': { strokeDashoffset: '0' },
-                        },
-                        stream: {
-                            '0%': { backgroundPosition: '-100% 0' },
-                            '100%': { backgroundPosition: '200% 0' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        growBar: {
-                            '0%': { width: '0%' },
-                            '60%': { width: '85%' },
-                            '100%': { width: '85%' }
-                        },
-                        scrollLogs: {
-                            '0%': { transform: 'translateY(0)' },
-                            '100%': { transform: 'translateY(-50%)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        body {
-            background-color: #020408;
-            color: #F8FAFC;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
-
-        /* The Living Line */
-        .living-line {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 100%;
-            background: linear-gradient(to bottom, 
-                transparent, 
-                #1E2230 10%, 
-                #1E2230 90%, 
-                transparent
-            );
-            z-index: 0;
-            pointer-events: none;
-        }
-        
-        .living-line::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 150px;
-            background: linear-gradient(to bottom, transparent, #3B82F6, transparent);
-            animation: drop 8s ease-in-out infinite;
-            filter: blur(2px);
-        }
-
-        /* Reduced Motion for Line */
-        @media (prefers-reduced-motion: reduce) {
-            .living-line::after {
-                animation: none;
-                display: none;
-            }
-            .animate-float, .animate-flow, .animate-pulse-slow, .animate-grow-bar, .animate-scroll-logs, .animate-stream {
-                animation: none;
-            }
-        }
-
-        @keyframes drop {
-            0% { top: -200px; opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-        }
-
-        /* Card Glow Effect on Hover */
-        .feature-card {
-            background: #0A0C12;
-            border: 1px solid #1E2230;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            z-index: 10;
-        }
-        
-        .feature-card:hover {
-            border-color: #3B82F6;
-            transform: translateY(-4px);
-            box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.15);
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
-            transition: left 0.5s;
-        }
-        .feature-card:hover::before {
-            left: 100%;
-        }
-
-        /* Glass Panel */
-        .glass-panel {
-            background: rgba(10, 12, 18, 0.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Syntax Highlighting */
-        .token-key { color: #7EE787; }
-        .token-str { color: #A5D6FF; }
-        .token-num { color: #D2A8FF; }
-        .token-kw  { color: #FF7B72; }
-        .token-comment { color: #8B949E; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #020408; }
-        ::-webkit-scrollbar-thumb { background: #1E2230; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-
-        #three-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            z-index: 0;
-            opacity: 0.4;
-            pointer-events: none;
-            mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-        }
-        
-        .dashed-flow {
-            stroke-dasharray: 4 4;
-            animation: flow 1s linear infinite;
-        }
-    </style>
 </head>
 <body class="relative">
 
@@ -269,7 +100,7 @@
     <main class="relative z-10 pt-32">
         
         <!-- The Living Line -->
-        <div class="hidden lg:block living-line h-[3500px]"></div>
+        <div class="hidden lg:block living-line"></div>
 
         <!-- HERO SECTION -->
         <section id="hero" class="max-w-7xl mx-auto px-6 mb-32 relative">
@@ -288,9 +119,11 @@
                     Control the chaos of probabilistic software.
                 </p>
                 
-                <p class="text-lg text-textMuted leading-relaxed mb-12 max-w-2xl mx-auto">
-                    RunLedger acts as a flight recorder and gatekeeper for your agents. 
-                    <span class="text-white">Deterministic evals</span>, <span class="text-white">replayable tool calls</span>, and <span class="text-white">schema enforcement</span> in one CLI.
+                <p class="text-lg text-textMuted leading-relaxed mb-6 max-w-2xl mx-auto">
+                    RunLedger is the CI harness for tool-using agents. Record tool calls once, replay in CI, and gate PRs with hard contracts, budgets, and baselines.
+                </p>
+                <p class="text-sm text-textMuted leading-relaxed mb-12 max-w-2xl mx-auto">
+                    Not an eval metrics framework. Keep DeepEval for scoring; RunLedger makes agent tests deterministic and merge-gated.
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
@@ -430,7 +263,7 @@
                     <h3 class="text-primary font-mono text-sm font-semibold tracking-wide uppercase mb-4">Regression Blocking</h3>
                     <h2 class="text-3xl font-bold text-white mb-6">Catch drift before it costs you.</h2>
                     <p class="text-textMuted leading-relaxed mb-8">
-                        LLMs are probabilistic, but your tool interfaces are strict. RunLedger enforces Pydantic schemas and compares execution traces against known baselines.
+                        LLMs are probabilistic, but your tool interfaces are strict. RunLedger enforces hard contracts (schema, tool order, budgets) and gates PRs against known baselines.
                     </p>
                     
                     <ul class="space-y-6">
@@ -439,8 +272,8 @@
                                 <i data-lucide="git-branch" class="w-4 h-4 text-primary"></i>
                             </div>
                             <div>
-                                <h4 class="text-white font-medium mb-1">Trace comparison</h4>
-                                <p class="text-sm text-textMuted">Diff the full execution trace (messages, tool calls, outputs).</p>
+                                <h4 class="text-white font-medium mb-1">Baseline diffs</h4>
+                                <p class="text-sm text-textMuted">Compare tool calls and outputs to a promoted baseline and fail on regressions.</p>
                             </div>
                         </li>
                         <li class="flex items-start gap-4">
@@ -448,8 +281,8 @@
                                 <i data-lucide="shield-check" class="w-4 h-4 text-accent"></i>
                             </div>
                             <div>
-                                <h4 class="text-white font-medium mb-1">Schema Enforcement</h4>
-                                <p class="text-sm text-textMuted">Fail the build if an agent hallucinates a parameter.</p>
+                                <h4 class="text-white font-medium mb-1">Contract enforcement</h4>
+                                <p class="text-sm text-textMuted">Fail the build if schema, tool order, or budgets are violated.</p>
                             </div>
                         </li>
                     </ul>
@@ -457,11 +290,63 @@
             </div>
         </section>
 
+        <!-- RUNLEDGER VS DEEPEVAL -->
+        <section id="compare" class="max-w-6xl mx-auto px-6 mb-40">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">RunLedger vs DeepEval</h2>
+                <p class="text-textMuted">Scoring and CI gates are different jobs. RunLedger is the harness for deterministic CI.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="feature-card p-6 rounded-xl">
+                    <div class="text-xs font-mono text-textMuted mb-3">EVAL METRICS</div>
+                    <h3 class="text-lg font-bold text-white mb-2">DeepEval (Confident AI)</h3>
+                    <p class="text-sm text-textMuted mb-4">Evaluation metrics and model-graded scoring for quality and benchmarking.</p>
+                    <ul class="space-y-2 text-sm text-textMuted">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-textMuted mt-0.5"></i>
+                            Faithfulness, relevancy, and other scoring suites
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-textMuted mt-0.5"></i>
+                            Benchmark workflows and dataset management
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-textMuted mt-0.5"></i>
+                            Optional hosted platform for evaluations
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="feature-card p-6 rounded-xl border border-primary/40">
+                    <div class="text-xs font-mono text-primary mb-3">CI HARNESS</div>
+                    <h3 class="text-lg font-bold text-white mb-2">RunLedger</h3>
+                    <p class="text-sm text-textMuted mb-4">Deterministic CI for tool-using agents with replay, contracts, and PR gates.</p>
+                    <ul class="space-y-2 text-sm text-textMuted">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i>
+                            Record tool calls once and replay in CI
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i>
+                            Hard contracts for schema, tool order, and budgets
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i>
+                            Baselines and regression gates with JUnit and HTML
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <p class="text-sm text-textMuted text-center mt-6">Use both: keep DeepEval scoring and run it inside RunLedger's deterministic harness.</p>
+        </section>
+
         <!-- FEATURES GRID -->
         <section id="features" class="max-w-7xl mx-auto px-6 mb-40">
             <div class="text-center mb-20">
-                <h2 class="text-3xl font-bold text-white mb-4">The Developer Infrastructure for Agents</h2>
-                <p class="text-textMuted">Built for teams shipping to production, not just prototyping.</p>
+                <h2 class="text-3xl font-bold text-white mb-4">CI Harness for Tool-Using Agents</h2>
+                <p class="text-textMuted">Deterministic replay, hard contracts, and baselines built for production shipping.</p>
             </div>
 
             <div class="grid md:grid-cols-3 gap-8 relative z-10">
@@ -492,55 +377,54 @@
 
                     <h3 class="text-lg font-bold text-white mb-3">Deterministic Replay</h3>
                     <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
-                        Network calls (Stripe, Postgres) are recorded once. In CI, we replay the recording. Tests are instant and deterministic.
+                        Record tool calls once. In CI, replay cassettes for fast, deterministic runs with no flaky dependencies.
                     </p>
                     <div class="mt-auto pt-4 border-t border-border">
-                        <code class="text-xs font-mono text-primary bg-primary/5 px-2 py-1 rounded">@record_replay</code>
+                        <code class="text-xs font-mono text-primary bg-primary/5 px-2 py-1 rounded">mode: replay</code>
                     </div>
                 </div>
 
-                <!-- Card 2: Flight Recorder -->
+                <!-- Card 2: Hard Contracts -->
                 <div class="feature-card p-6 rounded-xl flex flex-col h-full">
                     <div class="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative">
                         <!-- Visual: Scrolling Terminal -->
                         <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0D1117] z-10"></div>
                         <div class="p-3 font-mono text-[9px] space-y-2 opacity-80 animate-scroll-logs">
                             <!-- Log Lines -->
-                            <div class="flex gap-2"><span class="text-blue-400">[INFO]</span> <span class="text-textMuted">Agent initialized</span></div>
-                            <div class="flex gap-2"><span class="text-yellow-400">[TOOL]</span> <span class="text-textMuted">Calling search_users...</span></div>
-                            <div class="flex gap-2"><span class="text-textMuted">[DEBUG]</span> <span class="text-textMuted">Payload size: 2kb</span></div>
-                            <div class="flex gap-2"><span class="text-green-400">[OK]</span> <span class="text-textMuted">Tool output received</span></div>
-                            <div class="flex gap-2"><span class="text-blue-400">[INFO]</span> <span class="text-textMuted">Reasoning step 2...</span></div>
-                            <div class="flex gap-2"><span class="text-yellow-400">[TOOL]</span> <span class="text-textMuted">Calling update_db...</span></div>
-                             <div class="flex gap-2"><span class="text-green-400">[OK]</span> <span class="text-textMuted">Commit successful</span></div>
+                            <div class="flex gap-2"><span class="text-blue-400">[INFO]</span> <span class="text-textMuted">Contracts loaded</span></div>
+                            <div class="flex gap-2"><span class="text-emerald-400">[ASSERT]</span> <span class="text-textMuted">json_schema ok</span></div>
+                            <div class="flex gap-2"><span class="text-emerald-400">[ASSERT]</span> <span class="text-textMuted">required_fields ok</span></div>
+                            <div class="flex gap-2"><span class="text-emerald-400">[ASSERT]</span> <span class="text-textMuted">tool_order ok</span></div>
+                            <div class="flex gap-2"><span class="text-yellow-400">[BUDGET]</span> <span class="text-textMuted">tool_calls 3/10</span></div>
+                            <div class="flex gap-2"><span class="text-green-400">[OK]</span> <span class="text-textMuted">Contracts passed</span></div>
                         </div>
                     </div>
 
-                    <h3 class="text-lg font-bold text-white mb-3">Flight Recorder</h3>
+                    <h3 class="text-lg font-bold text-white mb-3">Hard Contracts</h3>
                     <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
-                        We capture agent messages, tool calls, tool outputs, and structured logs to build a complete trace of execution.
+                        Enforce JSON schema, required fields, and tool order as pass/fail gates. No model-graded scoring required.
                     </p>
                     <div class="mt-auto pt-4 border-t border-border">
-                        <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">runledger record</code>
+                        <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">assert: json_schema</code>
                     </div>
                 </div>
 
-                <!-- Card 3: Gates -->
+                <!-- Card 3: Baselines + PR Gates -->
                 <div class="feature-card p-6 rounded-xl flex flex-col h-full">
                     <div class="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative p-4 flex flex-col justify-center gap-4">
                         <!-- Visual: Budget Bar -->
                         <div>
                             <div class="flex justify-between mb-1.5">
-                                <span class="text-[10px] font-mono text-textMuted">Latency Budget</span>
-                                <span class="text-[10px] font-mono text-white">420ms / 500ms</span>
+                                <span class="text-[10px] font-mono text-textMuted">Baseline Drift</span>
+                                <span class="text-[10px] font-mono text-white">+1.2% / 5%</span>
                             </div>
                             <div class="h-1.5 w-full bg-border rounded-full overflow-hidden">
-                                <div class="h-full bg-emerald-500 w-[84%]"></div>
+                                <div class="h-full bg-emerald-500 w-[24%]"></div>
                             </div>
                         </div>
                         <div>
                             <div class="flex justify-between mb-1.5">
-                                <span class="text-[10px] font-mono text-textMuted">Token Budget</span>
+                                <span class="text-[10px] font-mono text-textMuted">Budget Gate</span>
                                 <span class="text-[10px] font-mono text-red-400 font-bold">FAIL</span>
                             </div>
                             <div class="h-1.5 w-full bg-border rounded-full overflow-hidden relative">
@@ -551,12 +435,12 @@
                         </div>
                     </div>
 
-                    <h3 class="text-lg font-bold text-white mb-3">Cost & Latency Gates</h3>
+                    <h3 class="text-lg font-bold text-white mb-3">Baselines + PR Gates</h3>
                     <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
-                        Set budgets for token usage and latency. If a prompt change causes your agent to loop or ramble, the test fails.
+                        Promote a known-good run, diff against it in CI, and fail when success rate drops or budgets spike.
                     </p>
                     <div class="mt-auto pt-4 border-t border-border">
-                        <code class="text-xs font-mono text-emerald-500 bg-emerald-500/5 px-2 py-1 rounded">budget: 500ms</code>
+                        <code class="text-xs font-mono text-emerald-500 bg-emerald-500/5 px-2 py-1 rounded">baseline: baselines/suite.json</code>
                     </div>
                 </div>
 
@@ -573,7 +457,7 @@
                     <div class="flex-1">
                         <h2 class="text-2xl font-bold text-white mb-4">Drop-in Middleware</h2>
                         <p class="text-textMuted mb-6">
-                            RunLedger works with any agent framework. Wrap your agent as a subprocess runner—minimal changes.
+                            RunLedger works with any agent framework. Wrap your agent as a subprocess runner--minimal changes.
                         </p>
                         <ul class="space-y-2 font-mono text-xs text-textMain">
                             <li class="flex items-center gap-2">
@@ -671,7 +555,7 @@
                         </div>
                         <span class="font-bold text-white text-sm">RunLedger</span>
                     </a>
-                    <p class="text-sm text-textMuted">Deterministic evals and replayable tool calls for CI-grade agents.</p>
+                    <p class="text-sm text-textMuted">CI harness with deterministic replay, hard contracts, and baselines.</p>
                     <div class="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
                         <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                         ALL SYSTEMS OPERATIONAL
@@ -722,9 +606,11 @@
             <div class="max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-textMuted">
                 <span>(c) 2025 RunLedger. MIT Licensed.</span>
                 <div class="flex items-center gap-6">
-                    <a href="security.html" class="hover:text-white transition-colors">Security</a>
-                    <a href="community.html#contact" class="hover:text-white transition-colors">Contact</a>
-                </div>
+    <a href="privacy.html" class="hover:text-white transition-colors">Privacy</a>
+    <a href="terms.html" class="hover:text-white transition-colors">Terms</a>
+    <a href="security.html" class="hover:text-white transition-colors">Security</a>
+    <a href="community.html#contact" class="hover:text-white transition-colors">Contact</a>
+</div>
             </div>
         </footer>
 
@@ -733,16 +619,6 @@
     <!-- Three.js Visuals -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Mobile Menu Logic
-            const btn = document.getElementById('mobile-menu-btn');
-            const menu = document.getElementById('mobile-menu');
-            
-            if(btn && menu) {
-                btn.addEventListener('click', () => {
-                    menu.classList.toggle('hidden');
-                });
-            }
-
             // Check for reduced motion
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -900,20 +776,6 @@
             }
         });
 
-        // --- Interactions ---
-        // Ensure Lucide icons load even if deferred
-        document.addEventListener('DOMContentLoaded', () => {
-             if (window.lucide) {
-                lucide.createIcons();
-             }
-        });
-        // Fallback in case load happens after DOMContentLoaded
-        window.addEventListener('load', () => {
-            if (window.lucide) {
-                lucide.createIcons();
-            }
-        });
-
         function copyCmd() {
             navigator.clipboard.writeText('pipx install runledger');
             const el = document.querySelector('[onclick="copyCmd()"] span:nth-child(2)');
@@ -928,3 +790,4 @@
     </script>
 </body>
 </html>
+
