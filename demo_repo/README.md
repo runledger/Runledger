@@ -24,8 +24,19 @@ runledger run ./evals/demo --mode replay --baseline baselines/demo.json
    - Expected failure: tool contract or allowlist failure.
 
 3. `regression-budget`
-   - Edit `evals/demo/agent/agent.py` to call `search_docs` twice while budget allows 1.
+   - Edit `evals/demo/suite.yaml` to set `max_tool_calls: 0`.
    - Expected failure: budget gate.
+
+## Regression templates
+
+`regressions/` contains ready-to-copy files for each regression branch. Each folder only includes the files that differ from `main`.
+
+```bash
+git checkout -b regression-schema
+cp -r regressions/regression-schema/* .
+git add -A
+git commit -m "Regression: schema required field"
+```
 
 ## README assets
 

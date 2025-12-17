@@ -1,13 +1,25 @@
 # RunLedger Project Status
 
-Next steps
-Do this “next sprint” as four concrete deliverables. Each one is independently valuable, but together they turn RunLedger from “engine” into “adoptable product.”
+## Summary
+- Core engine is complete with replay/record, assertions, budgets, baselines, diffs, report, and tests.
+- `runledger init` now generates a replay-ready suite, cassette, baseline, and agent stub.
+- This repo has a CI workflow and README badges.
+- Demo repo scaffold exists under `demo_repo/`.
+- Release workflow and `CHANGELOG.md` exist; tagging and publishing are still pending.
 
-Progress (this repo)
-- Deliverable 1 in progress: `runledger init` now generates a replay-ready suite, cassette, baseline, and agent stub.
-- Deliverable 2 in progress: demo repo scaffold added under `demo_repo/`.
-- Deliverable 3 in progress: `CHANGELOG.md` and `.github/workflows/release.yml` added.
-- Deliverable 4 in progress: dogfood CI workflow and README badges added.
+## Deliverable status (v0.1 launch quality)
+- Deliverable 1 (init + green run): done in repo, clean-venv verification done; pipx verify pending release.
+- Deliverable 2 (killer demo repo): in progress; scaffold exists, regression branches and GIF pending.
+- Deliverable 3 (release): in progress; version set and workflow ready, tagging and publish pending.
+- Deliverable 4 (dogfood CI): done in repo, pending confirmation from a GitHub CI run.
+
+## Next steps (to close v0.1)
+1. Clean-env verify: `pipx install runledger`, `runledger init`, `runledger run ./evals/demo --mode replay --baseline ./baselines/<suite>.json`.
+2. Demo repo: publish separate repo, add regression branches (schema/tools/budget), add README GIF/screenshot.
+3. Release: tag `v0.1.0`, publish to PyPI, tag action, confirm release notes include demo repo link.
+4. CI: confirm workflow runs green and uploads artifacts.
+
+---
 
 # Deliverable 1: `runledger init` that gets a green run in minutes
 
@@ -17,104 +29,67 @@ A brand-new user runs:
 
 ```bash
 runledger init
-runledger run ./evals --mode replay --baseline ./baselines/demo.json
+runledger run ./evals/demo --mode replay --baseline ./baselines/demo.json
 ```
 
-…and it passes on the first try.
+...and it passes on the first try.
 
-## Implementation checklist
+## Checklist
 
-1. **CLI UX**
-
-* `runledger init` (default: creates `./evals/demo` + `./baselines/demo.json`)
-* Flags:
-
-  * `--path ./evals`
-  * `--suite demo`
-  * `--template support-triage` (default)
-  * `--force` (overwrite)
-  * `--language python|node` (optional; python first)
-
-2. **Template output (python)**
-   Generate these files:
-
-```
-evals/demo/
-  suite.yaml
-  schema.json
-  cases/
-    t1.yaml
-  cassettes/
-    t1.jsonl
-  agent/
-    agent.py
-baselines/
-  demo.json
-```
-
-3. **Template rules**
-
-* Suite runs in **replay** by default.
-* Cassette exists and matches exactly what the stub agent will call.
-* Baseline exists and won’t false-fail on different machines (avoid strict latency deltas in default regression policy; gate mainly on success rate + tool-call count).
-
-4. **Post-init instructions**
-   At the end of `init`, print:
-
-* the next 2 commands to run
-* the path to `report.html` that will be generated
+- [x] CLI UX
+  - [x] `runledger init` creates `./evals/demo` and `./baselines/demo.json` by default
+  - [x] Flags: `--path`, `--suite`, `--template`, `--force`
+  - [x] `--language python` supported (python only in v0.1)
+- [x] Template output (python)
+  - [x] `evals/demo/suite.yaml`
+  - [x] `evals/demo/schema.json`
+  - [x] `evals/demo/cases/t1.yaml`
+  - [x] `evals/demo/cassettes/t1.jsonl`
+  - [x] `evals/demo/agent/agent.py`
+  - [x] `baselines/demo.json`
+- [x] Template rules
+  - [x] Suite defaults to replay mode
+  - [x] Cassette matches the stub agent tool call
+  - [x] Baseline exists and does not false-fail on different machines
+- [x] Post-init instructions printed with next commands
+- [x] Verified in a clean venv with `pip install <local path>` (WSL)
+- [ ] Verify `pipx install runledger==0.1.0` after PyPI release
 
 ## Acceptance criteria
 
-* Fresh directory, `runledger init` succeeds
-* `runledger run ./evals/demo --mode replay --baseline baselines/demo.json` passes
-* If user edits `schema.json` to require a new field → fail
-* If user edits `agent.py` to call a different tool/args → cassette mismatch fail
+- [x] Fresh directory, `runledger init` succeeds
+- [x] `runledger run ./evals/demo --mode replay --baseline baselines/demo.json` passes
+- [x] Editing `schema.json` to require a new field fails
+- [x] Editing `agent.py` to call a different tool/args fails with a cassette mismatch
 
 ---
 
-# Deliverable 2: “Killer demo” repo with regression branches
+# Deliverable 2: "Killer demo" repo with regression branches
 
 ## Goal
 
-Anyone can watch CI fail for 3 real reasons without reading docs.
+Anyone can watch CI fail for three real reasons without reading docs.
 
-## Repo structure
+## Checklist
 
-* Use the exact `init` output as the repo content.
-* Add `.github/workflows/ci.yml` that runs in replay mode and uploads artifacts.
-
-## Branches (each should fail CI)
-
-1. `regression-schema`
-
-* Break schema: require an extra field not produced (or rename a required field).
-* Expected failure: JSONSchema assertion.
-
-2. `regression-tools`
-
-* Change agent to:
-
-  * call a disallowed tool, or
-  * skip a required tool, or
-  * violate call order.
-* Expected failure: tool contract assertion or allowlist violation.
-
-3. `regression-budget` (pick one deterministic failure)
-
-* Increase tool calls (agent calls `search_docs` twice) while budget is `max_tool_calls: 1`, OR
-* keep budgets same but configure regression policy to fail when tool_calls increases vs baseline.
-* Expected failure: budget/regression gate.
+- [x] Scaffold exists under `demo_repo/` using the `init` output
+- [x] CI workflow in the scaffold runs replay mode and uploads artifacts
+- [x] Regression templates added under `demo_repo/regressions/`
+- [ ] Publish a separate demo repo
+- [ ] Add regression branches:
+  - [ ] `regression-schema` (JSONSchema failure)
+  - [ ] `regression-tools` (tool contract failure or allowlist failure)
+  - [ ] `regression-budget` (budget or regression threshold failure)
+- [ ] Add README GIF or screenshot of a failing PR
 
 ## Acceptance criteria
 
-* `main` branch CI green
-* Each regression branch CI red with an obvious reason in:
-
-  * GitHub check output
-  * `junit.xml`
-  * `summary.json`
-  * `report.html`
+- [ ] `main` branch CI green
+- [ ] Each regression branch CI red with a clear reason in:
+  - [ ] GitHub check output
+  - [ ] `junit.xml`
+  - [ ] `summary.json`
+  - [ ] `report.html`
 
 ---
 
@@ -126,35 +101,19 @@ People can depend on it like a real tool.
 
 ## Checklist
 
-1. **Versioning**
-
-* Set version to `0.1.0`
-* Add `CHANGELOG.md` with “what’s included”
-
-2. **Packaging sanity**
-
-* Ensure templates ship in the wheel/sdist (package data)
-* Verify in a clean env:
-
-  * `pipx install runledger==0.1.0`
-  * `runledger init` works
-
-3. **GitHub Releases**
-
-* Tag `v0.1.0`
-* Release notes include quickstart + the demo repo link
-
-4. **Action versioning**
-
-* Make sure users can do:
-
-  * `uses: <owner>/runledger@v0.1.0` (or `@v0.1`)
-* Document the exact snippet in README.
+- [x] Version set to `0.1.0` in `pyproject.toml`
+- [x] `CHANGELOG.md` added
+- [x] Release workflow added with release notes and demo repo link
+- [ ] Tag `v0.1.0` and publish to PyPI
+- [ ] Tag the GitHub Action (`@v0.1.0` or `@v0.1`)
+- [ ] Verify in a clean env:
+  - [ ] `pipx install runledger==0.1.0`
+  - [ ] `runledger init` works
 
 ## Acceptance criteria
 
-* A user can install from PyPI and run init + replay without cloning your repo
-* The GitHub Action works when referenced by tag
+- [ ] A user can install from PyPI and run init + replay without cloning the repo
+- [ ] The GitHub Action works when referenced by tag
 
 ---
 
@@ -162,32 +121,28 @@ People can depend on it like a real tool.
 
 ## Goal
 
-Your repo proves the product.
+This repo proves the product.
 
 ## Checklist
 
-* Add a workflow in this repo that:
-
-  * runs demo suite in replay mode
-  * runs `pytest`
-  * uploads artifacts
-* Add badges to README (CI, PyPI, license)
+- [x] Workflow runs pytest and the demo suite in replay mode
+- [x] Artifacts are uploaded (`run.jsonl`, `summary.json`, `junit.xml`, `report.html`)
+- [x] README badges added (CI, PyPI, license)
+- [ ] Confirm CI run green on GitHub
 
 ## Acceptance criteria
 
-* Every PR runs RunLedger on itself and produces artifacts
-* CI failures are readable without local repro
+- [ ] Every PR runs RunLedger on itself and produces artifacts
+- [ ] CI failures are readable without local repro
 
 ---
 
-## Recommended PR sequence (now that core is done)
+## Current behavior
 
-1. PR: **`init` command + bundled templates + smoke test**
-2. PR: **in-repo CI workflow dogfooding RunLedger**
-3. PR: **release workflow + v0.1.0 polish (changelog, docs, packaging)**
-4. Separate repo: **killer demo repo + regression branches + README GIF**
-
-If you paste your current repo tree (top-level folders + where `action.yml` lives + where CLI commands are defined), I’ll map this into an exact PR-by-PR file list with the concrete template contents (suite.yaml/case/cassette/agent/baseline) matching your current schema keys.
+- Outputs are written under `runledger_out/<suite>/<run_id>`.
+- Baselines live under `baselines/<suite>.json`.
+- Demo suite runs via `runledger run examples/evals/demo --mode replay`.
+- HTML report is generated automatically with each run.
 
 ## Positioning
 
@@ -197,7 +152,7 @@ If you paste your current repo tree (top-level folders + where `action.yml` live
 - Language-agnostic agent protocol (JSONL subprocess) for Python/Node/Go parity.
 - Budgets are gates, not metrics: p95 latency/tool errors/tool calls are regression criteria.
 
-## Current Competition (How People Solve "Agent Quality" Today)
+## Current competition (how people solve agent quality today)
 
 ### 1) Prompt/LLM test runners (CI-friendly)
 
@@ -223,7 +178,7 @@ What they are great at: visibility, iteration, dataset management, comparing run
 
 What they are great at: "what happened?" in dev/prod; instrumentation, traces, scoring.
 
-## How We Stand Out (Defensible Wedge)
+## How we stand out (defensible wedge)
 
 Our product wins if we own this sentence:
 
@@ -243,11 +198,11 @@ Concretely, we stand out by being the best at:
    - Any agent (Python/Node/Go) can be tested the same way via subprocess JSONL.
    - This separates us from platform- or framework-coupled workflows.
 
-4. Budgets as product, not a metric
+4. Budgets are product, not a metric
    - "Works but costs 3x" is a regression.
    - Gating on p95 latency/tool errors/tool call count is a business requirement, not a nice-to-have.
 
-## Standout Playbook (What To Ship/Market Next)
+## Standout playbook (what to ship/market next)
 
 ### A) Positioning (keep it narrow and sharp)
 
@@ -274,12 +229,12 @@ Concretely, we stand out by being the best at:
 - GitHub Action snippet works on first try
 - JUnit shows failures in the PR UI
 
-## Where We Won't Win (So We Don't Waste Time)
+## Where we will not win (so we do not waste time)
 
 - Competing head-on with LangSmith/Braintrust/Phoenix/Langfuse/Weave on dashboards, dataset UIs, and production monitoring.
 - Trying to be "the best LLM judge" or "the most metrics".
 
-## Simple Differentiation Statement
+## Simple differentiation statement
 
 "Prompt eval tools tell you if outputs look good. Observability tools tell you what happened. We block merges when an agent's tool-using behavior, schemas, or budgets regress - deterministically - using record/replay."
 
@@ -298,20 +253,9 @@ Concretely, we stand out by being the best at:
 - Comprehensive tests including integration and golden artifact files.
 - Composite GitHub Action (`action.yml`) for CI runs and artifact upload.
 
-## Current Behavior
+## Optional next steps
 
-- Outputs are written under `runledger_out/<suite>/<run_id>`.
-- Baselines live under `baselines/<suite>.json`.
-- Demo suite runs via `runledger run examples/evals/demo --mode replay`.
-- HTML report is generated automatically with each run.
-
-## What To Continue Implementing (Optional Next Steps)
-
-- Implement `runledger init` templates (currently a stub).
-- Ship a "killer demo" repo with regression branches and a README GIF.
-- Add richer tool plugins and documentation for custom tool modules.
-- Expand metrics/budgets for tokens and cost when agents provide them.
-- Harden redaction patterns based on real data and audit needs.
-- Improve HTML report (more filtering, metrics charts, trace search).
-- Add CI workflow in-repo that uses the composite action.
-- Publish and version releases to PyPI and tag GitHub releases.
+- Publish the demo repo and regression branches.
+- Ship the PyPI release and tag the GitHub Action.
+- Expand templates to Node/TS once v0.1 is stable.
+- Add richer budget metrics when agents report tokens/cost.
