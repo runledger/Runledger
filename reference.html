@@ -5,82 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RunLedger Reference | CLI and Config</title>
     <meta name="description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#020408">
+    <link rel="canonical" href="https://runleder.io/reference.html">
+
+    <meta property="og:title" content="RunLedger Reference | CLI and Config">
+    <meta property="og:description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RunLedger">
+    <meta property="og:url" content="https://runleder.io/reference.html">
+    <meta property="og:image" content="https://runleder.io/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@runledger">
+    <meta name="twitter:title" content="RunLedger Reference | CLI and Config">
+    <meta name="twitter:description" content="CLI commands, suite and case config, and protocol message reference for RunLedger.">
+    <meta name="twitter:image" content="https://runleder.io/og-image.png">
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="site.webmanifest">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="site.css">
+
     <!-- Icons (Pinned Version) -->
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
 
     <!-- Tailwind -->
+    <script src="site.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bg: '#020408',
-                        card: '#0A0C12',
-                        border: '#1E2230',
-                        borderHover: '#30364A',
-                        primary: '#3B82F6',
-                        primaryGlow: 'rgba(59, 130, 246, 0.5)',
-                        accent: '#06B6D4',
-                        textMain: '#F8FAFC',
-                        textMuted: '#94A3B8',
-                        codeBg: '#0D1117'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace']
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.8s ease-out forwards'
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        body {
-            background-color: #020408;
-            color: #F8FAFC;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
-
-        .glass-panel {
-            background: rgba(10, 12, 18, 0.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .feature-card {
-            background: #0A0C12;
-            border: 1px solid #1E2230;
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            border-color: #3B82F6;
-            transform: translateY(-4px);
-            box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.15);
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #020408; }
-        ::-webkit-scrollbar-thumb { background: #1E2230; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-    </style>
 </head>
 <body class="relative">
 
@@ -303,27 +265,16 @@ budgets:
         <div class="max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-textMuted">
             <span>(c) 2025 RunLedger. MIT Licensed.</span>
             <div class="flex items-center gap-6">
-                <a href="security.html" class="hover:text-white transition-colors">Security</a>
-                <a href="community.html#contact" class="hover:text-white transition-colors">Contact</a>
-            </div>
+    <a href="privacy.html" class="hover:text-white transition-colors">Privacy</a>
+    <a href="terms.html" class="hover:text-white transition-colors">Terms</a>
+    <a href="security.html" class="hover:text-white transition-colors">Security</a>
+    <a href="community.html#contact" class="hover:text-white transition-colors">Contact</a>
+</div>
         </div>
     </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('mobile-menu-btn');
-            const menu = document.getElementById('mobile-menu');
-
-            if (btn && menu) {
-                btn.addEventListener('click', () => {
-                    menu.classList.toggle('hidden');
-                });
-            }
-
-            if (window.lucide) {
-                lucide.createIcons();
-            }
-        });
-    </script>
 </body>
 </html>
+
+
+
+

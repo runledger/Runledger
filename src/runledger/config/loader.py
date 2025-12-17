@@ -39,6 +39,17 @@ def load_suite(path: Path) -> SuiteConfig:
     if not suite_path.is_file():
         raise FileNotFoundError(f"Suite file not found: {suite_path}")
     data = _load_yaml(suite_path)
+    agent_command = data.get("agent_command")
+    if isinstance(agent_command, list):
+        resolved_command: list[object] = []
+        for part in agent_command:
+            if isinstance(part, str) and not Path(part).is_absolute():
+                candidate = (suite_path.parent / part).resolve()
+                if candidate.exists():
+                    resolved_command.append(str(candidate))
+                    continue
+            resolved_command.append(part)
+        data["agent_command"] = resolved_command
     assertions = data.get("assertions", [])
     if isinstance(assertions, list):
         _resolve_schema_paths(assertions, suite_path.parent)

@@ -132,9 +132,13 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                     tool_calls += 1
                     tool_calls_by_name[message.name] = tool_calls_by_name.get(message.name, 0) + 1
                     if message.name not in allowed_tools:
+                        allowed_list = ", ".join(sorted(allowed_tools)) or "<none>"
                         failure = Failure(
                             type="tool_not_allowed",
-                            message=f"Tool not allowed: {message.name}",
+                            message=(
+                                f"Tool not allowed: {message.name}. "
+                                f"Allowed tools: {allowed_list}"
+                            ),
                         )
                         break
                     if suite.mode == "replay":
@@ -156,9 +160,13 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                         assert tool_registry is not None
                         tool = tool_registry.get(message.name)
                         if tool is None:
+                            allowed_list = ", ".join(sorted(tool_registry)) or "<none>"
                             failure = Failure(
                                 type="tool_not_registered",
-                                message=f"Tool not registered: {message.name}",
+                                message=(
+                                    f"Tool not registered: {message.name}. "
+                                    f"Registered tools: {allowed_list}"
+                                ),
                             )
                             break
                         try:
