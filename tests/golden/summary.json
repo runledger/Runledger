@@ -1,0 +1,140 @@
+{
+  "aggregates": {
+    "cases_error": 0,
+    "cases_fail": 1,
+    "cases_pass": 1,
+    "cases_total": 2,
+    "metrics": {
+      "cost_usd": {
+        "max": 0.002,
+        "mean": 0.0015,
+        "min": 0.001,
+        "p50": 0.001,
+        "p95": 0.002
+      },
+      "steps": {
+        "max": 4.0,
+        "mean": 3.0,
+        "min": 2.0,
+        "p50": 2.0,
+        "p95": 4.0
+      },
+      "tokens_in": {
+        "max": 20.0,
+        "mean": 15.0,
+        "min": 10.0,
+        "p50": 10.0,
+        "p95": 20.0
+      },
+      "tokens_out": {
+        "max": 40.0,
+        "mean": 30.0,
+        "min": 20.0,
+        "p50": 20.0,
+        "p95": 40.0
+      },
+      "tool_calls": {
+        "max": 2.0,
+        "mean": 1.5,
+        "min": 1.0,
+        "p50": 1.0,
+        "p95": 2.0
+      },
+      "tool_errors": {
+        "max": 1.0,
+        "mean": 0.5,
+        "min": 0.0,
+        "p50": 0.0,
+        "p95": 1.0
+      },
+      "wall_ms": {
+        "max": 200.0,
+        "mean": 150.0,
+        "min": 100.0,
+        "p50": 100.0,
+        "p95": 200.0
+      }
+    },
+    "pass_rate": 0.5
+  },
+  "cases": [
+    {
+      "assertions": {
+        "failed": 0,
+        "total": 2
+      },
+      "cost_usd": 0.001,
+      "failed_assertions": null,
+      "failure_reason": null,
+      "id": "case_a",
+      "replay": {
+        "cassette_path": "cassettes/case_a.jsonl",
+        "cassette_sha256": "abc123"
+      },
+      "status": "pass",
+      "steps": 2,
+      "tokens_in": 10,
+      "tokens_out": 20,
+      "tool_calls": 1,
+      "tool_calls_by_name": {
+        "search_docs": 1
+      },
+      "tool_errors": 0,
+      "tool_errors_by_name": {},
+      "wall_ms": 100
+    },
+    {
+      "assertions": {
+        "failed": 1,
+        "total": 2
+      },
+      "cost_usd": 0.002,
+      "failed_assertions": [
+        {
+          "message": "missing field",
+          "type": "required_fields"
+        }
+      ],
+      "failure_reason": "missing field",
+      "id": "case_b",
+      "replay": {
+        "cassette_path": "cassettes/case_b.jsonl",
+        "cassette_sha256": "def456"
+      },
+      "status": "fail",
+      "steps": 4,
+      "tokens_in": 20,
+      "tokens_out": 40,
+      "tool_calls": 2,
+      "tool_calls_by_name": {
+        "search_docs": 2
+      },
+      "tool_errors": 1,
+      "tool_errors_by_name": {
+        "search_docs": 1
+      },
+      "wall_ms": 200
+    }
+  ],
+  "generated_at": "2025-01-01T00:00:00Z",
+  "run": {
+    "ci": null,
+    "exit_status": "failed",
+    "git_sha": "test-sha",
+    "mode": "replay",
+    "run_id": "20250101-000000-abc123"
+  },
+  "runledger_version": "0.1.0",
+  "schema_version": 1,
+  "suite": {
+    "agent_command": [
+      "python",
+      "agent.py"
+    ],
+    "cases_total": 2,
+    "name": "golden",
+    "suite_config_hash": null,
+    "suite_path": "suite.yaml",
+    "tool_mode": "replay"
+  }
+}

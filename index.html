@@ -234,14 +234,16 @@
             
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center gap-8">
-                <a href="#features" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Features</a>
-                <a href="#demo" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Demo</a>
-                <a href="#integration" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integration</a>
+                <a href="docs.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Docs</a>
+                <a href="reference.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Reference</a>
+                <a href="integrations.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integrations</a>
+                <a href="pricing.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Pricing</a>
+                <a href="changelog.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Changelog</a>
             </div>
 
             <div class="flex items-center gap-4">
-                <a href="#" class="hidden md:block text-sm font-medium text-textMuted hover:text-white transition-colors">Sign In</a>
-                <a href="#" class="px-4 py-2 bg-white text-bg font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors shadow-lg shadow-white/10">
+                <a href="community.html" class="hidden md:block text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
+                <a href="docs.html#quickstart" class="px-4 py-2 bg-white text-bg font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors shadow-lg shadow-white/10">
                     Get Started
                 </a>
                 <!-- Mobile Menu Button -->
@@ -253,11 +255,13 @@
 
         <!-- Mobile Menu (Hidden by default) -->
         <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 w-full bg-[#0A0C12] border-b border-white/5 py-4 px-6 flex flex-col gap-4 shadow-2xl">
-            <a href="#features" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Features</a>
-            <a href="#demo" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Demo</a>
-            <a href="#integration" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integration</a>
+            <a href="docs.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Docs</a>
+            <a href="reference.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Reference</a>
+            <a href="integrations.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integrations</a>
+            <a href="pricing.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Pricing</a>
+            <a href="changelog.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Changelog</a>
             <hr class="border-white/5">
-            <a href="#" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Sign In</a>
+            <a href="community.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
         </div>
     </nav>
 
@@ -304,7 +308,7 @@
                     </a>
                 </div>
 
-                <!-- Hero Schematic -->
+                <!-- Hero Schematic (Upgraded to Flexbox + Correct Animation) -->
                 <div class="max-w-3xl mx-auto border border-border bg-card/50 rounded-xl p-8 backdrop-blur-sm shadow-2xl animate-fade-in" style="animation-delay: 0.2s">
                     <div class="flex items-center justify-between text-xs font-mono text-textMuted mb-6 px-4">
                         <span>INPUT STREAM</span>
@@ -312,34 +316,42 @@
                         <span>PRODUCTION</span>
                     </div>
                     
-                    <div class="relative h-20 flex items-center">
-                        <!-- Connecting Line -->
-                        <div class="absolute top-1/2 left-0 w-full h-px bg-border"></div>
+                    <div class="flex items-center w-full relative">
                         
-                        <!-- Animated Flow Dots -->
-                        <div class="absolute top-1/2 left-0 w-full h-px overflow-hidden">
-                            <div class="absolute top-0 left-0 w-20 h-px bg-gradient-to-r from-transparent via-primary to-transparent animate-[flow_2s_linear_infinite]" style="animation-duration: 2s; width: 100%;"></div>
+                        <!-- Step 1: Agent -->
+                        <div class="flex flex-col items-center gap-2 relative z-10 shrink-0">
+                            <div class="w-12 h-12 bg-card border border-border rounded-lg flex items-center justify-center shadow-lg">
+                                <i data-lucide="bot" class="w-5 h-5 text-textMuted"></i>
+                            </div>
+                            <span class="text-[10px] font-bold font-mono text-textMuted">AGENT</span>
                         </div>
 
-                        <!-- Step 1: Agent -->
-                        <div class="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 bg-card z-10 p-2 border border-border rounded-lg shadow-lg">
-                            <i data-lucide="bot" class="w-5 h-5 text-textMuted"></i>
-                            <span class="text-[10px] font-bold">AGENT</span>
+                        <!-- Connector 1 -->
+                        <div class="flex-1 h-px bg-border relative mx-2">
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style="background-size: 200% 100%;"></div>
                         </div>
 
                         <!-- Step 2: RunLedger Gate -->
-                        <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
+                        <div class="relative z-10 shrink-0">
                             <div class="w-32 h-14 bg-[#0F172A] border border-primary rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.2)] relative">
                                 <div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                                 <span class="text-white font-bold text-sm tracking-wide">RunLedger</span>
                             </div>
                         </div>
 
-                        <!-- Step 3: LLM -->
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 bg-card z-10 p-2 border border-border rounded-lg shadow-lg">
-                            <i data-lucide="server" class="w-5 h-5 text-textMuted"></i>
-                            <span class="text-[10px] font-bold">LLM API</span>
+                        <!-- Connector 2 -->
+                        <div class="flex-1 h-px bg-border relative mx-2">
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style="background-size: 200% 100%; animation-delay: 0.5s;"></div>
                         </div>
+
+                        <!-- Step 3: LLM -->
+                        <div class="flex flex-col items-center gap-2 relative z-10 shrink-0">
+                            <div class="w-12 h-12 bg-card border border-border rounded-lg flex items-center justify-center shadow-lg">
+                                <i data-lucide="server" class="w-5 h-5 text-textMuted"></i>
+                            </div>
+                            <span class="text-[10px] font-bold font-mono text-textMuted">LLM API</span>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -597,7 +609,7 @@
 
                             <!-- Connector 1 -->
                             <div class="flex-1 h-px bg-border relative mx-2">
-                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-[stream_1.5s_linear_infinite]" style="background-size: 200% 100%;"></div>
+                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style="background-size: 200% 100%;"></div>
                             </div>
 
                             <!-- Node 2: RunLedger Proxy -->
@@ -615,7 +627,7 @@
 
                             <!-- Connector 2 -->
                             <div class="flex-1 h-px bg-border relative mx-2">
-                                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-[stream_1.5s_linear_infinite]" style="animation-delay: 0.5s; background-size: 200% 100%;"></div>
+                                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style="animation-delay: 0.5s; background-size: 200% 100%;"></div>
                             </div>
 
                             <!-- Node 3: LLM API -->
@@ -640,10 +652,10 @@
             </div>
             
             <div class="flex justify-center gap-6 relative z-10">
-                <a href="#" class="px-8 py-4 bg-white text-bg font-bold rounded-lg hover:bg-gray-200 transition-colors shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-bg">
+                <a href="docs.html#quickstart" class="px-8 py-4 bg-white text-bg font-bold rounded-lg hover:bg-gray-200 transition-colors shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-bg">
                     Get Started Free
                 </a>
-                <a href="#" class="px-8 py-4 bg-card border border-border text-white font-medium rounded-lg hover:border-textMuted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-bg">
+                <a href="about.html" class="px-8 py-4 bg-card border border-border text-white font-medium rounded-lg hover:border-textMuted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-bg">
                     Read the Manifesto
                 </a>
             </div>
@@ -651,24 +663,67 @@
 
         <!-- Footer -->
         <footer class="border-t border-border bg-card">
-            <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <div class="max-w-7xl mx-auto px-6 py-12 grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
+                <div class="space-y-4">
+                    <a href="index.html" class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        </div>
+                        <span class="font-bold text-white text-sm">RunLedger</span>
+                    </a>
+                    <p class="text-sm text-textMuted">Deterministic evals and replayable tool calls for CI-grade agents.</p>
+                    <div class="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                        ALL SYSTEMS OPERATIONAL
                     </div>
-                    <span class="font-bold text-white text-sm">RunLedger</span>
-                    <span class="text-xs text-textMuted ml-2">© 2025</span>
-                </div>
-                
-                <div class="flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
-                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                    ALL SYSTEMS OPERATIONAL
                 </div>
 
-                <div class="flex gap-8 text-sm text-textMuted">
-                    <a href="#" class="hover:text-white transition-colors">Twitter</a>
-                    <a href="#" class="hover:text-white transition-colors">GitHub</a>
-                    <a href="#" class="hover:text-white transition-colors">Discord</a>
+                <div>
+                    <h3 class="text-sm font-semibold text-white mb-3">Product</h3>
+                    <ul class="space-y-2 text-sm text-textMuted">
+                        <li><a href="index.html" class="hover:text-white transition-colors">Overview</a></li>
+                        <li><a href="index.html#features" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="integrations.html" class="hover:text-white transition-colors">Integrations</a></li>
+                        <li><a href="pricing.html" class="hover:text-white transition-colors">Pricing</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold text-white mb-3">Docs</h3>
+                    <ul class="space-y-2 text-sm text-textMuted">
+                        <li><a href="docs.html" class="hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="docs.html#quickstart" class="hover:text-white transition-colors">Quickstart</a></li>
+                        <li><a href="reference.html" class="hover:text-white transition-colors">CLI Reference</a></li>
+                        <li><a href="reference.html#protocol" class="hover:text-white transition-colors">Protocol</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold text-white mb-3">Community</h3>
+                    <ul class="space-y-2 text-sm text-textMuted">
+                        <li><a href="community.html" class="hover:text-white transition-colors">Community</a></li>
+                        <li><a href="community.html#contributing" class="hover:text-white transition-colors">Contributing</a></li>
+                        <li><a href="community.html#support" class="hover:text-white transition-colors">Support</a></li>
+                        <li><a href="changelog.html" class="hover:text-white transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold text-white mb-3">Company</h3>
+                    <ul class="space-y-2 text-sm text-textMuted">
+                        <li><a href="about.html" class="hover:text-white transition-colors">About</a></li>
+                        <li><a href="about.html#mission" class="hover:text-white transition-colors">Mission</a></li>
+                        <li><a href="about.html#principles" class="hover:text-white transition-colors">Principles</a></li>
+                        <li><a href="security.html" class="hover:text-white transition-colors">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-textMuted">
+                <span>(c) 2025 RunLedger. MIT Licensed.</span>
+                <div class="flex items-center gap-6">
+                    <a href="security.html" class="hover:text-white transition-colors">Security</a>
+                    <a href="community.html#contact" class="hover:text-white transition-colors">Contact</a>
                 </div>
             </div>
         </footer>

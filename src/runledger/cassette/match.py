@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Iterable
 
 from runledger.util.canonical_json import canonical_dumps
+from runledger.util.redaction import redact
 
 from .models import CassetteEntry
 
@@ -10,11 +11,11 @@ from .models import CassetteEntry
 def find_match(
     entries: Iterable[CassetteEntry], tool_name: str, args: dict[str, object]
 ) -> CassetteEntry | None:
-    target_args = canonical_dumps(args)
+    target_args = canonical_dumps(redact(args))
     for entry in entries:
         if entry.tool != tool_name:
             continue
-        if canonical_dumps(entry.args) == target_args:
+        if canonical_dumps(redact(entry.args)) == target_args:
             return entry
     return None
 
@@ -22,10 +23,10 @@ def find_match(
 def format_mismatch_error(
     entries: Iterable[CassetteEntry], tool_name: str, args: dict[str, object]
 ) -> str:
-    target_args = canonical_dumps(args)
+    target_args = canonical_dumps(redact(args))
     available = []
     for entry in entries:
-        preview = canonical_dumps(entry.args)
+        preview = canonical_dumps(redact(entry.args))
         if len(preview) > 160:
             preview = preview[:157] + "..."
         available.append(f"- {entry.tool} args={preview}")

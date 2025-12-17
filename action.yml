@@ -1,0 +1,49 @@
+name: RunLedger
+description: Run RunLedger eval suites in CI and upload artifacts.
+inputs:
+  path:
+    description: Path to the eval suite directory.
+    required: false
+    default: ./evals
+  mode:
+    description: Run mode (replay, record, live).
+    required: false
+    default: replay
+  python-version:
+    description: Python version to use.
+    required: false
+    default: "3.11"
+  package:
+    description: PyPI package to install.
+    required: false
+    default: runledger
+  artifact-path:
+    description: Path pattern to upload as artifacts.
+    required: false
+    default: runledger_out/**
+  upload-artifacts:
+    description: Whether to upload artifacts.
+    required: false
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install RunLedger
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install "${{ inputs.package }}"
+    - name: Run evals
+      shell: bash
+      run: |
+        runledger run "${{ inputs.path }}" --mode "${{ inputs.mode }}"
+    - name: Upload artifacts
+      if: ${{ inputs.upload-artifacts == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: runledger-artifacts
+        path: ${{ inputs.artifact-path }}

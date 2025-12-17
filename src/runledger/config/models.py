@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 class AssertionSpec(BaseModel):
@@ -21,24 +21,37 @@ class BudgetSpec(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class RegressionSpec(BaseModel):
+    min_pass_rate: float | None = Field(
+        default=None,
+        validation_alias=AliasChoices("min_pass_rate", "min_success_rate"),
+    )
+    max_avg_wall_ms_delta_pct: float | None = Field(
+        default=None,
+        validation_alias=AliasChoices("max_avg_wall_ms_delta_pct"),
+    )
+    max_p95_wall_ms_delta_pct: float | None = Field(
+        default=None,
+        validation_alias=AliasChoices("max_p95_wall_ms_delta_pct", "max_p95_wall_ms_increase_pct"),
+    )
+
+    model_config = ConfigDict(extra="allow")
+
+
 class SuiteConfig(BaseModel):
     suite_name: str
     agent_command: list[str]
     mode: Literal["replay", "record", "live"]
     cases_path: str
     tool_registry: list[str]
+    tool_module: str | None = None
     assertions: list[AssertionSpec] = Field(default_factory=list)
     budgets: BudgetSpec | None = None
+    regression: RegressionSpec | None = None
     baseline_path: str | None = None
     output_dir: str | None = None
 
     model_config = ConfigDict(extra="forbid")
-
-    @model_validator(mode="after")
-    def _validate_mode(self) -> "SuiteConfig":
-        if self.mode != "replay":
-            raise ValueError("Only replay mode supported in MVP")
-        return self
 
 
 class CaseConfig(BaseModel):

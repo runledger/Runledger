@@ -5,12 +5,12 @@ import math
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
 import uuid
 
 from runledger import __version__ as runledger_version
 from runledger.config.models import SuiteConfig
 from runledger.runner.models import CaseResult, SuiteResult
+from runledger.util.redaction import redact
 
 
 def create_run_dir(base_dir: Path, suite_name: str, run_id: str | None = None) -> tuple[Path, str]:
@@ -52,17 +52,33 @@ def _case_status(case: CaseResult) -> str:
     return "fail"
 
 
-def write_summary(
-    run_dir: Path,
+def _policy_snapshot(suite: SuiteConfig) -> dict[str, object] | None:
+    if suite.regression is None:
+        return None
+    data = suite.regression.model_dump(exclude_none=True)
+    thresholds: dict[str, object] = {}
+    regression: dict[str, object] = {}
+    if "min_pass_rate" in data:
+        thresholds["min_pass_rate"] = data.pop("min_pass_rate")
+    regression.update(data)
+    snapshot: dict[str, object] = {}
+    if thresholds:
+        snapshot["thresholds"] = thresholds
+    if regression:
+        snapshot["regression"] = regression
+    return snapshot or None
+
+
+def build_summary(
     *,
     suite: SuiteConfig,
     suite_path: Path,
     suite_result: SuiteResult,
     run_id: str,
-) -> Path:
-    summary_path = run_dir / "summary.json"
-    run_dir.mkdir(parents=True, exist_ok=True)
-
+    regression: dict[str, object] | None = None,
+    policy_snapshot: dict[str, object] | None = None,
+    generated_at: datetime | None = None,
+) -> dict[str, object]:
     cases_list = sorted(suite_result.cases, key=lambda case: case.case_id)
     statuses = [_case_status(case) for case in cases_list]
     cases_total = len(cases_list)
@@ -86,10 +102,15 @@ def write_summary(
         exit_status = "error"
     elif cases_fail:
         exit_status = "failed"
+    elif regression is not None and not regression.get("passed", True):
+        exit_status = "failed"
 
-    summary = {
+    if generated_at is None:
+        generated_at = datetime.now(timezone.utc)
+
+    summary: dict[str, object] = {
         "schema_version": 1,
-        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "generated_at": generated_at.isoformat().replace("+00:00", "Z"),
         "runledger_version": runledger_version,
         "run": {
             "run_id": run_id,
@@ -142,8 +163,43 @@ def write_summary(
         ],
     }
 
+    if policy_snapshot is None:
+        policy_snapshot = _policy_snapshot(suite)
+    if policy_snapshot is not None:
+        summary["policy_snapshot"] = policy_snapshot
+
+    if regression is not None:
+        summary["regression"] = regression
+
+    return summary
+
+
+def write_summary(
+    run_dir: Path,
+    *,
+    suite: SuiteConfig,
+    suite_path: Path,
+    suite_result: SuiteResult,
+    run_id: str,
+    regression: dict[str, object] | None = None,
+    policy_snapshot: dict[str, object] | None = None,
+    generated_at: datetime | None = None,
+) -> Path:
+    summary_path = run_dir / "summary.json"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    summary = build_summary(
+        suite=suite,
+        suite_path=suite_path,
+        suite_result=suite_result,
+        run_id=run_id,
+        regression=regression,
+        policy_snapshot=policy_snapshot,
+        generated_at=generated_at,
+    )
+
     summary_path.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+        json.dumps(redact(summary), indent=2, ensure_ascii=False, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return summary_path

@@ -12,7 +12,7 @@ Below is a prioritized backlog Codex can execute as a sequence of PRs. Each task
 - Schema paths are resolved relative to the suite directory.
 - Cassette paths are resolved relative to the suite directory.
 - Demo suite lives under examples/evals/demo and runs via `runledger run examples/evals/demo`.
-- Artifacts are written under `.agentci/runs/<suite>/<timestamp>`.
+- Artifacts are written under `runledger_out/<suite>/<run_id>`.
 
 ---
 
@@ -516,7 +516,7 @@ Each line is an entry:
 
 # Phase 3 — Baselines + regression gating (merge gate value)
 
-## Task 17 — Define baseline data model and write/read baseline files
+## Task 17 [DONE] — Define baseline data model and write/read baseline files
 
 **Goal:** A stable baseline format for diffs and CI gating.
 
@@ -532,7 +532,7 @@ Each line is an entry:
 
 ---
 
-## Task 18 — Diff engine (run vs baseline) + threshold checks
+## Task 18 [DONE] — Diff engine (run vs baseline) + threshold checks
 
 **Goal:** Fail CI when regressions exceed configured thresholds.
 
@@ -549,7 +549,7 @@ Each line is an entry:
 
 ---
 
-## Task 19 — CLI commands: `diff` + `baseline promote`
+## Task 19 [DONE] — CLI commands: `diff` + `baseline promote`
 
 **Goal:** Explicit workflows for baseline management.
 
@@ -567,7 +567,7 @@ Each line is an entry:
 
 # Phase 4 — Record mode + tool registry (local authoring workflow)
 
-## Task 20 — Tool registry interface + built-in mock tools
+## Task 20 [DONE] — Tool registry interface + built-in mock tools
 
 **Goal:** Enable live tool execution in record mode while staying framework-agnostic.
 
@@ -586,7 +586,7 @@ Each line is an entry:
 
 ---
 
-## Task 21 — Record mode: write cassette entries deterministically
+## Task 21 [DONE] — Record mode: write cassette entries deterministically
 
 **Goal:** Record tool results for later replay.
 
@@ -608,7 +608,7 @@ Each line is an entry:
 
 # Phase 5 — HTML report (static, shareable)
 
-## Task 22 — Report data model + Jinja2 report.html
+## Task 22 [DONE] — Report data model + Jinja2 report.html
 
 **Goal:** A single static HTML that debugs failures and sells the tool.
 
@@ -627,7 +627,7 @@ Each line is an entry:
 
 # Phase 6 — GitHub Action (adoption)
 
-## Task 23 — Composite GitHub Action
+## Task 23 [DONE] — Composite GitHub Action
 
 **Goal:** One snippet runs in PR CI, uploads artifacts, and gates merges.
 
@@ -646,7 +646,7 @@ Each line is an entry:
 
 # Cross-cutting hardening tasks (do alongside phases)
 
-## Task 24 — Redaction + secret scanning in artifacts
+## Task 24 [DONE] — Redaction + secret scanning in artifacts
 
 **Goal:** Prevent accidental secret leakage.
 
@@ -668,7 +668,7 @@ Each line is an entry:
 
 ---
 
-## Task 25 — Golden-file tests for artifact stability
+## Task 25 [DONE] — Golden-file tests for artifact stability
 
 **Goal:** Keep output formats stable.
 
@@ -691,9 +691,5 @@ Each line is an entry:
 4. Tasks **9–11** (assertions + artifacts + CLI run)
 5. Tasks **12–13** (example agent + integration tests)
 6. Then Phase 2/3/4/5/6 in order.
-
-
-
-
 
 

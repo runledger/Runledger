@@ -42,6 +42,12 @@ def load_suite(path: Path) -> SuiteConfig:
     assertions = data.get("assertions", [])
     if isinstance(assertions, list):
         _resolve_schema_paths(assertions, suite_path.parent)
+    baseline_path = data.get("baseline_path")
+    if isinstance(baseline_path, str) and not Path(baseline_path).is_absolute():
+        data["baseline_path"] = str((suite_path.parent / baseline_path).resolve())
+    output_dir = data.get("output_dir")
+    if isinstance(output_dir, str) and not Path(output_dir).is_absolute():
+        data["output_dir"] = str((suite_path.parent / output_dir).resolve())
     return SuiteConfig.model_validate(data)
 
 
