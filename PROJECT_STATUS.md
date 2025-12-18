@@ -14,8 +14,8 @@
 - Deliverable 4 (dogfood CI): ✅ workflows in place and running on org (CI green on main).
 
 ## Next steps
-- Add README GIF/screenshot + optional CI badge in demo repo.
-- Optional: expand templates (Node/TS) and richer budgets when agents report tokens/cost.
+- (Optional) Add GIF/screenshot to demo README.
+- (Optional) Expand templates (Node/TS) and richer budgets when agents report tokens/cost.
 
 ---
 
