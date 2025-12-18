@@ -39,7 +39,11 @@ runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 
 ## What it looks like in a PR
 
-![RunLedger blocks merges on regressions](docs/pr-failure-log.png)
+**PR blocked (checks fail):**
+![PR blocked](docs/pr-failing-checks.png)
+
+**Why it failed (RunLedger output):**
+![Failure reason](docs/pr-failure-log.png)
 
 Artifacts are written to `runledger_out/<suite>/<run_id>/`:
 
