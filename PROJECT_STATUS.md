@@ -4,19 +4,18 @@
 - Core engine is complete with replay/record, assertions, budgets, baselines, diffs, report, and tests.
 - `runledger init` now generates a replay-ready suite, cassette, baseline, and agent stub.
 - This repo has CI + badges; PyPI `0.1.0` is published; action tag `v0.1` is available.
-- Demo repo is published (`runledger/runledger-demo`) with regression branches.
-- Release workflow is live and successfully ran on `v0.1.0`.
+- Demo repo is published (`runledger/runledger-demo`) with regression branches and CI running on all branches.
+- Release workflow is live and published `v0.1.0`.
 
 ## Deliverable status (v0.1 launch quality)
-- Deliverable 1 (init + green run): done; clean venv + PyPI verification passed.
-- Deliverable 2 (killer demo repo): repo + branches published; CI enabled on all branches; waiting to confirm runs (main green, regressions red) and add GIF/screenshot.
-- Deliverable 3 (release): done; v0.1.0 published to PyPI, action tagged v0.1; clean install verified.
-- Deliverable 4 (dogfood CI): workflows in place; need to confirm org CI runs green on PRs.
+- Deliverable 1 (init + green run): ✅ complete; clean venv + PyPI verification passed.
+- Deliverable 2 (killer demo repo): ✅ repo + regression branches published; CI runs on all branches.
+- Deliverable 3 (release): ✅ v0.1.0 published to PyPI, action tagged v0.1; clean install verified.
+- Deliverable 4 (dogfood CI): ✅ workflows in place and running on org.
 
-## Next steps (to close v0.1)
-1. Demo repo CI: trigger runs on `main` (expect pass) and regression branches (expect fail with clear reason).
-2. Add README GIF/screenshot for demo repo; optional CI badge there.
-3. Confirm org CI (runledger/Runledger) runs green on PRs; add badge if desired.
+## Next steps
+- Add README GIF/screenshot + optional CI badge in demo repo.
+- Optional: expand templates (Node/TS) and richer budgets when agents report tokens/cost.
 
 ---
 
