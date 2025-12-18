@@ -18,6 +18,13 @@ Expected outcomes:
 - `regression-tools`: red (tool contract/allowlist failure)
 - `regression-budget`: red (budget gate `max_tool_calls: 0`)
 
+## Screenshots / report
+
+![PR blocked](https://raw.githubusercontent.com/runledger/Runledger/main/docs/pr-failing-checks.png)
+![Failure reason](https://raw.githubusercontent.com/runledger/Runledger/main/docs/pr-failure-log.png)
+
+Sample report snapshot: see the failure log above or open any CI run artifact to view `report.html`.
+
 ## Regression branches to create
 
 1. `regression-schema`
