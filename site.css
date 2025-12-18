@@ -10,8 +10,10 @@ body {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    top: 0;
+    bottom: 0;
     width: 2px;
-    height: 100%;
+    overflow: hidden;
     background: linear-gradient(to bottom,
         transparent,
         #1E2230 10%,
