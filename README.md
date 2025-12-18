@@ -14,16 +14,33 @@ RunLedger is a **CI harness**, not an "eval metrics framework":
 
 ## Why RunLedger (in one minute)
 
-Agents regress silently:
-- prompt changes
-- tool signature drift
-- model updates
-- external APIs / web volatility
+### The problem
 
-RunLedger stops that by:
-- **recording tool calls once** and **replaying in CI**
-- enforcing **contracts** (schema, tool allowlist/order, budgets)
-- gating PRs via **baselines + diffs** (exit codes + JUnit + HTML report)
+Agents regress silently. Standard unit tests can't catch:
+
+- prompt drift that breaks tool schemas
+- hallucinated tool arguments
+- latency spikes or budget overruns
+- flaky external APIs causing false negatives in CI
+
+### The solution
+
+RunLedger stops regressions by shifting from "vibes-based" evaluation to deterministic contracts:
+
+- **Record & replay:** record tool outputs once; replay them in CI for instant, stable tests.
+- **Strict contracts:** enforce tool schemas, calling order, and allowlists.
+- **Budget gating:** fail PRs automatically if execution time, steps, or costs exceed defined limits.
+
+### RunLedger vs evaluation frameworks
+
+| Feature | DeepEval / Ragas / TruLens | RunLedger |
+| --- | --- | --- |
+| Primary goal | Scoring quality ("Is this answer helpful?") | Shipping safely ("Did we break the build?") |
+| Tool execution | Often live or mocked manually | Record/replay cassettes (automatic mocking) |
+| Pass/fail criteria | LLM-graded scores (0.0 - 1.0) | Hard contracts (schema, budgets, order) |
+| Best for | Improving prompt quality | Preventing regressions in production |
+
+Note: you can use both. Use DeepEval to calculate scores, and wrap your agent in RunLedger to ensure it runs deterministically in CI.
 
 ---
 
@@ -353,7 +370,7 @@ RunLedger is MIT-licensed and free to self-host. For teams that want done-for-yo
 - Hardening Sprint (fixed-scope implementation to get deterministic CI running fast)
 - Assurance (monthly retainer for cassette and case updates, budget tuning, and incident response)
 
-Contact: [runleder.io/community.html#contact](https://runleder.io/community.html#contact)
+Contact: [runledger.io/community.html#contact](https://runledger.io/community.html#contact)
 
 ---
 
