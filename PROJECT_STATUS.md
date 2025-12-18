@@ -130,8 +130,8 @@ This repo proves the product.
 
 ## Acceptance criteria
 
-- [ ] Every PR runs RunLedger on itself and produces artifacts
-- [ ] CI failures are readable without local repro
+- [x] Every PR runs RunLedger on itself and produces artifacts
+- [x] CI failures are readable without local repro
 
 ---
 
