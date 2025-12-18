@@ -37,6 +37,10 @@ runledger baseline promote --from <RUN_DIR> --to baselines/demo.json
 runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 ```
 
+## What it looks like in a PR
+
+![RunLedger blocks merges on regressions](docs/pr-failure-log.png)
+
 Artifacts are written to `runledger_out/<suite>/<run_id>/`:
 
 - `report.html`, `summary.json`, `junit.xml`, `run.jsonl`
