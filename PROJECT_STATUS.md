@@ -3,21 +3,20 @@
 ## Summary
 - Core engine is complete with replay/record, assertions, budgets, baselines, diffs, report, and tests.
 - `runledger init` now generates a replay-ready suite, cassette, baseline, and agent stub.
-- This repo has a CI workflow and README badges.
-- Demo repo scaffold exists under `demo_repo/`.
-- Release workflow and `CHANGELOG.md` exist; tagging and publishing are still pending.
+- This repo has CI + badges; PyPI `0.1.0` is published; action tag `v0.1` is available.
+- Demo repo is published (`runledger/runledger-demo`) with regression branches.
+- Release workflow is live and successfully ran on `v0.1.0`.
 
 ## Deliverable status (v0.1 launch quality)
-- Deliverable 1 (init + green run): done in repo, clean-venv verification done; pipx verify pending release.
-- Deliverable 2 (killer demo repo): in progress; scaffold exists, regression branches and GIF pending.
-- Deliverable 3 (release): in progress; version set and workflow ready, tagging and publish pending.
-- Deliverable 4 (dogfood CI): done in repo, pending confirmation from a GitHub CI run.
+- Deliverable 1 (init + green run): done; clean venv + PyPI verification passed.
+- Deliverable 2 (killer demo repo): repo + branches published; CI enabled on all branches; waiting to confirm runs (main green, regressions red) and add GIF/screenshot.
+- Deliverable 3 (release): done; v0.1.0 published to PyPI, action tagged v0.1; clean install verified.
+- Deliverable 4 (dogfood CI): workflows in place; need to confirm org CI runs green on PRs.
 
 ## Next steps (to close v0.1)
-1. Clean-env verify: `pipx install runledger`, `runledger init`, `runledger run ./evals/demo --mode replay --baseline ./baselines/<suite>.json`.
-2. Demo repo: publish separate repo, add regression branches (schema/tools/budget), add README GIF/screenshot.
-3. Release: tag `v0.1.0`, publish to PyPI, tag action, confirm release notes include demo repo link.
-4. CI: confirm workflow runs green and uploads artifacts.
+1. Demo repo CI: trigger runs on `main` (expect pass) and regression branches (expect fail with clear reason).
+2. Add README GIF/screenshot for demo repo; optional CI badge there.
+3. Confirm org CI (runledger/Runledger) runs green on PRs; add badge if desired.
 
 ---
 
