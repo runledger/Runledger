@@ -377,7 +377,7 @@
                 },
                 budget: {
                     title: "Budget Exceeded",
-                    file: "runledger.config.json",
+                    file: "suite.yaml",
                     diff: (
                         <div className="font-mono text-xs sm:text-sm leading-7 whitespace-pre">
                              <div className="flex text-gray-500 select-none"><span className="w-8 text-right mr-4 opacity-30">12</span>"budgets": {'{'}</div>
@@ -397,7 +397,7 @@
                 },
                 contract: {
                     title: "Strict Order",
-                    file: "traces/trace_08a.log",
+                    file: "runledger_out/demo/run.jsonl",
                     diff: (
                         <div className="font-mono text-xs sm:text-sm leading-7 whitespace-pre">
                             <div className="flex text-gray-500 select-none"><span className="w-8 text-right mr-4 opacity-30">1</span>// Contract: rag_pipeline</div>
@@ -428,7 +428,7 @@
                                 <h2 className="text-3xl md:text-5xl font-bold mb-4">Regression Viewer</h2>
                                 <p className="text-textMuted max-w-2xl mx-auto text-lg">
                                     Don't just see a failed build. See exactly <span className="text-white">why</span>. 
-                                    RunLedger provides intelligent diffs specifically designed for LLM traces.
+                                    RunLedger records tool calls and outputs, then renders deterministic diffs for contracts, budgets, and replay mismatches.
                                 </p>
                                 <div className="mt-6 flex justify-center">
                                     <a
@@ -779,7 +779,7 @@
                             <div className="max-w-3xl mx-auto border border-border bg-card/50 rounded-xl p-8 backdrop-blur-sm shadow-2xl">
                                 <div className="flex items-center justify-between text-xs font-mono text-textMuted mb-6 px-4">
                                     <span>INPUT STREAM</span>
-                                    <span>INTERCEPTION LAYER</span>
+                                    <span>REPLAY GATE</span>
                                     <span>PRODUCTION</span>
                                 </div>
                                 
@@ -815,7 +815,7 @@
                                         <div className="w-12 h-12 bg-card border border-border rounded-lg flex items-center justify-center shadow-lg">
                                             <Icon name="server" className="w-5 h-5 text-textMuted" />
                                         </div>
-                                        <span className="text-[10px] font-bold font-mono text-textMuted">LLM API</span>
+                                        <span className="text-[10px] font-bold font-mono text-textMuted">TOOLS + APIs</span>
                                     </div>
                                 </div>
                             </div>
@@ -966,15 +966,15 @@
 
         const Integration = () => (
             <section id="integration" className="max-w-5xl mx-auto px-6 mb-40">
-                <FadeIn>
-                    <div className="bg-card border border-border rounded-2xl p-12 relative overflow-hidden">
+                        <FadeIn>
+                            <div className="bg-card border border-border rounded-2xl p-12 relative overflow-hidden">
                         <div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
                         
-                        <div className="relative z-10 flex flex-col md:flex-row items-center gap-16">
+                            <div className="relative z-10 flex flex-col md:flex-row items-center gap-16">
                             <div className="flex-1">
-                                <h2 className="text-2xl font-bold text-white mb-4">Drop-in Middleware</h2>
+                                <h2 className="text-2xl font-bold text-white mb-4">Drop-in CLI runner</h2>
                                 <p className="text-textMuted mb-6">
-                                    RunLedger works with any agent framework. Wrap your agent as a subprocess runner--minimal changes.
+                                    RunLedger runs your agent as a subprocess. Point it at your agent command and keep your code unchanged.
                                 </p>
                                 <ul className="space-y-2 font-mono text-xs text-textMain">
                                     {['LangChain / LangGraph', 'LlamaIndex', 'AutoGen / CrewAI', 'Raw Python / Node.js'].map((item, i) => (
@@ -988,25 +988,25 @@
 
                             <div className="flex-1 flex justify-center w-full">
                                 <div className="flex items-center w-full max-w-md relative">
-                                    {/* Client */}
+                                    {/* Agent */}
                                     <div className="flex flex-col items-center gap-3 relative z-10 shrink-0">
                                         <div className="w-16 h-16 bg-bg border border-border rounded-xl flex items-center justify-center shadow-lg group hover:border-textMuted transition-colors">
                                             <Icon name="box" className="w-6 h-6 text-textMuted group-hover:text-white transition-colors" />
                                         </div>
-                                        <span className="font-mono text-[10px] text-textMuted uppercase tracking-wider">Client</span>
+                                        <span className="font-mono text-[10px] text-textMuted uppercase tracking-wider">Agent</span>
                                     </div>
 
                                     <div className="flex-1 h-px bg-border relative mx-2">
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style={{backgroundSize: '200% 100%'}}></div>
                                     </div>
 
-                                    {/* Proxy */}
+                                    {/* Runner */}
                                     <div className="flex flex-col items-center gap-3 relative z-10 shrink-0">
                                         <div className="w-20 h-20 bg-[#0F172A] border border-primary rounded-xl flex items-center justify-center shadow-[0_0_40px_rgba(59,130,246,0.15)] relative animate-float">
                                             <div className="absolute inset-0 bg-primary/10 rounded-xl animate-pulse-slow"></div>
                                             <div className="text-center relative z-10">
                                                 <div className="font-bold text-white text-base tracking-tight">RL</div>
-                                                <div className="text-[9px] text-primary font-mono mt-0.5 tracking-widest">PROXY</div>
+                                                <div className="text-[9px] text-primary font-mono mt-0.5 tracking-widest">RUNNER</div>
                                             </div>
                                         </div>
                                         <span className="font-mono text-[10px] text-primary font-bold uppercase tracking-wider">RunLedger</span>
@@ -1016,12 +1016,12 @@
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style={{animationDelay: '0.5s', backgroundSize: '200% 100%'}}></div>
                                     </div>
 
-                                    {/* API */}
+                                    {/* Tools/API */}
                                     <div className="flex flex-col items-center gap-3 relative z-10 shrink-0">
                                         <div className="w-16 h-16 bg-bg border border-border rounded-xl flex items-center justify-center shadow-lg group hover:border-textMuted transition-colors">
                                             <Icon name="cloud" className="w-6 h-6 text-textMuted group-hover:text-white transition-colors" />
                                         </div>
-                                        <span className="font-mono text-[10px] text-textMuted uppercase tracking-wider">LLM API</span>
+                                        <span className="font-mono text-[10px] text-textMuted uppercase tracking-wider">Tools + APIs</span>
                                     </div>
                                 </div>
                             </div>
