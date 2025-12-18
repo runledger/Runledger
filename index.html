@@ -4,706 +4,239 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RunLedger | The CI Standard for Agents</title>
-    <meta name="description" content="CI harness for tool-using agents with deterministic replay, hard contracts, baselines, and PR gates.">
-    <meta name="robots" content="index,follow">
-    <meta name="theme-color" content="#020408">
-    <link rel="canonical" href="https://runleder.io/">
-
-    <meta property="og:title" content="RunLedger | The CI Standard for Agents">
-    <meta property="og:description" content="CI harness for tool-using agents with deterministic replay, hard contracts, baselines, and PR gates.">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="RunLedger">
-    <meta property="og:url" content="https://runleder.io/">
-    <meta property="og:image" content="https://runleder.io/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@runledger">
-    <meta name="twitter:title" content="RunLedger | The CI Standard for Agents">
-    <meta name="twitter:description" content="CI harness for tool-using agents with deterministic replay, hard contracts, baselines, and PR gates.">
-    <meta name="twitter:image" content="https://runleder.io/og-image.png">
-
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
-    <link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
-    <link rel="manifest" href="site.webmanifest">
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="site.css">
-
-    <!-- Icons (Pinned Version) -->
-    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
-
-    <!-- Three.js (Pinned Version) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
-    <!-- Tailwind -->
-    <script src="site.js"></script>
+    <meta name="description" content="Turn probabilistic agent behavior into deterministic, merge-gated CI. Record tool calls once, replay forever.">
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="relative">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- 3D Background for Hero -->
-    <div id="three-canvas" aria-hidden="true"></div>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 glass-panel h-16">
-        <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                    </svg>
-                </div>
-                <span class="font-bold tracking-tight text-white text-lg">RunLedger</span>
-            </div>
-            
-            <!-- Desktop Menu -->
-                        <div class="hidden md:flex items-center gap-8">
-                <a href="docs.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Docs</a>
-                <a href="reference.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Reference</a>
-                <a href="integrations.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integrations</a>
-                <a href="pricing.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Pricing</a>
-                <a href="changelog.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Changelog</a>
-                <a href="https://github.com/runledger" class="text-sm font-medium text-textMuted hover:text-white transition-colors">GitHub</a>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <a href="community.html" class="hidden md:block text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
-                <a href="docs.html#quickstart" class="px-4 py-2 bg-white text-bg font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors shadow-lg shadow-white/10">
-                    Get Started
-                </a>
-                <!-- Mobile Menu Button -->
-                <button id="mobile-menu-btn" class="md:hidden text-textMuted hover:text-white focus:outline-none" aria-label="Toggle menu">
-                    <i data-lucide="menu" class="w-6 h-6"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile Menu (Hidden by default) -->
-                <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 w-full bg-[#0A0C12] border-b border-white/5 py-4 px-6 flex flex-col gap-4 shadow-2xl">
-            <a href="docs.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Docs</a>
-            <a href="reference.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Reference</a>
-            <a href="integrations.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Integrations</a>
-            <a href="pricing.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Pricing</a>
-            <a href="changelog.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Changelog</a>
-            <a href="https://github.com/runledger" class="text-sm font-medium text-textMuted hover:text-white transition-colors">GitHub</a>
-            <hr class="border-white/5">
-            <a href="community.html" class="text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="relative z-10 pt-32">
-        
-        <!-- The Living Line -->
-        <div class="hidden lg:block living-line"></div>
-
-        <!-- HERO SECTION -->
-        <section id="hero" class="max-w-7xl mx-auto px-6 mb-32 relative">
-            <div class="text-center relative z-10 max-w-4xl mx-auto">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 mb-8 animate-fade-in backdrop-blur-md">
-                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                    <span class="text-xs font-semibold text-primary tracking-wide">CI FOR TOOL-USING AGENTS</span>
-                </div>
-
-                <h1 class="text-5xl md:text-7xl font-bold text-white tracking-tight mb-8 leading-[1.1]">
-                    RunLedger<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">CI for tool-using agents.</span>
-                </h1>
-                
-                <p class="text-xl text-white font-medium leading-relaxed mb-4 max-w-2xl mx-auto">
-                    Control the chaos of probabilistic software.
-                </p>
-                
-                <p class="text-lg text-textMuted leading-relaxed mb-6 max-w-2xl mx-auto">
-                    RunLedger is the CI harness for tool-using agents. Record tool calls once, replay in CI, and gate PRs with hard contracts, budgets, and baselines.
-                </p>
-                <p class="text-sm text-textMuted leading-relaxed mb-12 max-w-2xl mx-auto">
-                    Not an eval metrics framework. Keep DeepEval for scoring; RunLedger makes agent tests deterministic and merge-gated.
-                </p>
-
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
-                    <button class="relative group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-bg rounded-lg" onclick="copyCmd()" aria-label="Copy install command">
-                        <div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
-                        <div class="relative h-14 px-6 bg-card rounded-lg flex items-center gap-4 border border-border">
-                            <span class="font-mono text-sm text-textMuted select-none">$</span>
-                            <span class="font-mono text-sm text-white">pipx install runledger</span>
-                            <i data-lucide="copy" class="w-4 h-4 text-textMuted group-hover:text-white transition-colors"></i>
-                        </div>
-                    </button>
-                    <a href="https://github.com/runledger" class="h-14 px-8 bg-white text-bg font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-bg">
-                        View Live Demo
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </a>
-                </div>
-
-                <!-- Hero Schematic (Upgraded to Flexbox + Correct Animation) -->
-                <div class="max-w-3xl mx-auto border border-border bg-card/50 rounded-xl p-8 backdrop-blur-sm shadow-2xl animate-fade-in" style="animation-delay: 0.2s">
-                    <div class="flex items-center justify-between text-xs font-mono text-textMuted mb-6 px-4">
-                        <span>INPUT STREAM</span>
-                        <span>INTERCEPTION LAYER</span>
-                        <span>PRODUCTION</span>
-                    </div>
-                    
-                    <div class="flex items-center w-full relative">
-                        
-                        <!-- Step 1: Agent -->
-                        <div class="flex flex-col items-center gap-2 relative z-10 shrink-0">
-                            <div class="w-12 h-12 bg-card border border-border rounded-lg flex items-center justify-center shadow-lg">
-                                <i data-lucide="bot" class="w-5 h-5 text-textMuted"></i>
-                            </div>
-                            <span class="text-[10px] font-bold font-mono text-textMuted">AGENT</span>
-                        </div>
-
-                        <!-- Connector 1 -->
-                        <div class="flex-1 h-px bg-border relative mx-2">
-                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style="background-size: 200% 100%;"></div>
-                        </div>
-
-                        <!-- Step 2: RunLedger Gate -->
-                        <div class="relative z-10 shrink-0">
-                            <div class="w-32 h-14 bg-[#0F172A] border border-primary rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.2)] relative">
-                                <div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                                <span class="text-white font-bold text-sm tracking-wide">RunLedger</span>
-                            </div>
-                        </div>
-
-                        <!-- Connector 2 -->
-                        <div class="flex-1 h-px bg-border relative mx-2">
-                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style="background-size: 200% 100%; animation-delay: 0.5s;"></div>
-                        </div>
-
-                        <!-- Step 3: LLM -->
-                        <div class="flex flex-col items-center gap-2 relative z-10 shrink-0">
-                            <div class="w-12 h-12 bg-card border border-border rounded-lg flex items-center justify-center shadow-lg">
-                                <i data-lucide="server" class="w-5 h-5 text-textMuted"></i>
-                            </div>
-                            <span class="text-[10px] font-bold font-mono text-textMuted">LLM API</span>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VISUAL EVIDENCE SECTION -->
-        <section id="demo" class="max-w-7xl mx-auto px-6 mb-40 relative">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
-                
-                <!-- Left: Comparison UI -->
-                <div class="relative group">
-                    <div class="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-                    <div class="relative rounded-xl border border-border bg-[#05070A] overflow-hidden shadow-2xl">
-                        
-                        <!-- Header -->
-                        <div class="h-10 bg-[#0F1117] border-b border-border flex items-center px-4 justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-mono text-textMuted">regressions.diff</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-[10px] text-red-500 font-mono font-bold">FAIL</div>
-                            </div>
-                        </div>
-
-                        <!-- Diff Content -->
-                        <div class="p-0 font-mono text-xs leading-6">
-                            <!-- Baseline -->
-                            <div class="grid grid-cols-2 border-b border-border/50">
-                                <div class="p-2 text-center text-[10px] text-textMuted border-r border-border/50 bg-[#0A0C12]">BASELINE (main)</div>
-                                <div class="p-2 text-center text-[10px] text-textMuted bg-[#0A0C12]">CURRENT (PR #124)</div>
-                            </div>
-                            
-                            <div class="grid grid-cols-2">
-                                <!-- Left Code -->
-                                <div class="p-4 border-r border-border/50 bg-[#0D1117] overflow-x-auto">
-                                    <div class="opacity-50">1  {</div>
-                                    <div>2    <span class="token-key">"tool"</span>: <span class="token-str">"stripe_refund"</span>,</div>
-                                    <div>3    <span class="token-key">"args"</span>: {</div>
-                                    <div>4      <span class="token-key">"id"</span>: <span class="token-str">"ch_1Mc..."</span>,</div>
-                                    <div class="bg-diffDel text-diffDelText -mx-4 px-4 border-l-2 border-diffDelText">5      <span class="token-key">"reason"</span>: <span class="token-str">"fraud"</span></div>
-                                    <div class="opacity-50">6    }</div>
-                                    <div class="opacity-50">7  }</div>
-                                </div>
-                                
-                                <!-- Right Code -->
-                                <div class="p-4 bg-[#0D1117] overflow-x-auto relative">
-                                    <div class="opacity-50">1  {</div>
-                                    <div>2    <span class="token-key">"tool"</span>: <span class="token-str">"stripe_refund"</span>,</div>
-                                    <div>3    <span class="token-key">"args"</span>: {</div>
-                                    <div>4      <span class="token-key">"id"</span>: <span class="token-str">"ch_1Mc..."</span>,</div>
-                                    
-                                    <!-- Missing line visual -->
-                                    <div class="h-6 w-full bg-border/20 my-0.5 flex items-center justify-center">
-                                        <span class="text-[10px] text-textMuted opacity-50">MISSING ARGUMENT</span>
-                                    </div>
-                                    
-                                    <div class="opacity-50">6    }</div>
-                                    <div class="opacity-50">7  }</div>
-
-                                    <!-- Floating Tooltip -->
-                                    <div class="absolute top-20 right-4 bg-card border border-red-500/30 shadow-2xl p-3 rounded-lg animate-pulse-slow max-w-[180px]">
-                                        <div class="flex items-center gap-2 mb-1 text-red-400">
-                                            <i data-lucide="alert-triangle" class="w-3 h-3"></i>
-                                            <span class="text-[10px] font-bold">Schema Error</span>
-                                        </div>
-                                        <p class="text-[10px] text-textMuted">Field 'reason' is required in StripeRefundSchema.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right: Explanation -->
-                <div class="pl-8 lg:pl-0">
-                    <h3 class="text-primary font-mono text-sm font-semibold tracking-wide uppercase mb-4">Regression Blocking</h3>
-                    <h2 class="text-3xl font-bold text-white mb-6">Catch drift before it costs you.</h2>
-                    <p class="text-textMuted leading-relaxed mb-8">
-                        LLMs are probabilistic, but your tool interfaces are strict. RunLedger enforces hard contracts (schema, tool order, budgets) and gates PRs against known baselines.
-                    </p>
-                    
-                    <ul class="space-y-6">
-                        <li class="flex items-start gap-4">
-                            <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                                <i data-lucide="git-branch" class="w-4 h-4 text-primary"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-white font-medium mb-1">Baseline diffs</h4>
-                                <p class="text-sm text-textMuted">Compare tool calls and outputs to a promoted baseline and fail on regressions.</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-4">
-                            <div class="w-8 h-8 rounded bg-accent/10 flex items-center justify-center shrink-0">
-                                <i data-lucide="shield-check" class="w-4 h-4 text-accent"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-white font-medium mb-1">Contract enforcement</h4>
-                                <p class="text-sm text-textMuted">Fail the build if schema, tool order, or budgets are violated.</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- RUNLEDGER VS DEEPEVAL -->
-        <section id="compare" class="max-w-6xl mx-auto px-6 mb-40">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-white mb-4">RunLedger vs DeepEval</h2>
-                <p class="text-textMuted">Scoring and CI gates are different jobs. RunLedger is the harness for deterministic CI.</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="feature-card p-6 rounded-xl">
-                    <div class="text-xs font-mono text-textMuted mb-3">EVAL METRICS</div>
-                    <h3 class="text-lg font-bold text-white mb-2">DeepEval (Confident AI)</h3>
-                    <p class="text-sm text-textMuted mb-4">Evaluation metrics and model-graded scoring for quality and benchmarking.</p>
-                    <ul class="space-y-2 text-sm text-textMuted">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-textMuted mt-0.5"></i>
-                            Faithfulness, relevancy, and other scoring suites
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-textMuted mt-0.5"></i>
-                            Benchmark workflows and dataset management
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-textMuted mt-0.5"></i>
-                            Optional hosted platform for evaluations
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="feature-card p-6 rounded-xl border border-primary/40">
-                    <div class="text-xs font-mono text-primary mb-3">CI HARNESS</div>
-                    <h3 class="text-lg font-bold text-white mb-2">RunLedger</h3>
-                    <p class="text-sm text-textMuted mb-4">Deterministic CI for tool-using agents with replay, contracts, and PR gates.</p>
-                    <ul class="space-y-2 text-sm text-textMuted">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i>
-                            Record tool calls once and replay in CI
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i>
-                            Hard contracts for schema, tool order, and budgets
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i>
-                            Baselines and regression gates with JUnit and HTML
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <p class="text-sm text-textMuted text-center mt-6">Use both: keep DeepEval scoring and run it inside RunLedger's deterministic harness.</p>
-        </section>
-
-        <!-- FEATURES GRID -->
-        <section id="features" class="max-w-7xl mx-auto px-6 mb-40">
-            <div class="text-center mb-20">
-                <h2 class="text-3xl font-bold text-white mb-4">CI Harness for Tool-Using Agents</h2>
-                <p class="text-textMuted">Deterministic replay, hard contracts, and baselines built for production shipping.</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8 relative z-10">
-                
-                <!-- Card 1: Deterministic Replay -->
-                <div class="feature-card p-6 rounded-xl flex flex-col h-full">
-                    <div class="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative p-4 flex flex-col justify-center">
-                        <!-- Visual: Timeline Replay -->
-                        <div class="flex items-center justify-between mb-3 opacity-50">
-                            <span class="text-[10px] font-mono text-textMuted">Live Run</span>
-                            <div class="flex-1 mx-2 h-1 bg-border rounded-full relative">
-                                <div class="absolute h-full w-[80%] bg-blue-500/30 rounded-full"></div>
-                            </div>
-                            <span class="text-[10px] font-mono text-textMuted">240ms</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
-                                <span class="text-[10px] font-mono text-white font-bold">Replay</span>
-                            </div>
-                            <div class="flex-1 mx-2 h-1 bg-border rounded-full">
-                                <div class="h-full w-[5%] bg-primary rounded-full"></div>
-                            </div>
-                            <span class="text-[10px] font-mono text-primary font-bold">0ms</span>
-                        </div>
-                        <div class="absolute right-4 top-4 text-[10px] font-mono text-textMuted border border-border px-1.5 rounded bg-card">CACHED</div>
-                    </div>
-
-                    <h3 class="text-lg font-bold text-white mb-3">Deterministic Replay</h3>
-                    <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
-                        Record tool calls once. In CI, replay cassettes for fast, deterministic runs with no flaky dependencies.
-                    </p>
-                    <div class="mt-auto pt-4 border-t border-border">
-                        <code class="text-xs font-mono text-primary bg-primary/5 px-2 py-1 rounded">mode: replay</code>
-                    </div>
-                </div>
-
-                <!-- Card 2: Hard Contracts -->
-                <div class="feature-card p-6 rounded-xl flex flex-col h-full">
-                    <div class="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative">
-                        <!-- Visual: Scrolling Terminal -->
-                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0D1117] z-10"></div>
-                        <div class="p-3 font-mono text-[9px] space-y-2 opacity-80 animate-scroll-logs">
-                            <!-- Log Lines -->
-                            <div class="flex gap-2"><span class="text-blue-400">[INFO]</span> <span class="text-textMuted">Contracts loaded</span></div>
-                            <div class="flex gap-2"><span class="text-emerald-400">[ASSERT]</span> <span class="text-textMuted">json_schema ok</span></div>
-                            <div class="flex gap-2"><span class="text-emerald-400">[ASSERT]</span> <span class="text-textMuted">required_fields ok</span></div>
-                            <div class="flex gap-2"><span class="text-emerald-400">[ASSERT]</span> <span class="text-textMuted">tool_order ok</span></div>
-                            <div class="flex gap-2"><span class="text-yellow-400">[BUDGET]</span> <span class="text-textMuted">tool_calls 3/10</span></div>
-                            <div class="flex gap-2"><span class="text-green-400">[OK]</span> <span class="text-textMuted">Contracts passed</span></div>
-                        </div>
-                    </div>
-
-                    <h3 class="text-lg font-bold text-white mb-3">Hard Contracts</h3>
-                    <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
-                        Enforce JSON schema, required fields, and tool order as pass/fail gates. No model-graded scoring required.
-                    </p>
-                    <div class="mt-auto pt-4 border-t border-border">
-                        <code class="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">assert: json_schema</code>
-                    </div>
-                </div>
-
-                <!-- Card 3: Baselines + PR Gates -->
-                <div class="feature-card p-6 rounded-xl flex flex-col h-full">
-                    <div class="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative p-4 flex flex-col justify-center gap-4">
-                        <!-- Visual: Budget Bar -->
-                        <div>
-                            <div class="flex justify-between mb-1.5">
-                                <span class="text-[10px] font-mono text-textMuted">Baseline Drift</span>
-                                <span class="text-[10px] font-mono text-white">+1.2% / 5%</span>
-                            </div>
-                            <div class="h-1.5 w-full bg-border rounded-full overflow-hidden">
-                                <div class="h-full bg-emerald-500 w-[24%]"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between mb-1.5">
-                                <span class="text-[10px] font-mono text-textMuted">Budget Gate</span>
-                                <span class="text-[10px] font-mono text-red-400 font-bold">FAIL</span>
-                            </div>
-                            <div class="h-1.5 w-full bg-border rounded-full overflow-hidden relative">
-                                <!-- The Limit Line -->
-                                <div class="absolute right-[20%] top-0 h-full w-0.5 bg-white z-10"></div>
-                                <div class="h-full bg-red-500 animate-grow-bar"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h3 class="text-lg font-bold text-white mb-3">Baselines + PR Gates</h3>
-                    <p class="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
-                        Promote a known-good run, diff against it in CI, and fail when success rate drops or budgets spike.
-                    </p>
-                    <div class="mt-auto pt-4 border-t border-border">
-                        <code class="text-xs font-mono text-emerald-500 bg-emerald-500/5 px-2 py-1 rounded">baseline: baselines/suite.json</code>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- DIAGRAM SECTION -->
-        <section id="integration" class="max-w-5xl mx-auto px-6 mb-40">
-            <div class="bg-card border border-border rounded-2xl p-12 relative overflow-hidden">
-                <!-- BG Pattern -->
-                <div class="absolute inset-0 opacity-[0.05]" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
-                
-                <div class="relative z-10 flex flex-col md:flex-row items-center gap-16">
-                    <div class="flex-1">
-                        <h2 class="text-2xl font-bold text-white mb-4">Drop-in Middleware</h2>
-                        <p class="text-textMuted mb-6">
-                            RunLedger works with any agent framework. Wrap your agent as a subprocess runner--minimal changes.
-                        </p>
-                        <ul class="space-y-2 font-mono text-xs text-textMain">
-                            <li class="flex items-center gap-2">
-                                <i data-lucide="check" class="w-4 h-4 text-primary"></i>
-                                LangChain / LangGraph
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <i data-lucide="check" class="w-4 h-4 text-primary"></i>
-                                LlamaIndex
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <i data-lucide="check" class="w-4 h-4 text-primary"></i>
-                                AutoGen / CrewAI
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <i data-lucide="check" class="w-4 h-4 text-primary"></i>
-                                Raw Python / Node.js
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Schematic (Robust Flexbox Implementation) -->
-                    <div class="flex-1 flex justify-center w-full">
-                        <div class="flex items-center w-full max-w-md relative">
-                            
-                            <!-- Node 1: Your Code -->
-                            <div class="flex flex-col items-center gap-3 relative z-10 shrink-0">
-                                <div class="w-16 h-16 bg-bg border border-border rounded-xl flex items-center justify-center shadow-lg group hover:border-textMuted transition-colors">
-                                    <i data-lucide="box" class="w-6 h-6 text-textMuted group-hover:text-white transition-colors"></i>
-                                </div>
-                                <span class="font-mono text-[10px] text-textMuted uppercase tracking-wider">Client</span>
-                            </div>
-
-                            <!-- Connector 1 -->
-                            <div class="flex-1 h-px bg-border relative mx-2">
-                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style="background-size: 200% 100%;"></div>
-                            </div>
-
-                            <!-- Node 2: RunLedger Proxy -->
-                            <div class="flex flex-col items-center gap-3 relative z-10 shrink-0">
-                                <div class="w-20 h-20 bg-[#0F172A] border border-primary rounded-xl flex items-center justify-center shadow-[0_0_40px_rgba(59,130,246,0.15)] relative animate-float">
-                                    <!-- Inner Pulse -->
-                                    <div class="absolute inset-0 bg-primary/10 rounded-xl animate-pulse-slow"></div>
-                                    <div class="text-center relative z-10">
-                                        <div class="font-bold text-white text-base tracking-tight">RL</div>
-                                        <div class="text-[9px] text-primary font-mono mt-0.5 tracking-widest">PROXY</div>
-                                    </div>
-                                </div>
-                                <span class="font-mono text-[10px] text-primary font-bold uppercase tracking-wider">RunLedger</span>
-                            </div>
-
-                            <!-- Connector 2 -->
-                            <div class="flex-1 h-px bg-border relative mx-2">
-                                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style="animation-delay: 0.5s; background-size: 200% 100%;"></div>
-                            </div>
-
-                            <!-- Node 3: LLM API -->
-                            <div class="flex flex-col items-center gap-3 relative z-10 shrink-0">
-                                <div class="w-16 h-16 bg-bg border border-border rounded-xl flex items-center justify-center shadow-lg group hover:border-textMuted transition-colors">
-                                    <i data-lucide="cloud" class="w-6 h-6 text-textMuted group-hover:text-white transition-colors"></i>
-                                </div>
-                                <span class="font-mono text-[10px] text-textMuted uppercase tracking-wider">LLM API</span>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- OFFERS -->
-        <section id="offers" class="max-w-7xl mx-auto px-6 mb-40">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-white mb-4">Pricing for every path to production</h2>
-                <p class="text-textMuted max-w-2xl mx-auto">Free OSS for DIY teams, fixed-scope implementation to ship fast, and monthly assurance to keep CI stable.</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="feature-card p-6 rounded-xl flex flex-col h-full">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-white">Open Source</h3>
-                        <span class="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded">FREE</span>
-                    </div>
-                    <p class="text-sm text-textMuted mb-4">Self-hosted CLI with deterministic replay and CI-ready artifacts.</p>
-                    <ul class="space-y-2 text-sm text-textMuted mb-6">
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> Replay mode + cassette recording</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> Assertions, budgets, baselines</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> JSONL, JUnit, HTML reports</li>
-                    </ul>
-                    <a href="docs.html#quickstart" class="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">
-                        Install CLI
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </a>
-                </div>
-
-                <div class="feature-card p-6 rounded-xl flex flex-col h-full border border-primary/40">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-white">Hardening Sprint</h3>
-                        <span class="text-xs font-mono text-primary bg-primary/10 px-3 py-1 rounded">$5,000</span>
-                    </div>
-                    <p class="text-sm text-textMuted mb-4">Fixed-scope implementation to get deterministic CI running fast.</p>
-                    <ul class="space-y-2 text-sm text-textMuted mb-6">
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> 1 repo, up to 2 workflows</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> Up to 6 tools, 80 cases</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> Baseline gates + CI wiring</li>
-                    </ul>
-                    <a href="community.html#contact" class="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">
-                        Book a sprint
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </a>
-                </div>
-
-                <div class="feature-card p-6 rounded-xl flex flex-col h-full">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-white">Assurance</h3>
-                        <span class="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded">$2,000/mo</span>
-                    </div>
-                    <p class="text-sm text-textMuted mb-4">Monthly retainer to keep evals current and CI gates stable.</p>
-                    <ul class="space-y-2 text-sm text-textMuted mb-6">
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> Up to 20 case/cassette updates</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> Budget tuning + baseline refresh</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-primary mt-0.5"></i> One incident window per month</li>
-                    </ul>
-                    <a href="community.html#contact" class="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-white font-semibold rounded-lg hover:border-textMuted transition-colors">
-                        Start assurance
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </a>
-                </div>
-            </div>
-
-            <div class="feature-card p-6 rounded-xl mt-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div>
-                    <div class="text-xs font-mono text-primary mb-2">HOSTED (PREVIEW)</div>
-                    <h3 class="text-lg font-semibold text-white mb-1">Hosted RunLedger is coming soon.</h3>
-                    <p class="text-sm text-textMuted">Managed storage, shared baselines, run history, and team dashboards.</p>
-                </div>
-                <a href="community.html#contact" class="inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-white font-semibold rounded-lg hover:border-textMuted transition-colors">
-                    Join the waitlist
-                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </a>
-            </div>
-        </section>
-
-        <!-- CTA -->
-        <section class="max-w-4xl mx-auto px-6 pb-32 text-center">
-            <div class="relative inline-block">
-                <div class="absolute -inset-10 bg-primary/20 blur-3xl rounded-full opacity-20 pointer-events-none"></div>
-                <h2 class="text-4xl font-bold text-white mb-8 relative z-10">Ship agents with confidence.</h2>
-            </div>
-            
-            <div class="flex justify-center gap-6 relative z-10">
-                <a href="docs.html#quickstart" class="px-8 py-4 bg-white text-bg font-bold rounded-lg hover:bg-gray-200 transition-colors shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-bg">
-                    Get Started Free
-                </a>
-                <a href="about.html" class="px-8 py-4 bg-card border border-border text-white font-medium rounded-lg hover:border-textMuted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-bg">
-                    Read the Manifesto
-                </a>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="border-t border-border bg-card">
-            <div class="max-w-7xl mx-auto px-6 py-12 grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
-                <div class="space-y-4">
-                    <a href="index.html" class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                        </div>
-                        <span class="font-bold text-white text-sm">RunLedger</span>
-                    </a>
-                    <p class="text-sm text-textMuted">CI harness with deterministic replay, hard contracts, and baselines.</p>
-                    <div class="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
-                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                        ALL SYSTEMS OPERATIONAL
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-semibold text-white mb-3">Product</h3>
-                    <ul class="space-y-2 text-sm text-textMuted">
-                        <li><a href="index.html" class="hover:text-white transition-colors">Overview</a></li>
-                        <li><a href="index.html#features" class="hover:text-white transition-colors">Features</a></li>
-                        <li><a href="integrations.html" class="hover:text-white transition-colors">Integrations</a></li>
-                        <li><a href="pricing.html" class="hover:text-white transition-colors">Pricing</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-semibold text-white mb-3">Docs</h3>
-                    <ul class="space-y-2 text-sm text-textMuted">
-                        <li><a href="docs.html" class="hover:text-white transition-colors">Documentation</a></li>
-                        <li><a href="docs.html#quickstart" class="hover:text-white transition-colors">Quickstart</a></li>
-                        <li><a href="reference.html" class="hover:text-white transition-colors">CLI Reference</a></li>
-                        <li><a href="reference.html#protocol" class="hover:text-white transition-colors">Protocol</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-semibold text-white mb-3">Community</h3>
-                    <ul class="space-y-2 text-sm text-textMuted">
-                        <li><a href="community.html" class="hover:text-white transition-colors">Community</a></li>
-                        <li><a href="community.html#contributing" class="hover:text-white transition-colors">Contributing</a></li>
-                        <li><a href="community.html#support" class="hover:text-white transition-colors">Support</a></li>
-                        <li><a href="changelog.html" class="hover:text-white transition-colors">Changelog</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-semibold text-white mb-3">Company</h3>
-                    <ul class="space-y-2 text-sm text-textMuted">
-                        <li><a href="about.html" class="hover:text-white transition-colors">About</a></li>
-                        <li><a href="about.html#mission" class="hover:text-white transition-colors">Mission</a></li>
-                        <li><a href="about.html#principles" class="hover:text-white transition-colors">Principles</a></li>
-                        <li><a href="security.html" class="hover:text-white transition-colors">Security</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-textMuted">
-                <span>(c) 2025 RunLedger. MIT Licensed.</span>
-                        <div class="flex items-center gap-6">
-                <a href="https://github.com/runledger" class="hover:text-white transition-colors">GitHub</a>
-                <a href="privacy.html" class="hover:text-white transition-colors">Privacy</a>
-                <a href="terms.html" class="hover:text-white transition-colors">Terms</a>
-                <a href="security.html" class="hover:text-white transition-colors">Security</a>
-                <a href="community.html#contact" class="hover:text-white transition-colors">Contact</a>
-            </div>
-            </div>
-        </footer>
-
-    </main>
-
-    <!-- Three.js Visuals -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check for reduced motion
-            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        bg: '#020408',
+                        card: '#0A0C12',
+                        border: '#1E293B',
+                        primary: '#3B82F6', // Blue-500
+                        accent: '#06B6D4', // Cyan-500
+                        textMuted: '#94A3B8', // Slate-400
+                        textMain: '#FFFFFF',
+                        brand: {
+                            dark: '#030305',
+                            panel: '#0E0E11',
+                            border: '#1E1E24',
+                            accent: '#3B82F6',
+                            success: '#10B981', 
+                            error: '#EF4444', 
+                            warning: '#F59E0B',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'stream': 'stream 2s linear infinite',
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        stream: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(200%)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: 0, transform: 'translateY(20px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #020408;
+            color: #ffffff;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020408; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E293B; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155; 
+        }
 
-            // Ensure THREE is loaded before using it
-            if (!prefersReducedMotion && typeof THREE !== 'undefined') {
-                // --- 3D Background Logic: "The Stabilizer" ---
-                const container = document.getElementById('three-canvas');
+        .glass-panel {
+            background: rgba(10, 12, 18, 0.7);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .glass-panel-strong {
+            background: rgba(10, 10, 12, 0.85);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .code-key { color: #34d399; }
+        .code-string { color: #f472b6; }
+        
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .living-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, rgba(59,130,246,0.2) 20%, rgba(59,130,246,0.2) 80%, transparent);
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- UTILS ---
+        
+        const useOnScreen = (options) => {
+            const ref = useRef(null);
+            const [isVisible, setIsVisible] = useState(false);
+
+            useEffect(() => {
+                const observer = new IntersectionObserver(([entry]) => {
+                    if (entry.isIntersecting) {
+                        setIsVisible(true);
+                        observer.disconnect();
+                    }
+                }, options);
+
+                if (ref.current) {
+                    observer.observe(ref.current);
+                }
+
+                return () => {
+                    if (ref.current) observer.unobserve(ref.current);
+                };
+            }, [ref, options]);
+
+            return [ref, isVisible];
+        };
+
+        const FadeIn = ({ children, delay = 0, className = "" }) => {
+            const [ref, isVisible] = useOnScreen({ threshold: 0.1 });
+            
+            return (
+                <div 
+                    ref={ref} 
+                    className={`fade-enter ${isVisible ? 'fade-enter-active' : ''} ${className}`}
+                    style={{ transitionDelay: `${delay}ms` }}
+                >
+                    {children}
+                </div>
+            );
+        };
+
+        // --- ICONS ---
+        // Mapping common names to SVG paths
+        const Icon = ({ name, size = 20, className = "", ...props }) => {
+            const icons = {
+                'menu': <><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></>,
+                'bot': <><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M9 3v18" /><path d="m9 9 5 5" /><path d="m9 15 5-5" /></>,
+                'server': <><rect width="20" height="8" x="2" y="2" rx="2" ry="2" /><rect width="20" height="8" x="2" y="14" rx="2" ry="2" /><line x1="6" x2="6.01" y1="6" y2="6" /><line x1="6" x2="6.01" y1="18" y2="18" /></>,
+                'copy': <><rect width="13" height="13" x="9" y="9" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></>,
+                'arrow-right': <><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></>,
+                'chevron-right': <path d="m9 18 6-6-6-6" />,
+                'check': <path d="M20 6 9 17 4 12" />,
+                'git-branch': <><line x1="6" x2="6" y1="3" y2="15" /><circle cx="18" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><path d="M18 9a9 9 0 0 1-9 9" /></>,
+                'shield-check': <><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></>,
+                'box': <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" x2="12" y1="22.08" y2="12" /></>,
+                'cloud': <><path d="M17.5 19c0-3.037-2.463-5.5-5.5-5.5S6.5 15.963 6.5 19" /><path d="M11.5 13.5v-6" /><path d="M15.029 8.529a5.5 5.5 0 1 1-3.535-3.536" /></>,
+                'terminal': <><polyline points="4 17 10 11 4 5" /><line x1="12" x2="20" y1="19" y2="19" /></>,
+                'activity': <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+                'refresh-cw': <><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></>,
+                'alert-triangle': <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" /></>,
+                'git-pull-request': <><circle cx="18" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><path d="M13 6h3a2 2 0 0 1 2 2v7" /><line x1="6" x2="6" y1="9" y2="21" /></>,
+                'scale': <><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" /><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" /><path d="M7 21h10" /><path d="M12 3v18" /><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" /></>,
+                'zap': <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
+                'play': <polygon points="5 3 19 12 5 21 5 3" />
+            };
+            
+            return (
+                <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width={size} 
+                    height={size} 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className={className} 
+                    {...props}
+                >
+                    {icons[name] || null}
+                </svg>
+            );
+        };
+
+
+        // --- 3D BACKGROUND (The Stabilizer) ---
+        const ThreeBackground = () => {
+            const mountRef = useRef(null);
+
+            useEffect(() => {
+                const mount = mountRef.current;
+                
+                // Scene setup
                 const scene = new THREE.Scene();
-                // Fog for depth - Increased density for better fade
+                // Match the theme color #020408
                 scene.fog = new THREE.FogExp2(0x020408, 0.0035);
 
                 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -714,9 +247,9 @@
                 const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                container.appendChild(renderer.domElement);
+                mount.appendChild(renderer.domElement);
 
-                // Particles System - Reduced count for subtlety
+                // Particles
                 const particleCount = 400; 
                 const geometry = new THREE.BufferGeometry();
                 const positions = new Float32Array(particleCount * 3);
@@ -727,9 +260,8 @@
                 const color2 = new THREE.Color(0x06B6D4); // Cyan
 
                 for(let i = 0; i < particleCount; i++) {
-                    // Create a structured grid (The "Ledger") - spread wider
                     const x = (Math.random() - 0.5) * 120;
-                    const y = (Math.random() - 0.5) * 15; // Flatter plane
+                    const y = (Math.random() - 0.5) * 15; 
                     const z = (Math.random() - 0.5) * 80;
                     
                     positions[i*3] = x;
@@ -740,7 +272,6 @@
                     originalPositions[i*3+1] = y;
                     originalPositions[i*3+2] = z;
 
-                    // Mix colors
                     const mixedColor = i % 2 === 0 ? color1 : color2;
                     colors[i*3] = mixedColor.r;
                     colors[i*3+1] = mixedColor.g;
@@ -751,46 +282,37 @@
                 geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
                 const material = new THREE.PointsMaterial({
-                    size: 0.15, // Smaller particles
+                    size: 0.15, 
                     vertexColors: true,
                     transparent: true,
-                    opacity: 0.5, // Lower opacity
+                    opacity: 0.5, 
                     blending: THREE.AdditiveBlending
                 });
 
                 const points = new THREE.Points(geometry, material);
                 scene.add(points);
 
-                // Animation Vars
+                // Animation
                 let time = 0;
                 let animationId;
-                let isAnimating = true;
                 
-                // Loop
                 function animate() {
-                    if (!isAnimating) return;
-                    
                     animationId = requestAnimationFrame(animate);
-                    time += 0.0015; // Much slower time
+                    time += 0.0015;
 
-                    // Rotate entire system slowly
                     points.rotation.y = time * 0.05;
 
                     const positions = points.geometry.attributes.position.array;
                     
-                    // Wave effect - Gentle undulation
                     for(let i = 0; i < particleCount; i++) {
                         const y = originalPositions[i*3+1];
                         const x = originalPositions[i*3];
                         
-                        // Calculate wave - lower frequency
+                        // Wave effect
                         const wave = Math.sin(x * 0.05 + time * 1.5) * 1.5;
-                        
-                        // Apply "Stabilization": Points near center move less
                         const dist = Math.sqrt(x*x);
-                        const stability = Math.max(0, 1 - dist/60); // 1 at center, 0 at edges
+                        const stability = Math.max(0, 1 - dist/60); 
                         
-                        // Center is stable (Ledger), Edges are chaotic (Agents)
                         positions[i*3+1] = y + wave * (1 - stability * 0.8);
                     }
                     
@@ -799,72 +321,856 @@
                 }
                 animate();
 
-                // Resize
-                window.addEventListener('resize', () => {
+                const handleResize = () => {
                     renderer.setSize(window.innerWidth, window.innerHeight);
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
-                });
+                };
 
-                // Mouse interaction (Very Subtle tilt)
-                document.addEventListener('mousemove', (e) => {
+                const handleMouseMove = (e) => {
                     const x = (e.clientX / window.innerWidth) * 2 - 1;
                     const y = -(e.clientY / window.innerHeight) * 2 + 1;
-                    
-                    // Smooth lerp for camera - significantly damped
                     camera.position.x += (x * 2 - camera.position.x) * 0.02;
                     camera.position.y += (y * 2 + 10 - camera.position.y) * 0.02;
                     camera.lookAt(0,0,0);
-                });
+                };
 
-                // --- Performance Optimizations ---
-                
-                // 1. Intersection Observer: Stop animating when Hero is out of view
-                const heroSection = document.getElementById('hero');
-                if (heroSection) {
-                    const observer = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                if (!isAnimating) {
-                                    isAnimating = true;
-                                    animate();
-                                }
-                            } else {
-                                isAnimating = false;
-                                cancelAnimationFrame(animationId);
-                            }
-                        });
-                    }, { threshold: 0 });
-                    observer.observe(heroSection);
+                window.addEventListener('resize', handleResize);
+                document.addEventListener('mousemove', handleMouseMove);
+
+                return () => {
+                    cancelAnimationFrame(animationId);
+                    window.removeEventListener('resize', handleResize);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    if(mount) mount.removeChild(renderer.domElement);
+                };
+            }, []);
+
+            return <div ref={mountRef} className="fixed top-0 left-0 w-full h-full z-0 pointer-events-none" />;
+        };
+
+        // --- NEW COMPONENT: REGRESSION VIEWER ---
+        const RegressionViewer = () => {
+            const [activeTab, setActiveTab] = useState('schema');
+
+            const scenarios = {
+                schema: {
+                    title: "Schema Violation",
+                    file: "tools/db_query.ts",
+                    diff: (
+                        <div className="font-mono text-xs sm:text-sm leading-7 whitespace-pre">
+                            <div className="flex text-gray-500 select-none"><span className="w-8 text-right mr-4 opacity-30">1</span>// Action: query_users</div>
+                            <div className="flex select-none"><span className="w-8 text-right mr-4 opacity-30">2</span><span className="text-purple-400">const</span> <span className="text-blue-400">args</span> = {'{'}</div>
+                            <div className="flex"><span className="w-8 text-right mr-4 opacity-30 select-none">3</span>  <span className="code-key">"table"</span>: <span className="code-string">"users"</span>,</div>
+                            <div className="flex bg-red-500/10 border-l-2 border-red-500 relative group">
+                                <span className="w-8 text-right mr-4 opacity-30 select-none text-red-500">4</span>
+                                <span className="pl-0">  <span className="code-key">"limit"</span>: <span className="code-string">"ALL"</span></span>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400 text-xs font-bold hidden group-hover:block">TypeError: Expected Int</span>
+                            </div>
+                            <div className="flex bg-green-500/10 border-l-2 border-green-500">
+                                <span className="w-8 text-right mr-4 opacity-30 select-none text-green-500">4</span>
+                                <span className="pl-0">  <span className="code-key">"limit"</span>: <span className="text-brand-success">50</span></span>
+                            </div>
+                            <div className="flex select-none"><span className="w-8 text-right mr-4 opacity-30">5</span>{'}'};</div>
+                        </div>
+                    )
+                },
+                budget: {
+                    title: "Budget Exceeded",
+                    file: "runledger.config.json",
+                    diff: (
+                        <div className="font-mono text-xs sm:text-sm leading-7 whitespace-pre">
+                             <div className="flex text-gray-500 select-none"><span className="w-8 text-right mr-4 opacity-30">12</span>"budgets": {'{'}</div>
+                            <div className="flex"><span className="w-8 text-right mr-4 opacity-30 select-none">13</span>  <span className="code-key">"customer_agent_v2"</span>: {'{'}</div>
+                            <div className="flex bg-red-500/10 border-l-2 border-red-500 relative">
+                                <span className="w-8 text-right mr-4 opacity-30 select-none text-red-500">14</span>
+                                <span className="pl-0 flex justify-between w-full pr-12">
+                                    <span>    <span className="code-key">"max_cost"</span>: 0.05</span>
+                                    <span className="text-red-400 font-bold">ACTUAL: $0.12</span>
+                                </span>
+                            </div>
+                            <div className="flex"><span className="w-8 text-right mr-4 opacity-30 select-none">15</span>    <span className="code-key">"max_tool_calls"</span>: 15</div>
+                            <div className="flex select-none"><span className="w-8 text-right mr-4 opacity-30">16</span>  {'}'}</div>
+                            <div className="flex select-none"><span className="w-8 text-right mr-4 opacity-30">17</span>{'}'}</div>
+                        </div>
+                    )
+                },
+                contract: {
+                    title: "Strict Order",
+                    file: "traces/trace_08a.log",
+                    diff: (
+                        <div className="font-mono text-xs sm:text-sm leading-7 whitespace-pre">
+                            <div className="flex text-gray-500 select-none"><span className="w-8 text-right mr-4 opacity-30">1</span>// Contract: rag_pipeline</div>
+                            <div className="flex select-none"><span className="w-8 text-right mr-4 opacity-30">2</span>1. search_kb()</div>
+                            <div className="flex bg-green-500/10 border-l-2 border-green-500">
+                                <span className="w-8 text-right mr-4 opacity-30 select-none text-green-500">3</span>
+                                <span className="text-gray-400 opacity-50">2. retrieve_context()</span>
+                            </div>
+                            <div className="flex select-none"><span className="w-8 text-right mr-4 opacity-30">4</span>3. generate_answer()</div>
+                            <div className="py-2"></div>
+                            <div className="flex text-gray-500 select-none"><span className="w-8 text-right mr-4 opacity-30"></span>// ACTUAL EXECUTION</div>
+                            <div className="flex select-none"><span className="w-8 text-right mr-4 opacity-30">1</span>1. search_kb()</div>
+                            <div className="flex bg-red-500/10 border-l-2 border-red-500 relative">
+                                <span className="w-8 text-right mr-4 opacity-30 select-none text-red-500">2</span>
+                                <span className="text-brand-error font-bold">2. generate_answer()</span>
+                                <span className="absolute right-4 text-xs text-brand-error font-mono">SKIPPED STEP 2</span>
+                            </div>
+                        </div>
+                    )
                 }
+            };
 
-                // 2. Visibility Change: Stop animating when tab is hidden
-                document.addEventListener("visibilitychange", () => {
-                    if (document.hidden) {
-                        isAnimating = false;
-                        cancelAnimationFrame(animationId);
-                    } else {
-                        // Only restart if hero is also visible (checked by observer usually, but simple restart here is safe)
-                        isAnimating = true;
-                        animate();
-                    }
-                });
-            }
-        });
+            return (
+                <section id="demo" className="py-32 relative z-10">
+                    <div className="max-w-6xl mx-auto px-6">
+                        <FadeIn>
+                            <div className="mb-16 text-center">
+                                <h2 className="text-3xl md:text-5xl font-bold mb-4">Regression Viewer</h2>
+                                <p className="text-textMuted max-w-2xl mx-auto text-lg">
+                                    Don't just see a failed build. See exactly <span className="text-white">why</span>. 
+                                    RunLedger provides intelligent diffs specifically designed for LLM traces.
+                                </p>
+                                <div className="mt-6 flex justify-center">
+                                    <a
+                                        href="https://github.com/runledger/runledger-demo/actions"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg hover:border-textMuted transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="18" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><path d="M13 6h3a2 2 0 0 1 2 2v7" /><line x1="6" x2="6" y1="9" y2="21" />
+                                        </svg>
+                                        View sample report
+                                    </a>
+                                </div>
+                            </div>
+                        </FadeIn>
 
-        function copyCmd() {
-            navigator.clipboard.writeText('pipx install runledger');
-            const el = document.querySelector('[onclick="copyCmd()"] span:nth-child(2)');
-            const original = el.innerText;
-            el.innerText = "Copied!";
-            el.classList.add('text-white');
-            setTimeout(() => {
-                el.innerText = original;
-                el.classList.remove('text-white');
-            }, 2000);
-        }
+                        <div className="grid lg:grid-cols-12 gap-8 items-start">
+                            {/* Controls */}
+                            <FadeIn delay={100} className="lg:col-span-4 space-y-3">
+                                {Object.keys(scenarios).map(key => (
+                                    <button
+                                        key={key}
+                                        onClick={() => setActiveTab(key)}
+                                        className={`w-full group relative p-4 rounded-xl border text-left transition-all duration-300 overflow-hidden ${
+                                            activeTab === key 
+                                            ? 'bg-brand-panel border-brand-accent/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]' 
+                                            : 'bg-brand-panel/30 border-white/5 hover:border-white/20 hover:bg-brand-panel/60'
+                                        }`}
+                                    >
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all ${activeTab === key ? 'bg-brand-accent' : 'bg-transparent group-hover:bg-white/20'}`}></div>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <span className={`font-bold text-sm ${activeTab === key ? 'text-white' : 'text-gray-400'}`}>{scenarios[key].title}</span>
+                                            {activeTab === key && <Icon name="chevron-right" size={16} className="text-brand-accent" />}
+                                        </div>
+                                        <div className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">{scenarios[key].file}</div>
+                                    </button>
+                                ))}
+                                
+                                <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-brand-accent/10 to-transparent border border-brand-accent/20">
+                                    <div className="flex items-center gap-2 text-brand-accent mb-2">
+                                        <Icon name="git-pull-request" size={16} />
+                                        <span className="font-bold text-xs uppercase tracking-wide">CI Integration</span>
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                                        These views are automatically commented on your PRs in GitHub/GitLab, blocking merges until resolved.
+                                    </p>
+                                </div>
+                            </FadeIn>
+
+                            {/* IDE Window */}
+                            <FadeIn delay={200} className="lg:col-span-8">
+                                <div className="glass-panel-strong rounded-xl overflow-hidden shadow-2xl flex flex-col min-h-[350px] border border-white/10 relative transition-all duration-300">
+                                    {/* Window Chrome */}
+                                    <div className="bg-[#1e1e1e] border-b border-black p-3 flex items-center justify-between shrink-0">
+                                        <div className="flex gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs font-mono text-gray-400 bg-black/30 px-3 py-1 rounded-md border border-white/5">
+                                            <Icon name="alert-triangle" size={12} className="text-brand-error" />
+                                            {scenarios[activeTab].file}
+                                        </div>
+                                        <div className="w-12"></div> 
+                                    </div>
+                                    
+                                    {/* Content */}
+                                    <div className="p-0 overflow-auto flex-1 bg-[#1e1e1e] relative">
+                                        <div className="absolute top-0 left-0 w-full h-full p-6">
+                                            {scenarios[activeTab].diff}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Status Bar */}
+                                    <div className="bg-brand-error text-white text-xs font-mono py-1.5 px-4 flex justify-between items-center shrink-0">
+                                        <span className="flex items-center gap-2 font-bold">
+                                            <Icon name="alert-triangle" size={12} /> FAILED
+                                        </span>
+                                        <span>Ln 14, Col 22</span>
+                                    </div>
+                                </div>
+                            </FadeIn>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // --- NEW COMPONENT: METRICS CHART ---
+        const MetricsChart = () => {
+            const [mode, setMode] = useState('replay'); // live vs replay
+            const [liveCost, setLiveCost] = useState(0.15);
+            
+            // Effect to simulate cost ticking up
+            useEffect(() => {
+                let interval;
+                if (mode === 'live') {
+                    setLiveCost(0.00);
+                    interval = setInterval(() => {
+                        setLiveCost(prev => {
+                            if (prev >= 0.45) return 0.45;
+                            return prev + 0.01;
+                        });
+                    }, 50);
+                } else {
+                    setLiveCost(0.00);
+                }
+                return () => clearInterval(interval);
+            }, [mode]);
+
+            return (
+                <section className="py-32 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-brand-dark via-brand-panel to-brand-dark opacity-80 -z-10"></div>
+                    
+                    <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
+                        <FadeIn>
+                            <div className="inline-block px-3 py-1 rounded border border-brand-accent/30 bg-brand-accent/10 text-brand-accent font-mono text-xs mb-6 tracking-wide">
+                                IMPACT ANALYSIS
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                                Stop paying for <br/>
+                                <span className="text-white">CI flakiness.</span>
+                            </h2>
+                            <p className="text-textMuted text-lg mb-10 leading-relaxed">
+                                Running agents "live" in CI is slow, expensive, and non-deterministic. RunLedger records the interaction once, then replays the tool outputs instantly.
+                            </p>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="bg-white/5 border border-white/5 p-5 rounded-xl">
+                                    <div className="mb-4 bg-yellow-500/20 w-10 h-10 rounded-lg flex items-center justify-center text-yellow-500">
+                                        <Icon name="zap" size={20} />
+                                    </div>
+                                    <div className="font-bold text-white text-lg">Zero Latency</div>
+                                    <div className="text-sm text-gray-500 mt-1">Mocked outputs return in &lt;5ms.</div>
+                                </div>
+                                <div className="bg-white/5 border border-white/5 p-5 rounded-xl">
+                                    <div className="mb-4 bg-brand-success/20 w-10 h-10 rounded-lg flex items-center justify-center text-brand-success">
+                                        <Icon name="scale" size={20} />
+                                    </div>
+                                    <div className="font-bold text-white text-lg">Hard Gates</div>
+                                    <div className="text-sm text-gray-500 mt-1">Block PRs on budget spikes.</div>
+                                </div>
+                            </div>
+                        </FadeIn>
+
+                        {/* Interactive Chart */}
+                        <FadeIn delay={200} className="relative">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent to-purple-600 rounded-2xl blur opacity-20"></div>
+                            <div className="glass-panel-strong p-8 rounded-2xl relative">
+                                <div className="flex justify-between items-center mb-10">
+                                    <h3 className="font-bold text-xl">Runtime Performance</h3>
+                                    <div className="flex bg-black/50 p-1 rounded-lg border border-white/10">
+                                        <button 
+                                            onClick={() => setMode('live')}
+                                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${mode === 'live' ? 'bg-red-500/20 text-red-500 shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+                                        >
+                                            Live Agent
+                                        </button>
+                                        <button 
+                                            onClick={() => setMode('replay')}
+                                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${mode === 'replay' ? 'bg-brand-success text-black shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+                                        >
+                                            RunLedger
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-10">
+                                    {/* Cost Bar */}
+                                    <div>
+                                        <div className="flex justify-between text-xs font-mono text-gray-400 mb-3 uppercase tracking-wider">
+                                            <span>API Cost (Per Run)</span>
+                                            <span className={`transition-colors ${mode === 'live' ? 'text-red-400' : 'text-brand-success'}`}>
+                                                ${mode === 'live' ? liveCost.toFixed(2) : '0.00'}
+                                            </span>
+                                        </div>
+                                        <div className="h-6 w-full bg-black/50 rounded-full overflow-hidden border border-white/5 relative">
+                                             {/* Grid lines for chart */}
+                                             <div className="absolute top-0 left-1/4 h-full w-px bg-white/5"></div>
+                                             <div className="absolute top-0 left-2/4 h-full w-px bg-white/5"></div>
+                                             <div className="absolute top-0 left-3/4 h-full w-px bg-white/5"></div>
+                                             
+                                            <div 
+                                                className={`h-full rounded-full transition-all duration-[2000ms] ease-out relative ${mode === 'live' ? 'w-[85%] bg-gradient-to-r from-orange-500 to-red-500' : 'w-[1%] bg-brand-success'}`}
+                                            >
+                                                {mode === 'live' && <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/50 animate-pulse"></div>}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Time Bar */}
+                                    <div>
+                                        <div className="flex justify-between text-xs font-mono text-gray-400 mb-3 uppercase tracking-wider">
+                                            <span>Duration</span>
+                                            <span>{mode === 'live' ? '45s' : '0.2s'}</span>
+                                        </div>
+                                        <div className="h-6 w-full bg-black/50 rounded-full overflow-hidden border border-white/5 relative">
+                                             <div className="absolute top-0 left-1/4 h-full w-px bg-white/5"></div>
+                                             <div className="absolute top-0 left-2/4 h-full w-px bg-white/5"></div>
+                                             <div className="absolute top-0 left-3/4 h-full w-px bg-white/5"></div>
+                                             
+                                            <div 
+                                                className={`h-full rounded-full transition-all duration-1000 ease-out ${mode === 'live' ? 'w-[95%] bg-gray-700' : 'w-[2%] bg-brand-success'}`}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                     {/* Consistency Visualization */}
+                                    <div>
+                                        <div className="flex justify-between text-xs font-mono text-gray-400 mb-3 uppercase tracking-wider">
+                                            <span>Result Determinism</span>
+                                            <span className={mode === 'live' ? 'text-yellow-500' : 'text-brand-success'}>{mode === 'live' ? 'Probabilistic' : '100% Fixed'}</span>
+                                        </div>
+                                        <div className="flex gap-1.5 h-8">
+                                            {[...Array(15)].map((_, i) => (
+                                                <div 
+                                                    key={i}
+                                                    className={`flex-1 rounded-sm transition-all duration-500 ${
+                                                        mode === 'live' 
+                                                            ? (Math.random() > 0.6 ? 'bg-red-500/50' : 'bg-brand-success/50') 
+                                                            : 'bg-brand-success'
+                                                    } border border-black/20`}
+                                                    style={{ transitionDelay: `${i * 30}ms` }}
+                                                ></div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </FadeIn>
+                    </div>
+                </section>
+            );
+        };
+
+
+        // --- STANDARD COMPONENTS (Ported from HTML) ---
+        
+        const Nav = () => {
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+            return (
+                <nav className="fixed top-0 w-full z-50 glass-panel h-16">
+                    <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                                <Icon name="bot" size={16} color="white" strokeWidth="3" />
+                            </div>
+                            <span className="font-bold tracking-tight text-white text-lg">RunLedger</span>
+                        </div>
+                        
+                        <div className="hidden md:flex items-center gap-8">
+                            {['Docs', 'Reference', 'Integrations', 'Pricing', 'Changelog'].map(link => (
+                                <a key={link} href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors">{link}</a>
+                            ))}
+                            <a href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors">GitHub</a>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <a href="#" className="hidden md:block text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
+                            <a href="#" className="px-4 py-2 bg-white text-bg font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors shadow-lg shadow-white/10">
+                                Get Started
+                            </a>
+                            <button 
+                                className="md:hidden text-textMuted hover:text-white focus:outline-none" 
+                                aria-label="Toggle menu"
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            >
+                                <Icon name="menu" className="w-6 h-6" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Menu Dropdown */}
+                    {isMobileMenuOpen && (
+                        <div className="md:hidden absolute top-16 left-0 w-full bg-[#0A0C12] border-b border-white/5 py-4 px-6 flex flex-col gap-4 shadow-2xl animate-fade-in">
+                            {['Docs', 'Reference', 'Integrations', 'Pricing', 'Changelog'].map(link => (
+                                <a key={link} href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors block">{link}</a>
+                            ))}
+                            <a href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors block">GitHub</a>
+                            <hr className="border-white/5" />
+                            <a href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors block">Community</a>
+                        </div>
+                    )}
+                </nav>
+            );
+        };
+
+        const Hero = () => {
+            const [copied, setCopied] = useState(false);
+            const copyCmd = () => {
+                navigator.clipboard.writeText('pipx install runledger');
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+
+            return (
+                <section id="hero" className="max-w-7xl mx-auto px-6 mb-32 relative pt-32">
+                    <div className="hidden lg:block living-line"></div>
+                    <div className="text-center relative z-10 max-w-4xl mx-auto">
+                        <FadeIn>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 mb-8 backdrop-blur-md">
+                                <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                <span className="text-xs font-semibold text-primary tracking-wide">CI FOR TOOL-USING AGENTS</span>
+                            </div>
+
+                            <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-8 leading-[1.1]">
+                                RunLedger<br/>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">CI for tool-using agents.</span>
+                            </h1>
+                            
+                            <p className="text-xl text-white font-medium leading-relaxed mb-4 max-w-2xl mx-auto">
+                                Control the chaos of probabilistic software.
+                            </p>
+                            
+                            <p className="text-lg text-textMuted leading-relaxed mb-6 max-w-2xl mx-auto">
+                                RunLedger is the CI harness for tool-using agents. Record tool calls once, replay in CI, and gate PRs with hard contracts, budgets, and baselines.
+                            </p>
+                            <p className="text-sm text-textMuted leading-relaxed mb-12 max-w-2xl mx-auto">
+                                Not an eval metrics framework. Keep DeepEval for scoring; RunLedger makes agent tests deterministic and merge-gated.
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+                                <button className="relative group cursor-pointer focus:outline-none rounded-lg" onClick={copyCmd} aria-label="Copy install command">
+                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
+                                    <div className="relative h-14 px-6 bg-card rounded-lg flex items-center gap-4 border border-border">
+                                        <span className="font-mono text-sm text-textMuted select-none">$</span>
+                                        <span className="font-mono text-sm text-white">{copied ? 'Copied!' : 'pipx install runledger'}</span>
+                                        <Icon name={copied ? 'check' : 'copy'} className="w-4 h-4 text-textMuted group-hover:text-white transition-colors" />
+                                    </div>
+                                </button>
+                                <a href="#" className="h-14 px-8 bg-white text-bg font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                                    View Live Demo
+                                    <Icon name="arrow-right" className="w-4 h-4" />
+                                </a>
+                            </div>
+
+                            {/* Hero Schematic */}
+                            <div className="max-w-3xl mx-auto border border-border bg-card/50 rounded-xl p-8 backdrop-blur-sm shadow-2xl">
+                                <div className="flex items-center justify-between text-xs font-mono text-textMuted mb-6 px-4">
+                                    <span>INPUT STREAM</span>
+                                    <span>INTERCEPTION LAYER</span>
+                                    <span>PRODUCTION</span>
+                                </div>
+                                
+                                <div className="flex items-center w-full relative">
+                                    {/* Agent */}
+                                    <div className="flex flex-col items-center gap-2 relative z-10 shrink-0">
+                                        <div className="w-12 h-12 bg-card border border-border rounded-lg flex items-center justify-center shadow-lg">
+                                            <Icon name="bot" className="w-5 h-5 text-textMuted" />
+                                        </div>
+                                        <span className="text-[10px] font-bold font-mono text-textMuted">AGENT</span>
+                                    </div>
+
+                                    {/* Connector 1 */}
+                                    <div className="flex-1 h-px bg-border relative mx-2">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style={{backgroundSize: '200% 100%'}}></div>
+                                    </div>
+
+                                    {/* RunLedger Gate */}
+                                    <div className="relative z-10 shrink-0">
+                                        <div className="w-32 h-14 bg-[#0F172A] border border-primary rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.2)] relative">
+                                            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                                            <span className="text-white font-bold text-sm tracking-wide">RunLedger</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Connector 2 */}
+                                    <div className="flex-1 h-px bg-border relative mx-2">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style={{backgroundSize: '200% 100%', animationDelay: '0.5s'}}></div>
+                                    </div>
+
+                                    {/* LLM */}
+                                    <div className="flex flex-col items-center gap-2 relative z-10 shrink-0">
+                                        <div className="w-12 h-12 bg-card border border-border rounded-lg flex items-center justify-center shadow-lg">
+                                            <Icon name="server" className="w-5 h-5 text-textMuted" />
+                                        </div>
+                                        <span className="text-[10px] font-bold font-mono text-textMuted">LLM API</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </FadeIn>
+                    </div>
+                </section>
+            );
+        };
+
+        const Comparison = () => (
+            <section id="compare" className="max-w-6xl mx-auto px-6 mb-40">
+                <FadeIn>
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-white mb-4">RunLedger vs DeepEval</h2>
+                        <p className="text-textMuted">Scoring and CI gates are different jobs. RunLedger is the harness for deterministic CI.</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="bg-card p-6 rounded-xl border border-white/5">
+                            <div className="text-xs font-mono text-textMuted mb-3">EVAL METRICS</div>
+                            <h3 className="text-lg font-bold text-white mb-2">DeepEval (Confident AI)</h3>
+                            <p className="text-sm text-textMuted mb-4">Evaluation metrics and model-graded scoring for quality and benchmarking.</p>
+                            <ul className="space-y-2 text-sm text-textMuted">
+                                {['Faithfulness, relevancy, and other scoring suites', 'Benchmark workflows and dataset management', 'Optional hosted platform for evaluations'].map((item, i) => (
+                                    <li key={i} className="flex items-start gap-2">
+                                        <Icon name="check" className="w-4 h-4 text-textMuted mt-0.5" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="bg-card p-6 rounded-xl border border-primary/40">
+                            <div className="text-xs font-mono text-primary mb-3">CI HARNESS</div>
+                            <h3 className="text-lg font-bold text-white mb-2">RunLedger</h3>
+                            <p class="text-sm text-textMuted mb-4">Deterministic CI for tool-using agents with replay, contracts, and PR gates.</p>
+                            <ul className="space-y-2 text-sm text-textMuted">
+                                {['Record tool calls once and replay in CI', 'Hard contracts for schema, tool order, and budgets', 'Baselines and regression gates with JUnit and HTML'].map((item, i) => (
+                                    <li key={i} className="flex items-start gap-2">
+                                        <Icon name="check" className="w-4 h-4 text-primary mt-0.5" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <p className="text-sm text-textMuted text-center mt-6">Use both: keep DeepEval scoring and run it inside RunLedger's deterministic harness.</p>
+                </FadeIn>
+            </section>
+        );
+
+        const Features = () => (
+            <section id="features" className="max-w-7xl mx-auto px-6 mb-40">
+                <FadeIn>
+                    <div className="text-center mb-20">
+                        <h2 className="text-3xl font-bold text-white mb-4">CI Harness for Tool-Using Agents</h2>
+                        <p className="text-textMuted">Deterministic replay, hard contracts, and baselines built for production shipping.</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8 relative z-10">
+                        {/* Card 1 */}
+                        <div className="bg-card p-6 rounded-xl flex flex-col h-full border border-white/5">
+                            <div className="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative p-4 flex flex-col justify-center">
+                                <div className="flex items-center justify-between mb-3 opacity-50">
+                                    <span className="text-[10px] font-mono text-textMuted">Live Run</span>
+                                    <div className="flex-1 mx-2 h-1 bg-border rounded-full relative">
+                                        <div className="absolute h-full w-[80%] bg-blue-500/30 rounded-full"></div>
+                                    </div>
+                                    <span className="text-[10px] font-mono text-textMuted">240ms</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                                        <span className="text-[10px] font-mono text-white font-bold">Replay</span>
+                                    </div>
+                                    <div className="flex-1 mx-2 h-1 bg-border rounded-full">
+                                        <div className="h-full w-[5%] bg-primary rounded-full"></div>
+                                    </div>
+                                    <span className="text-[10px] font-mono text-primary font-bold">0ms</span>
+                                </div>
+                                <div className="absolute right-4 top-4 text-[10px] font-mono text-textMuted border border-border px-1.5 rounded bg-card">CACHED</div>
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-3">Deterministic Replay</h3>
+                            <p className="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
+                                Record tool calls once. In CI, replay cassettes for fast, deterministic runs with no flaky dependencies.
+                            </p>
+                            <div className="mt-auto pt-4 border-t border-border">
+                                <code className="text-xs font-mono text-primary bg-primary/5 px-2 py-1 rounded">mode: replay</code>
+                            </div>
+                        </div>
+
+                        {/* Card 2 */}
+                        <div className="bg-card p-6 rounded-xl flex flex-col h-full border border-white/5">
+                            <div className="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative p-3 font-mono text-[9px] space-y-2 opacity-80">
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0D1117] z-10"></div>
+                                <div className="flex gap-2"><span className="text-blue-400">[INFO]</span> <span className="text-textMuted">Contracts loaded</span></div>
+                                <div className="flex gap-2"><span className="text-emerald-400">[ASSERT]</span> <span className="text-textMuted">json_schema ok</span></div>
+                                <div className="flex gap-2"><span className="text-emerald-400">[ASSERT]</span> <span className="text-textMuted">required_fields ok</span></div>
+                                <div className="flex gap-2"><span className="text-emerald-400">[ASSERT]</span> <span className="text-textMuted">tool_order ok</span></div>
+                                <div className="flex gap-2"><span className="text-yellow-400">[BUDGET]</span> <span className="text-textMuted">tool_calls 3/10</span></div>
+                                <div className="flex gap-2"><span className="text-green-400">[OK]</span> <span className="text-textMuted">Contracts passed</span></div>
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-3">Hard Contracts</h3>
+                            <p className="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
+                                Enforce JSON schema, required fields, and tool order as pass/fail gates. No model-graded scoring required.
+                            </p>
+                            <div className="mt-auto pt-4 border-t border-border">
+                                <code className="text-xs font-mono text-accent bg-accent/5 px-2 py-1 rounded">assert: json_schema</code>
+                            </div>
+                        </div>
+
+                        {/* Card 3 */}
+                        <div className="bg-card p-6 rounded-xl flex flex-col h-full border border-white/5">
+                            <div className="h-40 mb-6 bg-[#0D1117] border border-border rounded-lg overflow-hidden relative p-4 flex flex-col justify-center gap-4">
+                                <div>
+                                    <div className="flex justify-between mb-1.5">
+                                        <span className="text-[10px] font-mono text-textMuted">Baseline Drift</span>
+                                        <span className="text-[10px] font-mono text-white">+1.2% / 5%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
+                                        <div className="h-full bg-emerald-500 w-[24%]"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="flex justify-between mb-1.5">
+                                        <span className="text-[10px] font-mono text-textMuted">Budget Gate</span>
+                                        <span className="text-[10px] font-mono text-red-400 font-bold">FAIL</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-border rounded-full overflow-hidden relative">
+                                        <div className="absolute right-[20%] top-0 h-full w-0.5 bg-white z-10"></div>
+                                        <div className="h-full bg-red-500 w-[85%]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-3">Baselines + PR Gates</h3>
+                            <p className="text-sm text-textMuted leading-relaxed mb-6 flex-grow">
+                                Promote a known-good run, diff against it in CI, and fail when success rate drops or budgets spike.
+                            </p>
+                            <div className="mt-auto pt-4 border-t border-border">
+                                <code className="text-xs font-mono text-emerald-500 bg-emerald-500/5 px-2 py-1 rounded">baseline: baselines/suite.json</code>
+                            </div>
+                        </div>
+                    </div>
+                </FadeIn>
+            </section>
+        );
+
+        const Integration = () => (
+            <section id="integration" className="max-w-5xl mx-auto px-6 mb-40">
+                <FadeIn>
+                    <div className="bg-card border border-border rounded-2xl p-12 relative overflow-hidden">
+                        <div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+                        
+                        <div className="relative z-10 flex flex-col md:flex-row items-center gap-16">
+                            <div className="flex-1">
+                                <h2 className="text-2xl font-bold text-white mb-4">Drop-in Middleware</h2>
+                                <p className="text-textMuted mb-6">
+                                    RunLedger works with any agent framework. Wrap your agent as a subprocess runner--minimal changes.
+                                </p>
+                                <ul className="space-y-2 font-mono text-xs text-textMain">
+                                    {['LangChain / LangGraph', 'LlamaIndex', 'AutoGen / CrewAI', 'Raw Python / Node.js'].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-2">
+                                            <Icon name="check" className="w-4 h-4 text-primary" />
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div className="flex-1 flex justify-center w-full">
+                                <div className="flex items-center w-full max-w-md relative">
+                                    {/* Client */}
+                                    <div className="flex flex-col items-center gap-3 relative z-10 shrink-0">
+                                        <div className="w-16 h-16 bg-bg border border-border rounded-xl flex items-center justify-center shadow-lg group hover:border-textMuted transition-colors">
+                                            <Icon name="box" className="w-6 h-6 text-textMuted group-hover:text-white transition-colors" />
+                                        </div>
+                                        <span className="font-mono text-[10px] text-textMuted uppercase tracking-wider">Client</span>
+                                    </div>
+
+                                    <div className="flex-1 h-px bg-border relative mx-2">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style={{backgroundSize: '200% 100%'}}></div>
+                                    </div>
+
+                                    {/* Proxy */}
+                                    <div className="flex flex-col items-center gap-3 relative z-10 shrink-0">
+                                        <div className="w-20 h-20 bg-[#0F172A] border border-primary rounded-xl flex items-center justify-center shadow-[0_0_40px_rgba(59,130,246,0.15)] relative animate-float">
+                                            <div className="absolute inset-0 bg-primary/10 rounded-xl animate-pulse-slow"></div>
+                                            <div className="text-center relative z-10">
+                                                <div className="font-bold text-white text-base tracking-tight">RL</div>
+                                                <div className="text-[9px] text-primary font-mono mt-0.5 tracking-widest">PROXY</div>
+                                            </div>
+                                        </div>
+                                        <span className="font-mono text-[10px] text-primary font-bold uppercase tracking-wider">RunLedger</span>
+                                    </div>
+
+                                    <div className="flex-1 h-px bg-border relative mx-2">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/50 to-transparent w-1/2 h-full animate-stream" style={{animationDelay: '0.5s', backgroundSize: '200% 100%'}}></div>
+                                    </div>
+
+                                    {/* API */}
+                                    <div className="flex flex-col items-center gap-3 relative z-10 shrink-0">
+                                        <div className="w-16 h-16 bg-bg border border-border rounded-xl flex items-center justify-center shadow-lg group hover:border-textMuted transition-colors">
+                                            <Icon name="cloud" className="w-6 h-6 text-textMuted group-hover:text-white transition-colors" />
+                                        </div>
+                                        <span className="font-mono text-[10px] text-textMuted uppercase tracking-wider">LLM API</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </FadeIn>
+            </section>
+        );
+
+        const Offers = () => (
+            <section id="offers" className="max-w-7xl mx-auto px-6 mb-40">
+                <FadeIn>
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold text-white mb-4">Pricing for every path to production</h2>
+                        <p className="text-textMuted max-w-2xl mx-auto">Free OSS for DIY teams, fixed-scope implementation to ship fast, and monthly assurance to keep CI stable.</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {/* OSS */}
+                        <div className="bg-card border border-white/5 p-6 rounded-xl flex flex-col h-full">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-white">Open Source</h3>
+                                <span className="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded">FREE</span>
+                            </div>
+                            <p className="text-sm text-textMuted mb-4">Self-hosted CLI with deterministic replay and CI-ready artifacts.</p>
+                            <ul className="space-y-2 text-sm text-textMuted mb-6">
+                                {['Replay mode + cassette recording', 'Assertions, budgets, baselines', 'JSONL, JUnit, HTML reports'].map((item, i) => (
+                                    <li key={i} className="flex items-start gap-2"><Icon name="check" className="w-4 h-4 text-primary mt-0.5" />{item}</li>
+                                ))}
+                            </ul>
+                            <a href="#" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">
+                                Install CLI <Icon name="arrow-right" className="w-4 h-4" />
+                            </a>
+                        </div>
+
+                        {/* Sprint */}
+                        <div className="bg-card p-6 rounded-xl flex flex-col h-full border border-primary/40">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-white">Hardening Sprint</h3>
+                                <span className="text-xs font-mono text-primary bg-primary/10 px-3 py-1 rounded">$5,000</span>
+                            </div>
+                            <p className="text-sm text-textMuted mb-4">Fixed-scope implementation to get deterministic CI running fast.</p>
+                            <ul className="space-y-2 text-sm text-textMuted mb-6">
+                                {['1 repo, up to 2 workflows', 'Up to 6 tools, 80 cases', 'Baseline gates + CI wiring'].map((item, i) => (
+                                    <li key={i} className="flex items-start gap-2"><Icon name="check" className="w-4 h-4 text-primary mt-0.5" />{item}</li>
+                                ))}
+                            </ul>
+                            <a href="#" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">
+                                Book a sprint <Icon name="arrow-right" className="w-4 h-4" />
+                            </a>
+                        </div>
+
+                        {/* Assurance */}
+                        <div className="bg-card border border-white/5 p-6 rounded-xl flex flex-col h-full">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-white">Assurance</h3>
+                                <span className="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded">$2,000/mo</span>
+                            </div>
+                            <p className="text-sm text-textMuted mb-4">Monthly retainer to keep evals current and CI gates stable.</p>
+                            <ul className="space-y-2 text-sm text-textMuted mb-6">
+                                {['Up to 20 case/cassette updates', 'Budget tuning + baseline refresh', 'One incident window per month'].map((item, i) => (
+                                    <li key={i} className="flex items-start gap-2"><Icon name="check" className="w-4 h-4 text-primary mt-0.5" />{item}</li>
+                                ))}
+                            </ul>
+                            <a href="#" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-white font-semibold rounded-lg hover:border-textMuted transition-colors">
+                                Start assurance <Icon name="arrow-right" className="w-4 h-4" />
+                            </a>
+                        </div>
+                    </div>
+                </FadeIn>
+            </section>
+        );
+
+        const Footer = () => (
+            <footer className="border-t border-border bg-card">
+                <div className="max-w-7xl mx-auto px-6 py-12 grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                                <Icon name="bot" size={12} color="white" strokeWidth="3" />
+                            </div>
+                            <span className="font-bold text-white text-sm">RunLedger</span>
+                        </div>
+                        <p className="text-sm text-textMuted">CI harness with deterministic replay, hard contracts, and baselines.</p>
+                        <div className="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                            ALL SYSTEMS OPERATIONAL
+                        </div>
+                    </div>
+
+                    {[
+                        { title: 'Product', links: ['Overview', 'Features', 'Integrations', 'Pricing'] },
+                        { title: 'Docs', links: ['Documentation', 'Quickstart', 'CLI Reference', 'Protocol'] },
+                        { title: 'Community', links: ['Community', 'Contributing', 'Support', 'Changelog'] },
+                        { title: 'Company', links: ['About', 'Mission', 'Principles', 'Security'] },
+                    ].map((col, i) => (
+                        <div key={i}>
+                            <h3 className="text-sm font-semibold text-white mb-3">{col.title}</h3>
+                            <ul className="space-y-2 text-sm text-textMuted">
+                                {col.links.map(link => (
+                                    <li key={link}><a href="#" className="hover:text-white transition-colors">{link}</a></li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+                <div className="max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-textMuted">
+                    <span>(c) 2025 RunLedger. MIT Licensed.</span>
+                    <div className="flex items-center gap-6">
+                        {['GitHub', 'Privacy', 'Terms', 'Security', 'Contact'].map(link => (
+                            <a key={link} href="#" className="hover:text-white transition-colors">{link}</a>
+                        ))}
+                    </div>
+                </div>
+            </footer>
+        );
+
+        // --- MAIN APP ---
+        const App = () => {
+            return (
+                <div className="relative text-white font-sans selection:bg-primary selection:text-white">
+                    <ThreeBackground />
+                    <Nav />
+                    <main className="relative z-10">
+                        <Hero />
+                        <RegressionViewer />
+                        <MetricsChart />
+                        <Comparison />
+                        <Features />
+                        <Integration />
+                        <Offers />
+                        
+                        {/* Final CTA */}
+                        <section className="max-w-4xl mx-auto px-6 pb-32 text-center">
+                            <div className="relative inline-block">
+                                <div className="absolute -inset-10 bg-primary/20 blur-3xl rounded-full opacity-20 pointer-events-none"></div>
+                                <h2 className="text-4xl font-bold text-white mb-8 relative z-10">Ship agents with confidence.</h2>
+                            </div>
+                            
+                            <div className="flex justify-center gap-6 relative z-10">
+                                <a href="https://pypi.org/project/runledger/" className="px-8 py-4 bg-white text-bg font-bold rounded-lg hover:bg-gray-200 transition-colors shadow-xl">
+                                    Get Started Free
+                                </a>
+                                <a href="https://github.com/runledger/Runledger" className="px-8 py-4 bg-card border border-border text-white font-medium rounded-lg hover:border-textMuted transition-colors">
+                                    Read the Manifesto
+                                </a>
+                            </div>
+                        </section>
+
+                        <Footer />
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
-
-
