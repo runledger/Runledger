@@ -1,8 +1,8 @@
 # RunLedger
 
-[![CI](https://github.com/ZackMitchell910/runledger/actions/workflows/ci.yml/badge.svg)](https://github.com/ZackMitchell910/runledger/actions/workflows/ci.yml)
+[![CI](https://github.com/runledger/Runledger/actions/workflows/ci.yml/badge.svg)](https://github.com/runledger/Runledger/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/runledger)](https://pypi.org/project/runledger/)
-[![License](https://img.shields.io/github/license/ZackMitchell910/runledger)](LICENSE)
+[![License](https://img.shields.io/github/license/runledger/Runledger)](LICENSE)
 
 **CI for tool-using agents.** Deterministic eval suites with record/replay tool calls, hard assertions, budgets, and PR regression gates.
 
@@ -293,7 +293,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run deterministic evals (replay)
-        uses: ZackMitchell910/runledger@v0.1.0
+        uses: runledger/Runledger@v0.1.0
         with:
           path: ./evals/demo
           mode: replay
