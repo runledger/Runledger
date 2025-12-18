@@ -671,6 +671,14 @@
         const Nav = () => {
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+            const navLinks = [
+                { label: 'Docs', href: 'https://github.com/runledger/Runledger#readme' },
+                { label: 'Reference', href: 'reference.html' },
+                { label: 'Integrations', href: 'integrations.html' },
+                { label: 'Pricing', href: 'pricing.html' },
+                { label: 'Changelog', href: 'changelog.html' },
+            ];
+            
             return (
                 <nav className="fixed top-0 w-full z-50 glass-panel h-16">
                     <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
@@ -682,15 +690,15 @@
                         </div>
                         
                         <div className="hidden md:flex items-center gap-8">
-                            {['Docs', 'Reference', 'Integrations', 'Pricing', 'Changelog'].map(link => (
-                                <a key={link} href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors">{link}</a>
+                            {navLinks.map(({ label, href }) => (
+                                <a key={label} href={href} className="text-sm font-medium text-textMuted hover:text-white transition-colors">{label}</a>
                             ))}
-                            <a href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors">GitHub</a>
+                            <a href="https://github.com/runledger/Runledger" className="text-sm font-medium text-textMuted hover:text-white transition-colors">GitHub</a>
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <a href="#" className="hidden md:block text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
-                            <a href="#" className="px-4 py-2 bg-white text-bg font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors shadow-lg shadow-white/10">
+                            <a href="https://github.com/runledger/Runledger/discussions" className="hidden md:block text-sm font-medium text-textMuted hover:text-white transition-colors">Community</a>
+                            <a href="https://pypi.org/project/runledger/" className="px-4 py-2 bg-white text-bg font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors shadow-lg shadow-white/10">
                                 Get Started
                             </a>
                             <button 
@@ -706,12 +714,12 @@
                     {/* Mobile Menu Dropdown */}
                     {isMobileMenuOpen && (
                         <div className="md:hidden absolute top-16 left-0 w-full bg-[#0A0C12] border-b border-white/5 py-4 px-6 flex flex-col gap-4 shadow-2xl animate-fade-in">
-                            {['Docs', 'Reference', 'Integrations', 'Pricing', 'Changelog'].map(link => (
-                                <a key={link} href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors block">{link}</a>
+                            {navLinks.map(({ label, href }) => (
+                                <a key={label} href={href} className="text-sm font-medium text-textMuted hover:text-white transition-colors block">{label}</a>
                             ))}
-                            <a href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors block">GitHub</a>
+                            <a href="https://github.com/runledger/Runledger" className="text-sm font-medium text-textMuted hover:text-white transition-colors block">GitHub</a>
                             <hr className="border-white/5" />
-                            <a href="#" className="text-sm font-medium text-textMuted hover:text-white transition-colors block">Community</a>
+                            <a href="https://github.com/runledger/Runledger/discussions" className="text-sm font-medium text-textMuted hover:text-white transition-colors block">Community</a>
                         </div>
                     )}
                 </nav>
@@ -761,7 +769,7 @@
                                         <Icon name={copied ? 'check' : 'copy'} className="w-4 h-4 text-textMuted group-hover:text-white transition-colors" />
                                     </div>
                                 </button>
-                                <a href="#" className="h-14 px-8 bg-white text-bg font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                                <a href="https://github.com/runledger/runledger-demo" className="h-14 px-8 bg-white text-bg font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                                     View Live Demo
                                     <Icon name="arrow-right" className="w-4 h-4" />
                                 </a>
@@ -1044,7 +1052,7 @@
                                     <li key={i} className="flex items-start gap-2"><Icon name="check" className="w-4 h-4 text-primary mt-0.5" />{item}</li>
                                 ))}
                             </ul>
-                            <a href="#" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">
+                            <a href="https://pypi.org/project/runledger/" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">
                                 Install CLI <Icon name="arrow-right" className="w-4 h-4" />
                             </a>
                         </div>
@@ -1061,7 +1069,7 @@
                                     <li key={i} className="flex items-start gap-2"><Icon name="check" className="w-4 h-4 text-primary mt-0.5" />{item}</li>
                                 ))}
                             </ul>
-                            <a href="#" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">
+                            <a href="https://github.com/runledger/Runledger/discussions" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-white text-bg font-semibold rounded-lg hover:bg-gray-200 transition-colors">
                                 Book a sprint <Icon name="arrow-right" className="w-4 h-4" />
                             </a>
                         </div>
@@ -1078,7 +1086,7 @@
                                     <li key={i} className="flex items-start gap-2"><Icon name="check" className="w-4 h-4 text-primary mt-0.5" />{item}</li>
                                 ))}
                             </ul>
-                            <a href="#" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-white font-semibold rounded-lg hover:border-textMuted transition-colors">
+                            <a href="https://github.com/runledger/Runledger/discussions" className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-white font-semibold rounded-lg hover:border-textMuted transition-colors">
                                 Start assurance <Icon name="arrow-right" className="w-4 h-4" />
                             </a>
                         </div>
@@ -1087,49 +1095,93 @@
             </section>
         );
 
-        const Footer = () => (
-            <footer className="border-t border-border bg-card">
-                <div className="max-w-7xl mx-auto px-6 py-12 grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                                <Icon name="bot" size={12} color="white" strokeWidth="3" />
-                            </div>
-                            <span className="font-bold text-white text-sm">RunLedger</span>
-                        </div>
-                        <p className="text-sm text-textMuted">CI harness with deterministic replay, hard contracts, and baselines.</p>
-                        <div className="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                            ALL SYSTEMS OPERATIONAL
-                        </div>
-                    </div>
+        const Footer = () => {
+            const columns = [
+                {
+                    title: 'Product',
+                    links: [
+                        { label: 'Overview', href: '#hero' },
+                        { label: 'Features', href: '#demo' },
+                        { label: 'Integrations', href: 'integrations.html' },
+                        { label: 'Pricing', href: '#offers' },
+                    ],
+                },
+                {
+                    title: 'Docs',
+                    links: [
+                        { label: 'Documentation', href: 'https://github.com/runledger/Runledger#readme' },
+                        { label: 'Quickstart', href: 'https://github.com/runledger/Runledger/blob/main/docs/quickstart.md' },
+                        { label: 'CLI Reference', href: 'reference.html' },
+                        { label: 'Protocol', href: 'https://github.com/runledger/Runledger#agent-under-test-protocol' },
+                    ],
+                },
+                {
+                    title: 'Community',
+                    links: [
+                        { label: 'Community', href: 'https://github.com/runledger/Runledger/discussions' },
+                        { label: 'Contributing', href: 'CONTRIBUTING.md' },
+                        { label: 'Support', href: 'https://github.com/runledger/Runledger/issues' },
+                        { label: 'Changelog', href: 'changelog.html' },
+                    ],
+                },
+                {
+                    title: 'Company',
+                    links: [
+                        { label: 'About', href: 'about.html' },
+                        { label: 'Security', href: 'security.html' },
+                        { label: 'Privacy', href: 'privacy.html' },
+                        { label: 'Terms', href: 'terms.html' },
+                    ],
+                },
+            ];
 
-                    {[
-                        { title: 'Product', links: ['Overview', 'Features', 'Integrations', 'Pricing'] },
-                        { title: 'Docs', links: ['Documentation', 'Quickstart', 'CLI Reference', 'Protocol'] },
-                        { title: 'Community', links: ['Community', 'Contributing', 'Support', 'Changelog'] },
-                        { title: 'Company', links: ['About', 'Mission', 'Principles', 'Security'] },
-                    ].map((col, i) => (
-                        <div key={i}>
-                            <h3 className="text-sm font-semibold text-white mb-3">{col.title}</h3>
-                            <ul className="space-y-2 text-sm text-textMuted">
-                                {col.links.map(link => (
-                                    <li key={link}><a href="#" className="hover:text-white transition-colors">{link}</a></li>
-                                ))}
-                            </ul>
+            const bottomLinks = [
+                { label: 'GitHub', href: 'https://github.com/runledger/Runledger' },
+                { label: 'Privacy', href: 'privacy.html' },
+                { label: 'Terms', href: 'terms.html' },
+                { label: 'Security', href: 'security.html' },
+                { label: 'Contact', href: 'https://github.com/runledger/Runledger/discussions' },
+            ];
+
+            return (
+                <footer className="border-t border-border bg-card">
+                    <div className="max-w-7xl mx-auto px-6 py-12 grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                                    <Icon name="bot" size={12} color="white" strokeWidth="3" />
+                                </div>
+                                <span className="font-bold text-white text-sm">RunLedger</span>
+                            </div>
+                            <p className="text-sm text-textMuted">CI harness with deterministic replay, hard contracts, and baselines.</p>
+                            <div className="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                ALL SYSTEMS OPERATIONAL
+                            </div>
                         </div>
-                    ))}
-                </div>
-                <div className="max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-textMuted">
-                    <span>(c) 2025 RunLedger. MIT Licensed.</span>
-                    <div className="flex items-center gap-6">
-                        {['GitHub', 'Privacy', 'Terms', 'Security', 'Contact'].map(link => (
-                            <a key={link} href="#" className="hover:text-white transition-colors">{link}</a>
+
+                        {columns.map((col, i) => (
+                            <div key={i}>
+                                <h3 className="text-sm font-semibold text-white mb-3">{col.title}</h3>
+                                <ul className="space-y-2 text-sm text-textMuted">
+                                    {col.links.map(link => (
+                                        <li key={link.label}><a href={link.href} className="hover:text-white transition-colors">{link.label}</a></li>
+                                    ))}
+                                </ul>
+                            </div>
                         ))}
                     </div>
-                </div>
-            </footer>
-        );
+                    <div className="max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-textMuted">
+                        <span>(c) 2025 RunLedger. MIT Licensed.</span>
+                        <div className="flex items-center gap-6">
+                            {bottomLinks.map(link => (
+                                <a key={link.label} href={link.href} className="hover:text-white transition-colors">{link.label}</a>
+                            ))}
+                        </div>
+                    </div>
+                </footer>
+            );
+        };
 
         // --- MAIN APP ---
         const App = () => {
