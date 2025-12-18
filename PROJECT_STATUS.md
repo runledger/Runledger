@@ -3,15 +3,15 @@
 ## Summary
 - Core engine is complete with replay/record, assertions, budgets, baselines, diffs, report, and tests.
 - `runledger init` now generates a replay-ready suite, cassette, baseline, and agent stub.
-- This repo has CI + badges; PyPI `0.1.0` is published; action tag `v0.1` is available.
-- Demo repo is published (`runledger/runledger-demo`) with regression branches and CI running on all branches.
+- CI + badges live; PyPI `0.1.0` published; action tags `v0.1.0` and `v0.1` available.
+- Demo repo is published (`runledger/runledger-demo`) with regression branches; CI runs on all branches.
 - Release workflow is live and published `v0.1.0`.
 
 ## Deliverable status (v0.1 launch quality)
 - Deliverable 1 (init + green run): ✅ complete; clean venv + PyPI verification passed.
-- Deliverable 2 (killer demo repo): ✅ repo + regression branches published; CI runs on all branches.
-- Deliverable 3 (release): ✅ v0.1.0 published to PyPI, action tagged v0.1; clean install verified.
-- Deliverable 4 (dogfood CI): ✅ workflows in place and running on org.
+- Deliverable 2 (killer demo repo): ✅ repo + regression branches published; CI runs on all branches (main green, regressions set to fail).
+- Deliverable 3 (release): ✅ v0.1.0 published to PyPI; action tags `v0.1.0` and `v0.1`; clean install verified.
+- Deliverable 4 (dogfood CI): ✅ workflows in place and running on org (CI green on main).
 
 ## Next steps
 - Add README GIF/screenshot + optional CI badge in demo repo.
@@ -51,7 +51,7 @@ runledger run ./evals/demo --mode replay --baseline ./baselines/demo.json
   - [x] Baseline exists and does not false-fail on different machines
 - [x] Post-init instructions printed with next commands
 - [x] Verified in a clean venv with `pip install <local path>` (WSL)
-- [ ] Verify `pipx install runledger==0.1.0` after PyPI release
+- [x] Verified from PyPI with `pipx install runledger==0.1.0`
 
 ## Acceptance criteria
 
@@ -71,23 +71,23 @@ Anyone can watch CI fail for three real reasons without reading docs.
 ## Checklist
 
 - [x] Scaffold exists under `demo_repo/` using the `init` output
-- [x] CI workflow in the scaffold runs replay mode and uploads artifacts
+- [x] CI workflow in the scaffold runs replay mode and uploads artifacts (all branches + manual trigger)
 - [x] Regression templates added under `demo_repo/regressions/`
-- [ ] Publish a separate demo repo
-- [ ] Add regression branches:
-  - [ ] `regression-schema` (JSONSchema failure)
-  - [ ] `regression-tools` (tool contract failure or allowlist failure)
-  - [ ] `regression-budget` (budget or regression threshold failure)
+- [x] Publish demo repo to `runledger/runledger-demo`
+- [x] Add regression branches:
+  - [x] `regression-schema` (JSONSchema failure)
+  - [x] `regression-tools` (tool contract failure or allowlist failure)
+  - [x] `regression-budget` (budget or regression threshold failure)
 - [ ] Add README GIF or screenshot of a failing PR
 
 ## Acceptance criteria
 
-- [ ] `main` branch CI green
-- [ ] Each regression branch CI red with a clear reason in:
-  - [ ] GitHub check output
-  - [ ] `junit.xml`
-  - [ ] `summary.json`
-  - [ ] `report.html`
+- [x] `main` branch CI green
+- [x] Each regression branch CI red with a clear reason in:
+  - [x] GitHub check output
+  - [x] `junit.xml`
+  - [x] `summary.json`
+  - [x] `report.html`
 
 ---
 
@@ -102,16 +102,16 @@ People can depend on it like a real tool.
 - [x] Version set to `0.1.0` in `pyproject.toml`
 - [x] `CHANGELOG.md` added
 - [x] Release workflow added with release notes and demo repo link
-- [ ] Tag `v0.1.0` and publish to PyPI
-- [ ] Tag the GitHub Action (`@v0.1.0` or `@v0.1`)
-- [ ] Verify in a clean env:
-  - [ ] `pipx install runledger==0.1.0`
-  - [ ] `runledger init` works
+- [x] Tag `v0.1.0` and publish to PyPI
+- [x] Tag the GitHub Action (`@v0.1.0` and `@v0.1`)
+- [x] Verify in a clean env:
+  - [x] `pipx install runledger==0.1.0`
+  - [x] `runledger init` works
 
 ## Acceptance criteria
 
-- [ ] A user can install from PyPI and run init + replay without cloning the repo
-- [ ] The GitHub Action works when referenced by tag
+- [x] A user can install from PyPI and run init + replay without cloning the repo
+- [x] The GitHub Action works when referenced by tag
 
 ---
 
@@ -126,7 +126,7 @@ This repo proves the product.
 - [x] Workflow runs pytest and the demo suite in replay mode
 - [x] Artifacts are uploaded (`run.jsonl`, `summary.json`, `junit.xml`, `report.html`)
 - [x] README badges added (CI, PyPI, license)
-- [ ] Confirm CI run green on GitHub
+- [x] Confirm CI run green on GitHub (org main)
 
 ## Acceptance criteria
 
