@@ -39,7 +39,7 @@ def _score_repo(repo: dict, cfg: dict, has_ci: bool) -> float:
 
 def _has_ci(full_name: str) -> bool:
     result = run(
-        ["gh", "api", f"repos/{full_name}/contents/.github/workflows"],
+        ["gh", "api", "-X", "GET", f"repos/{full_name}/contents/.github/workflows"],
         check=False,
     )
     if result.returncode == 0:
@@ -60,6 +60,8 @@ def _search(query: str, max_results: int) -> list[dict]:
             [
                 "gh",
                 "api",
+                "-X",
+                "GET",
                 "search/repositories",
                 "-f",
                 f"q={query}",
