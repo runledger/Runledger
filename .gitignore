@@ -10,6 +10,9 @@ dist/
 .ruff_cache/
 .agentci/
 runledger_out/
+automation/workdir/
+automation/targets.json
+automation/config.yaml
 .idea/
 .vscode/
 .DS_Store
