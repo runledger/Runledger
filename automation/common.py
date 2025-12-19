@@ -28,10 +28,22 @@ def load_config(path: str | Path) -> Config:
     return Config(data=payload, path=cfg_path)
 
 
-def ensure_tool(cmd: str) -> None:
-    result = subprocess.run([cmd, "--version"], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise SystemExit(f"Required tool not found: {cmd}")
+def ensure_tool(cmd: str, args: list[str] | None = None) -> None:
+    candidates = [args] if args else [["--version"], ["-V"], ["--help"]]
+    for candidate in candidates:
+        if not candidate:
+            continue
+        try:
+            result = subprocess.run(
+                [cmd, *candidate],
+                capture_output=True,
+                text=True,
+            )
+        except OSError:
+            continue
+        if result.returncode == 0:
+            return
+    raise SystemExit(f"Required tool not found or unusable: {cmd}")
 
 
 def run(cmd: list[str], *, cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess:

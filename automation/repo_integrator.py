@@ -37,8 +37,10 @@ def main() -> None:
     run(["git", "clone", f"https://github.com/{args.repo}.git", str(repo_dir)])
     run(["git", "checkout", "-b", args.branch], cwd=repo_dir)
 
-    print("TODO: generate evals, baseline, and workflow using templates.")
-    print("Repo cloned at:", repo_dir)
+    raise SystemExit(
+        "RepoIntegrator is not implemented yet. Use --dry-run, or add patch generation "
+        "for evals/baseline/workflow before running."
+    )
 
 
 if __name__ == "__main__":
