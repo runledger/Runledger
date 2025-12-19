@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://runleder.io/sitemap.xml
+Sitemap: https://runledger.io/sitemap.xml
 

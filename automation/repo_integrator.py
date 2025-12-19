@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 import re
 import shutil
@@ -81,7 +82,6 @@ def main() -> None:
         "assertions": [{"type": "json_schema", "schema_path": "schema.json"}],
         "budgets": {"max_wall_ms": 20000, "max_tool_calls": 1, "max_tool_errors": 0},
         "regression": {"min_pass_rate": 1.0},
-        "baseline_path": _relpath(baseline_file, suite_dir),
     }
     suite_path.write_text(yaml.safe_dump(suite_yaml, sort_keys=False), encoding="utf-8")
 
@@ -154,12 +154,14 @@ def main() -> None:
         encoding="utf-8",
     )
 
+    if not args.skip_baseline:
+        _generate_baseline(repo_dir, suite_dir, baseline_file)
+        suite_yaml["baseline_path"] = _relpath(baseline_file, suite_dir)
+        suite_path.write_text(yaml.safe_dump(suite_yaml, sort_keys=False), encoding="utf-8")
+
     _write_workflow(repo_dir, workflow_path, suite_dir, baseline_file, action_ref)
     _append_readme(repo_dir, suite_dir, baseline_file)
     _ensure_gitignore(repo_dir)
-
-    if not args.skip_baseline:
-        _generate_baseline(repo_dir, suite_dir, baseline_file)
 
     _check_diff_size(repo_dir, max_diff_lines)
 
@@ -169,15 +171,12 @@ def main() -> None:
     print("Baseline:", baseline_file)
 
 
-if __name__ == "__main__":
-    main()
-
-
 def _relpath(path: Path, base: Path) -> str:
     try:
-        return path.relative_to(base).as_posix()
+        rel = os.path.relpath(path.resolve(), start=base.resolve())
+        return Path(rel).as_posix()
     except ValueError:
-        return path.as_posix()
+        return path.resolve().as_posix()
 
 
 def _write_workflow(repo_dir: Path, workflow_path: Path, suite_dir: Path, baseline_file: Path, action_ref: str) -> None:
@@ -225,12 +224,31 @@ def _ensure_gitignore(repo_dir: Path) -> None:
 
 
 def _generate_baseline(repo_dir: Path, suite_dir: Path, baseline_file: Path) -> None:
-    result = run(["runledger", "run", str(suite_dir), "--mode", "replay"], cwd=repo_dir, check=True)
-    match = re.search(r"Artifacts written to:\\s*(.+)", result.stdout)
-    if not match:
-        raise SystemExit("Unable to locate run output path from RunLedger output.")
-    run_dir = match.group(1).strip()
-    run(["runledger", "baseline", "promote", "--from", run_dir, "--to", str(baseline_file)], cwd=repo_dir)
+    suite_path = suite_dir.resolve()
+    result = run(["runledger", "run", str(suite_path), "--mode", "replay"], cwd=repo_dir, check=False)
+    output = "\n".join([result.stdout, result.stderr]).strip()
+    if result.returncode != 0:
+        raise SystemExit(f"runledger run failed:\n{output}")
+    clean_output = re.sub(r"\x1b\[[0-9;]*m", "", output)
+    run_dir = ""
+    for line in clean_output.splitlines():
+        if "Artifacts written to:" in line:
+            run_dir = line.split("Artifacts written to:", 1)[1].strip()
+            break
+    if not run_dir:
+        raise SystemExit(f"Unable to locate run output path from RunLedger output:\n{output}")
+    run(
+        [
+            "runledger",
+            "baseline",
+            "promote",
+            "--from",
+            run_dir,
+            "--to",
+            str(baseline_file.resolve()),
+        ],
+        cwd=repo_dir,
+    )
 
 
 def _check_diff_size(repo_dir: Path, max_diff_lines: int) -> None:
@@ -249,3 +267,7 @@ def _check_diff_size(repo_dir: Path, max_diff_lines: int) -> None:
         total += added + deleted
     if total > max_diff_lines:
         raise SystemExit(f"Diff too large: {total} lines > max_diff_lines={max_diff_lines}")
+
+
+if __name__ == "__main__":
+    main()

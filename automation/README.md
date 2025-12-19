@@ -19,10 +19,29 @@ cp automation/config.example.yaml automation/config.yaml
 3) Find candidate repos:
 
 ```bash
-python automation/repo_finder.py --config automation/config.yaml --output automation/targets.json
+python -m automation.repo_finder --config automation/config.yaml --output automation/targets.json
 ```
 
 4) Review the target list (Gate A). Only then move to integration.
+
+## GitHub App auth (optional)
+
+If you want PRs to appear as `runledger[bot]`, use a GitHub App installation token
+when running `gh pr create`.
+
+Example (token expires ~1 hour):
+
+```bash
+token=$(python -m automation.app_token --app-id 12345 --key ~/.config/runledger/app.pem --repo runledger/tuui)
+GITHUB_TOKEN="$token" gh pr create --repo AI-QL/tuui --head runledger:runledger/replay-gate --base main \
+  --title "Add RunLedger replay gate for agent regressions" \
+  --body-file automation/drafts/AI-QL_tuui_pr.md
+unset GITHUB_TOKEN
+```
+
+Notes:
+- RepoFinder still needs your user token because GitHub App tokens cannot use the search API.
+- Keep the `.pem` private key out of the repo.
 
 ## Guardrails
 

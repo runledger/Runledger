@@ -7,7 +7,8 @@
 - [x] Add OutreachBot skeleton
 - [x] Add workflow + README templates
 - [ ] Implement repo adapter detection (language/entrypoint)
-- [ ] Implement eval/cassette/baseline generation logic
-- [ ] Implement PR diff size check (<200 LOC)
+- [x] Implement eval/cassette/baseline generation logic
+- [x] Implement PR diff size check (<200 LOC)
+- [x] Add GitHub App token helper
 - [ ] Implement approval gates (target list + PR review)
 - [ ] Pilot on 1-2 repos and refine templates
