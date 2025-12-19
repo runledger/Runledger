@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 import json
 
+import sys
+
 from automation.common import Config, ensure_tool, load_config, run, write_json
 
 
@@ -36,27 +38,45 @@ def _score_repo(repo: dict, cfg: dict, has_ci: bool) -> float:
 
 
 def _has_ci(full_name: str) -> bool:
-    try:
-        run(["gh", "api", f"repos/{full_name}/contents/.github/workflows"])
-        return True
-    except Exception:
-        return False
-
-
-def _search(query: str, per_page: int = 50) -> list[dict]:
     result = run(
-        [
-            "gh",
-            "api",
-            "search/repositories",
-            "-f",
-            f"q={query}",
-            "-f",
-            f"per_page={per_page}",
-        ]
+        ["gh", "api", f"repos/{full_name}/contents/.github/workflows"],
+        check=False,
     )
-    payload = json.loads(result.stdout)
-    return payload.get("items", [])
+    if result.returncode == 0:
+        return True
+    if result.stderr:
+        print(
+            f"Warning: unable to check CI for {full_name}: {result.stderr.strip()}",
+            file=sys.stderr,
+        )
+    return False
+
+
+def _search(query: str, max_results: int) -> list[dict]:
+    items: list[dict] = []
+    per_page = min(100, max_results)
+    for page in range(1, 11):
+        result = run(
+            [
+                "gh",
+                "api",
+                "search/repositories",
+                "-f",
+                f"q={query}",
+                "-f",
+                f"per_page={per_page}",
+                "-f",
+                f"page={page}",
+            ]
+        )
+        payload = json.loads(result.stdout)
+        batch = payload.get("items", [])
+        if not batch:
+            break
+        items.extend(batch)
+        if len(items) >= max_results:
+            break
+    return items[:max_results]
 
 
 def main() -> None:
@@ -73,7 +93,7 @@ def main() -> None:
 
     found: dict[str, dict] = {}
     for q in queries:
-        for repo in _search(q, per_page=min(50, max_results)):
+        for repo in _search(q, max_results=max_results):
             if repo.get("archived") or repo.get("fork"):
                 continue
             if repo.get("stargazers_count", 0) < min_stars:

@@ -18,7 +18,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     repo_path = Path(args.repo_path).resolve()
-    ensure_tool("runledger")
+    ensure_tool("runledger", ["--help"])
 
     print("Running RunLedger replay check...")
     run(
