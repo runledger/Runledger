@@ -137,17 +137,21 @@ def main() -> None:
                 "    sys.stdout.write(json.dumps(payload) + \"\\n\")",
                 "    sys.stdout.flush()",
                 "",
-                "for line in sys.stdin:",
-                "    line = line.strip()",
-                "    if not line:",
-                "        continue",
-                "    msg = json.loads(line)",
-                "    if msg.get(\"type\") == \"task_start\":",
-                "        ticket = msg.get(\"input\", {}).get(\"ticket\", \"\")",
-                "        send({\"type\": \"tool_call\", \"name\": \"search_docs\", \"call_id\": \"c1\", \"args\": {\"q\": ticket}})",
-                "    elif msg.get(\"type\") == \"tool_result\":",
-                "        send({\"type\": \"final_output\", \"output\": {\"category\": \"account\", \"reply\": \"Reset password instructions sent.\"}})",
-                "        break",
+                "def main():",
+                "    for line in sys.stdin:",
+                "        line = line.strip()",
+                "        if not line:",
+                "            continue",
+                "        msg = json.loads(line)",
+                "        if msg.get(\"type\") == \"task_start\":",
+                "            ticket = msg.get(\"input\", {}).get(\"ticket\", \"\")",
+                "            send({\"type\": \"tool_call\", \"name\": \"search_docs\", \"call_id\": \"c1\", \"args\": {\"q\": ticket}})",
+                "        elif msg.get(\"type\") == \"tool_result\":",
+                "            send({\"type\": \"final_output\", \"output\": {\"category\": \"account\", \"reply\": \"Reset password instructions sent.\"}})",
+                "            break",
+                "",
+                "if __name__ == \"__main__\":",
+                "    main()",
                 "",
             ]
         ),
@@ -156,6 +160,7 @@ def main() -> None:
 
     if not args.skip_baseline:
         _generate_baseline(repo_dir, suite_dir, baseline_file)
+        _normalize_baseline_paths(baseline_file, repo_dir)
         suite_yaml["baseline_path"] = _relpath(baseline_file, suite_dir)
         suite_path.write_text(yaml.safe_dump(suite_yaml, sort_keys=False), encoding="utf-8")
 
@@ -267,6 +272,51 @@ def _check_diff_size(repo_dir: Path, max_diff_lines: int) -> None:
         total += added + deleted
     if total > max_diff_lines:
         raise SystemExit(f"Diff too large: {total} lines > max_diff_lines={max_diff_lines}")
+
+
+def _normalize_baseline_paths(baseline_file: Path, repo_dir: Path) -> None:
+    data = json.loads(baseline_file.read_text(encoding="utf-8"))
+    repo_dir = repo_dir.resolve()
+
+    suite = data.get("suite")
+    if isinstance(suite, dict):
+        suite_path = suite.get("suite_path")
+        suite["suite_path"] = _normalize_path_value(suite_path, repo_dir)
+        agent_command = suite.get("agent_command")
+        if isinstance(agent_command, list):
+            suite["agent_command"] = [
+                _normalize_path_value(item, repo_dir) if isinstance(item, str) else item
+                for item in agent_command
+            ]
+
+    cases = data.get("cases")
+    if isinstance(cases, list):
+        for case in cases:
+            if not isinstance(case, dict):
+                continue
+            replay = case.get("replay")
+            if not isinstance(replay, dict):
+                continue
+            cassette_path = replay.get("cassette_path")
+            replay["cassette_path"] = _normalize_path_value(cassette_path, repo_dir)
+
+    baseline_file.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _normalize_path_value(value: str | None, base_dir: Path) -> str | None:
+    if value is None or not isinstance(value, str):
+        return value
+    path = Path(value)
+    if not path.is_absolute():
+        return path.as_posix()
+    try:
+        rel = path.resolve().relative_to(base_dir)
+    except ValueError:
+        return path.as_posix()
+    return rel.as_posix()
 
 
 if __name__ == "__main__":
