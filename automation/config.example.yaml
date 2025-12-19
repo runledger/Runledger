@@ -1,0 +1,29 @@
+search:
+  queries:
+    - "agent tool calls language:python"
+    - "autogen agents language:python"
+    - "langchain agent tools language:python"
+    - "llm agent tools language:typescript"
+  max_results: 50
+  min_stars: 10
+  max_age_days: 365
+  require_ci: true
+
+scoring:
+  stars_weight: 0.4
+  recency_weight: 0.4
+  ci_weight: 0.2
+
+integration:
+  suite_name: "runledger-demo"
+  evals_dir: "evals/runledger"
+  baseline_dir: "baselines"
+  workflow_path: ".github/workflows/runledger.yml"
+  action_ref: "runledger/Runledger@v0.1"
+  pypi_pkg: "runledger"
+  replay_only: true
+  max_diff_lines: 200
+
+output:
+  targets_json: "automation/targets.json"
+  workdir: "automation/workdir"
