@@ -8,7 +8,7 @@
 - [x] Add workflow + README templates
 - [x] Add workflow mode support (pull_request vs workflow_dispatch)
 - [x] Add PR/issue body templates (no garbled markdown)
-- [ ] Implement repo adapter detection (language/entrypoint)
+- [x] Implement repo adapter detection (language/entrypoint)
 - [x] Implement eval/cassette/baseline generation logic
 - [x] Implement PR diff size check (<200 LOC)
 - [x] Add GitHub App token helper
