@@ -33,6 +33,7 @@ python -m automation.repo_integrator --config automation/config.yaml --repo owne
 ```
 
 This writes the integration patch in `automation/workdir/...` and also generates a clean PR body draft in `automation/drafts/` (no PowerShell/backtick issues).
+It also writes `evals/runledger/INTEGRATION.md` in the target repo with entrypoint hints (detected by scanning config files like `README`, `pyproject.toml`, `package.json`, and common example folders).
 
 2) Gate B: review the diff in the workdir clone, then commit/push and open the PR (or open an issue first).
 
@@ -71,6 +72,7 @@ Notes:
 
 - Replay-only. No secrets. No live tool calls.
 - Keep diffs small (target <200 LOC).
+- Default CI mode is `workflow_dispatch` (manual) to avoid surprising existing CI. Switch to `pull_request` once maintainers opt in.
 - Two approval gates:
   - Gate A: approve target list.
   - Gate B: approve draft PR before submission.

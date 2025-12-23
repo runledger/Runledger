@@ -10,6 +10,7 @@ import json
 import yaml
 
 from automation.common import ensure_tool, load_config, run
+from automation.entrypoints import detect_entrypoints, render_entrypoints_markdown
 
 
 def parse_args() -> argparse.Namespace:
@@ -37,7 +38,7 @@ def main() -> None:
     baseline_dir = Path(integration_cfg.get("baseline_dir", "baselines"))
     workflow_path = Path(integration_cfg.get("workflow_path", ".github/workflows/runledger.yml"))
     action_ref = integration_cfg.get("action_ref", "runledger/Runledger@v0.1")
-    workflow_mode = str(integration_cfg.get("workflow_mode", "pull_request")).strip()
+    workflow_mode = str(integration_cfg.get("workflow_mode", "workflow_dispatch")).strip()
     replay_only = bool(integration_cfg.get("replay_only", True))
     max_diff_lines = int(integration_cfg.get("max_diff_lines", 200))
     drafts_dir = Path(cfg.data.get("output", {}).get("drafts_dir", "automation/drafts"))
@@ -59,6 +60,8 @@ def main() -> None:
 
     run(["git", "clone", f"https://github.com/{args.repo}.git", str(repo_dir)])
     run(["git", "checkout", "-b", args.branch], cwd=repo_dir)
+
+    detected_entrypoints = detect_entrypoints(repo_dir)
 
     suite_dir = repo_dir / evals_dir
     cases_dir = suite_dir / "cases"
@@ -162,6 +165,14 @@ def main() -> None:
         encoding="utf-8",
     )
 
+    _write_integration_hints(
+        repo_dir=repo_dir,
+        suite_dir=suite_dir,
+        baseline_file=baseline_file,
+        repo_slug=args.repo,
+        detected_entrypoints=detected_entrypoints,
+    )
+
     if not args.skip_baseline:
         _generate_baseline(repo_dir, suite_dir, baseline_file)
         _normalize_baseline_paths(baseline_file, repo_dir)
@@ -236,6 +247,34 @@ def _append_readme(repo_dir: Path, suite_dir: Path, baseline_file: Path) -> None
         readme.write_text(content.rstrip() + "\n\n" + note + "\n", encoding="utf-8")
     else:
         readme.write_text("# Repository\n\n" + note + "\n", encoding="utf-8")
+
+
+def _write_integration_hints(
+    *,
+    repo_dir: Path,
+    suite_dir: Path,
+    baseline_file: Path,
+    repo_slug: str,
+    detected_entrypoints,
+) -> None:
+    template_path = Path(__file__).parent / "templates" / "INTEGRATION.md"
+    if not template_path.exists():
+        return
+
+    suite_rel = _relpath(suite_dir, repo_dir)
+    baseline_rel = _relpath(baseline_file, repo_dir)
+    entrypoints_md = render_entrypoints_markdown(detected_entrypoints)
+
+    text = (
+        template_path.read_text(encoding="utf-8")
+        .replace("{{repo_slug}}", repo_slug)
+        .replace("{{suite_path}}", suite_rel)
+        .replace("{{baseline_path}}", baseline_rel)
+        .replace("{{entrypoints_md}}", entrypoints_md.rstrip())
+    )
+
+    target = suite_dir / "INTEGRATION.md"
+    target.write_text(text.rstrip() + "\n", encoding="utf-8")
 
 
 def _write_pr_draft(
