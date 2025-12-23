@@ -1,0 +1,16 @@
+name: runledger-gate
+on:
+  workflow_dispatch:
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run RunLedger (replay)
+        uses: {{action_ref}}
+        with:
+          path: {{suite_path}}
+          mode: replay

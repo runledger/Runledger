@@ -20,6 +20,7 @@ integration:
   baseline_dir: "baselines"
   workflow_path: ".github/workflows/runledger.yml"
   action_ref: "runledger/Runledger@v0.1"
+  workflow_mode: "pull_request" # pull_request | workflow_dispatch | none
   pypi_pkg: "runledger"
   replay_only: true
   max_diff_lines: 200
@@ -27,3 +28,4 @@ integration:
 output:
   targets_json: "automation/targets.json"
   workdir: "automation/workdir"
+  drafts_dir: "automation/drafts"
