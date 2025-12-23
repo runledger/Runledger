@@ -1,0 +1,20 @@
+name: runledger-gate
+on:
+  pull_request:
+    paths:
+      - "{{suite_path}}/**"
+      - "{{baseline_path}}"
+      - ".github/workflows/runledger.yml"
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run RunLedger (replay)
+        uses: {{action_ref}}
+        with:
+          path: {{suite_path}}
+          mode: replay

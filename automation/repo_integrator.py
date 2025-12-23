@@ -37,8 +37,10 @@ def main() -> None:
     baseline_dir = Path(integration_cfg.get("baseline_dir", "baselines"))
     workflow_path = Path(integration_cfg.get("workflow_path", ".github/workflows/runledger.yml"))
     action_ref = integration_cfg.get("action_ref", "runledger/Runledger@v0.1")
+    workflow_mode = str(integration_cfg.get("workflow_mode", "pull_request")).strip()
     replay_only = bool(integration_cfg.get("replay_only", True))
     max_diff_lines = int(integration_cfg.get("max_diff_lines", 200))
+    drafts_dir = Path(cfg.data.get("output", {}).get("drafts_dir", "automation/drafts"))
 
     if args.dry_run:
         print("Dry run: would clone and prepare patch for", args.repo)
@@ -47,6 +49,8 @@ def main() -> None:
         print("Baseline dir:", baseline_dir)
         print("Workflow:", workflow_path)
         print("Action ref:", action_ref)
+        print("Workflow mode:", workflow_mode)
+        print("Drafts dir:", drafts_dir)
         return
 
     if repo_dir.exists():
@@ -164,9 +168,10 @@ def main() -> None:
         suite_yaml["baseline_path"] = _relpath(baseline_file, suite_dir)
         suite_path.write_text(yaml.safe_dump(suite_yaml, sort_keys=False), encoding="utf-8")
 
-    _write_workflow(repo_dir, workflow_path, suite_dir, baseline_file, action_ref)
+    _write_workflow(repo_dir, workflow_path, suite_dir, baseline_file, action_ref, workflow_mode)
     _append_readme(repo_dir, suite_dir, baseline_file)
     _ensure_gitignore(repo_dir)
+    _write_pr_draft(drafts_dir, args.repo, repo_dir, suite_dir, baseline_file, workflow_path)
 
     _check_diff_size(repo_dir, max_diff_lines)
 
@@ -184,15 +189,32 @@ def _relpath(path: Path, base: Path) -> str:
         return path.resolve().as_posix()
 
 
-def _write_workflow(repo_dir: Path, workflow_path: Path, suite_dir: Path, baseline_file: Path, action_ref: str) -> None:
-    template_path = Path(__file__).parent / "templates" / "runledger.yml"
+def _write_workflow(
+    repo_dir: Path,
+    workflow_path: Path,
+    suite_dir: Path,
+    baseline_file: Path,
+    action_ref: str,
+    workflow_mode: str,
+) -> None:
+    if workflow_mode == "none":
+        return
+
+    template_name = {
+        "pull_request": "runledger_pull_request.yml",
+        "workflow_dispatch": "runledger_workflow_dispatch.yml",
+    }.get(workflow_mode)
+    if template_name is None:
+        raise SystemExit(f"Unsupported workflow_mode: {workflow_mode}")
+
+    template_path = Path(__file__).parent / "templates" / template_name
     text = template_path.read_text(encoding="utf-8")
     suite_rel = _relpath(suite_dir, repo_dir)
     baseline_rel = _relpath(baseline_file, repo_dir)
     rendered = (
         text.replace("{{suite_path}}", suite_rel)
         .replace("{{baseline_path}}", baseline_rel)
-        .replace("runledger/Runledger@v0.1", action_ref)
+        .replace("{{action_ref}}", action_ref)
     )
     target = repo_dir / workflow_path
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -209,11 +231,40 @@ def _append_readme(repo_dir: Path, suite_dir: Path, baseline_file: Path) -> None
     )
     if readme.exists():
         content = readme.read_text(encoding="utf-8")
-        if "RunLedger CI gate" in content:
+        if "<!-- runledger:note:start -->" in content or "## RunLedger CI gate" in content:
             return
         readme.write_text(content.rstrip() + "\n\n" + note + "\n", encoding="utf-8")
     else:
         readme.write_text("# Repository\n\n" + note + "\n", encoding="utf-8")
+
+
+def _write_pr_draft(
+    drafts_dir: Path,
+    repo_slug: str,
+    repo_dir: Path,
+    suite_dir: Path,
+    baseline_file: Path,
+    workflow_path: Path,
+) -> None:
+    template_path = Path(__file__).parent / "templates" / "PR_body.md"
+    if not template_path.exists():
+        return
+
+    suite_rel = _relpath(suite_dir, repo_dir)
+    baseline_rel = _relpath(baseline_file, repo_dir)
+    workflow_rel = workflow_path.as_posix()
+
+    body = (
+        template_path.read_text(encoding="utf-8")
+        .replace("{{suite_path}}", suite_rel)
+        .replace("{{baseline_path}}", baseline_rel)
+        .replace("{{workflow_path}}", workflow_rel)
+    )
+
+    drafts_dir.mkdir(parents=True, exist_ok=True)
+    draft_path = drafts_dir / f"{repo_slug.replace('/', '_')}_pr.md"
+    draft_path.write_text(body, encoding="utf-8")
+    print("Draft PR body written to:", draft_path)
 
 
 def _ensure_gitignore(repo_dir: Path) -> None:

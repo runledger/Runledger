@@ -24,10 +24,34 @@ python -m automation.repo_finder --config automation/config.yaml --output automa
 
 4) Review the target list (Gate A). Only then move to integration.
 
-## GitHub App auth (optional)
+## Integration workflow (recommended)
 
-If you want PRs to appear as `runledger[bot]`, use a GitHub App installation token
-when running `gh pr create`.
+1) Generate a patch in a workdir clone:
+
+```bash
+python -m automation.repo_integrator --config automation/config.yaml --repo owner/name
+```
+
+This writes the integration patch in `automation/workdir/...` and also generates a clean PR body draft in `automation/drafts/` (no PowerShell/backtick issues).
+
+2) Gate B: review the diff in the workdir clone, then commit/push and open the PR (or open an issue first).
+
+## Issue-first outreach (recommended for new repos)
+
+Before opening PRs widely, consider opening a short issue asking if they want a PR. A template is in `automation/templates/issue_body.md`.
+
+You can use `automation/outreach_bot.py` to draft and submit either an issue or a PR:
+
+```bash
+python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional RunLedger replay gate?" --body automation/templates/issue_body.md
+python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional RunLedger replay gate?" --body automation/templates/issue_body.md --submit
+```
+
+## GitHub App auth (optional / limited)
+
+If you want PRs to appear as `runledger[bot]`, you need a GitHub App installation token.
+Important: GitHub Apps cannot open PRs on external repos unless the target repo owner installs the App.
+For third-party repos, PRs should come from a user account (or a separate bot user with a PAT).
 
 Example (token expires ~1 hour):
 

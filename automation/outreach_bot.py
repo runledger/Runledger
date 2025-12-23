@@ -9,9 +9,19 @@ from automation.common import ensure_tool, run
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Draft RunLedger outreach issue/PR text.")
     parser.add_argument("--repo", required=True, help="GitHub repo in owner/name form")
-    parser.add_argument("--title", default="Add deterministic replay gate for agent tests", help="PR title")
-    parser.add_argument("--body", required=True, help="Path to PR body markdown")
-    parser.add_argument("--submit", action="store_true", help="Create PR via gh (requires approval)")
+    parser.add_argument(
+        "--kind",
+        choices=["pr", "issue"],
+        default="pr",
+        help="What to create when --submit is set",
+    )
+    parser.add_argument(
+        "--title",
+        default="Add optional replay-only agent regression check",
+        help="PR/issue title",
+    )
+    parser.add_argument("--body", required=True, help="Path to markdown body")
+    parser.add_argument("--submit", action="store_true", help="Create PR/issue via gh (requires approval)")
     return parser.parse_args()
 
 
@@ -28,10 +38,15 @@ def main() -> None:
     print(body)
 
     if not args.submit:
-        print("\nSubmit flag not set. Review before opening a PR.")
+        print("\nSubmit flag not set. Review before submitting.")
         return
 
     ensure_tool("gh")
+    if args.kind == "issue":
+        run(["gh", "issue", "create", "--repo", args.repo, "--title", args.title, "--body", body])
+        print("Issue created.")
+        return
+
     run(["gh", "pr", "create", "--repo", args.repo, "--title", args.title, "--body", body])
     print("PR created.")
 
