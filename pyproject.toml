@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "runledger"
-version = "0.1.0"
+version = "0.1.1"
 description = "CI for tool-using agents: deterministic eval suites with record/replay, hard assertions, budgets, and PR regression gates."
 readme = "README.md"
 requires-python = ">=3.9"
