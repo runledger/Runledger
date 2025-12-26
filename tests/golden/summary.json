@@ -124,7 +124,7 @@
     "mode": "replay",
     "run_id": "20250101-000000-abc123"
   },
-  "runledger_version": "0.1.0",
+  "runledger_version": "0.1.1",
   "schema_version": 1,
   "suite": {
     "agent_command": [

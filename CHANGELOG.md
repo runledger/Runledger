@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1] - 2025-12-26
+
+### Changed
+
+- GitHub Action now includes Marketplace branding metadata.
+- `pytest` config avoids collecting tests in `automation/workdir/` clones.
+- Docs: composite action usage points to `runledger/Runledger@v0.1`; release notes link to the demo repo.
+
 ## [0.1.0] - 2025-12-17
 
 ### Added
