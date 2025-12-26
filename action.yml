@@ -1,5 +1,9 @@
 name: RunLedger
 description: Run RunLedger eval suites in CI and upload artifacts.
+author: runledger
+branding:
+  icon: check-circle
+  color: blue
 inputs:
   path:
     description: Path to the eval suite directory.

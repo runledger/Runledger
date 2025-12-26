@@ -320,7 +320,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run deterministic evals (replay)
-        uses: runledger/Runledger@v0.1.0
+        uses: runledger/Runledger@v0.1
         with:
           path: ./evals/demo
           mode: replay

@@ -24,7 +24,7 @@ jobs:
         run: |
           cat CHANGELOG.md > release_notes.md
           echo "" >> release_notes.md
-          echo "Demo repo: https://github.com/ZackMitchell910/runledger/tree/main/demo_repo" >> release_notes.md
+          echo "Demo repo: https://github.com/runledger/runledger-demo" >> release_notes.md
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

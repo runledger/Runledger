@@ -37,8 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: <OWNER>/<REPO>@<VERSION>
+      - uses: runledger/Runledger@v0.1
         with:
           path: ./evals/demo
           mode: replay
 ```
+
+Note: if your `suite.yaml` includes `baseline_path`, RunLedger will automatically compute a regression diff vs that baseline (no extra flags needed).
