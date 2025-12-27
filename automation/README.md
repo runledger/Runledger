@@ -29,6 +29,9 @@ python -m automation.repo_finder --config automation/config.yaml --output automa
 1) Generate a patch in a workdir clone:
 
 ```bash
+cp automation/approved_targets.example.txt automation/approved_targets.txt
+# add one repo per line: owner/name
+
 python -m automation.repo_integrator --config automation/config.yaml --repo owner/name
 ```
 
@@ -45,7 +48,7 @@ You can use `automation/outreach_bot.py` to draft and submit either an issue or 
 
 ```bash
 python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional RunLedger replay gate?" --body automation/templates/issue_body.md
-python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional RunLedger replay gate?" --body automation/templates/issue_body.md --submit
+python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional RunLedger replay gate?" --body automation/templates/issue_body.md --submit --confirm owner/name
 ```
 
 ## GitHub App auth (optional / limited)

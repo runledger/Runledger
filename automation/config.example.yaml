@@ -14,6 +14,12 @@ scoring:
   recency_weight: 0.4
   ci_weight: 0.2
 
+approval:
+  # Gate A: require repos to be explicitly approved before running RepoIntegrator.
+  # Recommended: keep this file uncommitted (it is ignored by .gitignore).
+  approved_targets_file: "approved_targets.txt"
+  require_approved_targets: true
+
 integration:
   suite_name: "runledger-demo"
   evals_dir: "evals/runledger"

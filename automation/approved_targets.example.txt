@@ -1,0 +1,8 @@
+# Gate A: approved targets for RepoIntegrator
+#
+# Add one repo per line in the form:
+#   owner/name
+#
+# Example:
+#   AI-QL/tuui
+#   cryxnet/DeepMCPAgent

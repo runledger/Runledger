@@ -20,8 +20,37 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workdir", default=None, help="Workdir base (overrides config)")
     parser.add_argument("--branch", default="runledger/replay-gate", help="Branch name to create")
     parser.add_argument("--skip-baseline", action="store_true", help="Skip baseline generation")
+    parser.add_argument(
+        "--allow-unapproved",
+        action="store_true",
+        help="Bypass the approved targets file check (Gate A)",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Plan only; do not modify repo")
     return parser.parse_args()
+
+
+def _load_approved_targets(path: Path) -> set[str]:
+    if not path.exists():
+        raise SystemExit(
+            "\n".join(
+                [
+                    f"Approved targets file not found (Gate A): {path}",
+                    "",
+                    "Create it by copying the example:",
+                    "  cp automation/approved_targets.example.txt automation/approved_targets.txt",
+                    "",
+                    "Then add approved repos (one per line):",
+                    "  owner/name",
+                ]
+            )
+        )
+    approved: set[str] = set()
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        approved.add(line)
+    return approved
 
 
 def main() -> None:
@@ -29,6 +58,13 @@ def main() -> None:
     cfg = load_config(args.config)
     ensure_tool("git")
     ensure_tool("runledger", ["--help"])
+
+    approval_cfg = cfg.data.get("approval", {}) if isinstance(cfg.data.get("approval"), dict) else {}
+    require_approved = bool(approval_cfg.get("require_approved_targets", True))
+    approved_file_cfg = approval_cfg.get("approved_targets_file", "approved_targets.txt")
+    approved_file = Path(approved_file_cfg)
+    if not approved_file.is_absolute():
+        approved_file = (cfg.path.parent / approved_file).resolve()
 
     workdir = Path(args.workdir or cfg.data.get("output", {}).get("workdir", "automation/workdir"))
     repo_dir = workdir / args.repo.replace("/", "_")
@@ -53,6 +89,21 @@ def main() -> None:
         print("Workflow mode:", workflow_mode)
         print("Drafts dir:", drafts_dir)
         return
+
+    if require_approved and not args.allow_unapproved:
+        approved = _load_approved_targets(approved_file)
+        if args.repo not in approved:
+            raise SystemExit(
+                "\n".join(
+                    [
+                        f"Repo not in approved targets list (Gate A): {args.repo}",
+                        f"Approved list: {approved_file}",
+                        "",
+                        "Add it to the approved targets file (one per line) and re-run.",
+                        "To bypass (not recommended), re-run with --allow-unapproved.",
+                    ]
+                )
+            )
 
     if repo_dir.exists():
         shutil.rmtree(repo_dir)
