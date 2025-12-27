@@ -51,8 +51,6 @@ Note: you can use both. Use DeepEval to calculate scores, and wrap your agent in
 ```bash
 pipx install runledger
 runledger init
-runledger run ./evals/demo --mode record
-runledger baseline promote --from <RUN_DIR> --to baselines/demo.json
 runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 ```
 

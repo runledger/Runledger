@@ -22,6 +22,32 @@ def create_run_dir(base_dir: Path, suite_name: str, run_id: str | None = None) -
     return run_dir, run_id
 
 
+def _stable_path(path: Path, *, base_dir: Path) -> str:
+    if not path.is_absolute():
+        return path.as_posix()
+    try:
+        return path.resolve().relative_to(base_dir.resolve()).as_posix()
+    except Exception:
+        try:
+            return Path(os.path.relpath(path, start=base_dir)).as_posix()
+        except Exception:
+            return path.as_posix()
+
+
+def _stable_command(command: list[str], *, base_dir: Path) -> list[str]:
+    result: list[str] = []
+    for item in command:
+        if not isinstance(item, str):
+            result.append(str(item))
+            continue
+        candidate = Path(item)
+        if candidate.is_absolute():
+            result.append(_stable_path(candidate, base_dir=base_dir))
+        else:
+            result.append(Path(item).as_posix())
+    return result
+
+
 def _percentile(values: list[float], pct: float) -> float:
     if not values:
         raise ValueError("No values for percentile")
@@ -87,6 +113,7 @@ def build_summary(
     cases_error = sum(1 for status in statuses if status == "error")
     pass_rate = (cases_pass / cases_total) if cases_total else 0.0
 
+    base_dir = Path.cwd()
     metrics = {
         "wall_ms": _metric_summary([case.wall_ms for case in cases_list]),
         "tool_calls": _metric_summary([case.tool_calls for case in cases_list]),
@@ -121,8 +148,8 @@ def build_summary(
         },
         "suite": {
             "name": suite.suite_name,
-            "suite_path": str(suite_path),
-            "agent_command": suite.agent_command,
+            "suite_path": _stable_path(suite_path, base_dir=base_dir),
+            "agent_command": _stable_command(suite.agent_command, base_dir=base_dir),
             "tool_mode": suite.mode,
             "suite_config_hash": None,
             "cases_total": cases_total,
@@ -149,7 +176,11 @@ def build_summary(
                 "tool_calls_by_name": case.tool_calls_by_name,
                 "tool_errors_by_name": case.tool_errors_by_name,
                 "replay": {
-                    "cassette_path": case.replay_cassette_path,
+                    "cassette_path": (
+                        _stable_path(Path(case.replay_cassette_path), base_dir=base_dir)
+                        if case.replay_cassette_path
+                        else None
+                    ),
                     "cassette_sha256": case.replay_cassette_sha256,
                 },
                 "assertions": {

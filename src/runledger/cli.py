@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
 import shutil
 from pathlib import Path
 from typing import Optional
@@ -26,6 +27,18 @@ app = typer.Typer(add_completion=False, no_args_is_help=True)
 console = Console()
 baseline_app = typer.Typer(add_completion=False, no_args_is_help=True)
 app.add_typer(baseline_app, name="baseline")
+
+
+def _display_path(path: Path, *, base_dir: Path) -> str:
+    if not path.is_absolute():
+        return path.as_posix()
+    try:
+        return path.resolve().relative_to(base_dir.resolve()).as_posix()
+    except Exception:
+        try:
+            return Path(os.path.relpath(path, start=base_dir)).as_posix()
+        except Exception:
+            return path.as_posix()
 
 
 def _resolve_summary_path(run_path: Path) -> Path:
@@ -152,17 +165,22 @@ def init(
                 "    sys.stdout.write(json.dumps(payload) + \"\\n\")",
                 "    sys.stdout.flush()",
                 "",
-                "for line in sys.stdin:",
-                "    line = line.strip()",
-                "    if not line:",
-                "        continue",
-                "    msg = json.loads(line)",
-                "    if msg.get(\"type\") == \"task_start\":",
-                "        ticket = msg.get(\"input\", {}).get(\"ticket\", \"\")",
-                "        send({\"type\": \"tool_call\", \"name\": \"search_docs\", \"call_id\": \"c1\", \"args\": {\"q\": ticket}})",
-                "    elif msg.get(\"type\") == \"tool_result\":",
-                "        send({\"type\": \"final_output\", \"output\": {\"category\": \"account\", \"reply\": \"Reset password instructions sent.\"}})",
-                "        break",
+                "def main():",
+                "    for line in sys.stdin:",
+                "        line = line.strip()",
+                "        if not line:",
+                "            continue",
+                "        msg = json.loads(line)",
+                "        if msg.get(\"type\") == \"task_start\":",
+                "            ticket = msg.get(\"input\", {}).get(\"ticket\", \"\")",
+                "            send({\"type\": \"tool_call\", \"name\": \"search_docs\", \"call_id\": \"c1\", \"args\": {\"q\": ticket}})",
+                "        elif msg.get(\"type\") == \"tool_result\":",
+                "            send({\"type\": \"final_output\", \"output\": {\"category\": \"account\", \"reply\": \"Reset password instructions sent.\"}})",
+                "            return 0",
+                "    return 1",
+                "",
+                "if __name__ == \"__main__\":",
+                "    raise SystemExit(main())",
                 "",
             ]
         ),
@@ -267,12 +285,16 @@ def init(
         console.print(f"[red]Failed to generate baseline:[/red] {exc}")
         raise typer.Exit(code=1)
 
-    console.print(f"Created eval suite at: {evals_dir}")
-    console.print(f"Created baseline at: {baselines_dir / f'{suite}.json'}")
+    cwd = Path.cwd()
+    evals_dir_display = _display_path(evals_dir, base_dir=cwd)
+    baseline_display = _display_path(baselines_dir / f"{suite}.json", base_dir=cwd)
+
+    console.print(f"Created eval suite at: {evals_dir_display}")
+    console.print(f"Created baseline at: {baseline_display}")
     console.print("")
     console.print("Next steps:")
     console.print(
-        f"  runledger run {evals_dir} --mode replay --baseline {baselines_dir / f'{suite}.json'}"
+        f'  runledger run "{evals_dir_display}" --mode replay --baseline "{baseline_display}"'
     )
     console.print(f"  open runledger_out/{suite}/<run_id>/report.html")
     console.print("")
@@ -294,7 +316,7 @@ def init(
                 "          python -m pip install --upgrade pip",
                 "          python -m pip install runledger",
                 "      - name: Run deterministic evals",
-                f"        run: runledger run {evals_dir} --mode replay",
+                f'        run: runledger run "{evals_dir_display}" --mode replay --baseline "{baseline_display}"',
                 "      - name: Upload artifacts",
                 "        uses: actions/upload-artifact@v4",
                 "        with:",
@@ -479,6 +501,18 @@ def promote(
     try:
         summary_path = _resolve_summary_path(run_path)
         summary_data = json.loads(summary_path.read_text(encoding="utf-8"))
+        summary_data.pop("regression", None)
+
+        run_payload = summary_data.get("run")
+        aggregates_payload = summary_data.get("aggregates")
+        if isinstance(run_payload, dict) and isinstance(aggregates_payload, dict):
+            exit_status = "success"
+            if aggregates_payload.get("cases_error"):
+                exit_status = "error"
+            elif aggregates_payload.get("cases_fail"):
+                exit_status = "failed"
+            run_payload["exit_status"] = exit_status
+
         baseline = BaselineSummary.model_validate(summary_data)
         write_baseline(baseline_path, baseline)
     except Exception as exc:

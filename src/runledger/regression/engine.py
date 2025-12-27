@@ -1,10 +1,23 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 from runledger.baseline.models import BaselineSummary
 from runledger.config.models import RegressionSpec
+
+
+def _stable_path(path: Path, *, base_dir: Path) -> str:
+    if not path.is_absolute():
+        return path.as_posix()
+    try:
+        return path.resolve().relative_to(base_dir.resolve()).as_posix()
+    except Exception:
+        try:
+            return Path(os.path.relpath(path, start=base_dir)).as_posix()
+        except Exception:
+            return path.as_posix()
 
 
 def _delta_pct(baseline: float | None, current: float | None) -> float | None:
@@ -183,8 +196,9 @@ def compute_regression(
         },
     }
 
+    base_dir = Path.cwd()
     return {
-        "baseline_path": str(baseline_path),
+        "baseline_path": _stable_path(baseline_path, base_dir=base_dir),
         "passed": passed,
         "checks": checks,
         "metrics": metrics,

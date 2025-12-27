@@ -16,7 +16,7 @@ runledger init
 This creates:
 
 - `evals/demo/` with a working suite and cassette
-- `demo_agent.py` (minimal Python agent)
+- `evals/demo/agent/agent.py` (minimal Python agent)
 - `baselines/demo.json`
 
 ## Run deterministically (replay)
