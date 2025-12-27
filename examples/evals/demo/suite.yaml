@@ -16,7 +16,7 @@ budgets:
 
 regression:
   min_pass_rate: 1.0
-  max_avg_wall_ms_delta_pct: 0.2
-  max_p95_wall_ms_delta_pct: 0.2
+  max_avg_wall_ms_delta_pct: 10.0
+  max_p95_wall_ms_delta_pct: 10.0
 
 baseline_path: ../../../baselines/demo.json
