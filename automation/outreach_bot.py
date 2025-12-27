@@ -22,6 +22,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--body", required=True, help="Path to markdown body")
     parser.add_argument("--submit", action="store_true", help="Create PR/issue via gh (requires approval)")
+    parser.add_argument(
+        "--confirm",
+        default=None,
+        help="Type the repo name (owner/name) to confirm submission (Gate B)",
+    )
     return parser.parse_args()
 
 
@@ -40,6 +45,16 @@ def main() -> None:
     if not args.submit:
         print("\nSubmit flag not set. Review before submitting.")
         return
+
+    if args.confirm != args.repo:
+        raise SystemExit(
+            "\n".join(
+                [
+                    "Refusing to submit without explicit confirmation (Gate B).",
+                    f"Re-run with: --confirm {args.repo}",
+                ]
+            )
+        )
 
     ensure_tool("gh")
     if args.kind == "issue":

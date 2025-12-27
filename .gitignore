@@ -13,6 +13,7 @@ runledger_out/
 automation/workdir/
 automation/targets.json
 automation/config.yaml
+automation/approved_targets.txt
 .idea/
 .vscode/
 .DS_Store
