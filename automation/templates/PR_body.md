@@ -20,5 +20,6 @@ runledger run {{suite_path}} --mode replay --baseline {{baseline_path}}
 
 - The included `agent/agent.py` is a minimal RunLedger JSONL protocol example. To use this for a real agent, point `agent_command` in `{{suite_path}}/suite.yaml` at your own agent entrypoint (or a thin adapter).
 - `{{suite_path}}/INTEGRATION.md` lists a few potential entrypoints found in this repo (by scanning `README`, `pyproject.toml`, `package.json`, and common example folders). No repo code was executed to produce the hints.
+- GitHub may not run new workflows from fork PRs by default. If you don't see any checks, a maintainer may need to approve Actions for this PR, or you can run the workflow manually from the Actions tab (if it's configured as `workflow_dispatch`).
 - RunLedger repo: https://github.com/runledger/Runledger
 
