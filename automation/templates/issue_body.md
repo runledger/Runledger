@@ -4,7 +4,7 @@ Would you be open to a small, optional PR that adds:
 
 - `evals/runledger/` (suite + one case + schema + cassette)
 - `baselines/runledger-demo.json`
-- an optional GitHub Actions workflow to run the replay check
+- an optional GitHub Actions workflow to run the replay check (manual or on PR, depending on what you prefer)
 
 The goal is to make agent/tool regressions visible in CI without live tool calls (record once, replay in CI).
 
