@@ -1,6 +1,6 @@
 # RunLedger integration notes
 
-This PR adds a small, replay-only RunLedger suite under `{{suite_path}}`.
+This PR adds a small RunLedger suite under `{{suite_path}}` configured to run in replay mode (no live calls).
 
 The included `agent/agent.py` is a minimal JSONL protocol example so the suite can run deterministically with the bundled cassette. To use RunLedger as a real regression gate for this repo, update `agent_command` in `{{suite_path}}/suite.yaml` to run your real agent (or a thin adapter) that speaks the RunLedger protocol.
 

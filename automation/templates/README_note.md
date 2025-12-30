@@ -1,7 +1,7 @@
 <!-- runledger:note:start -->
-## RunLedger replay check (optional)
+## RunLedger deterministic CI check (optional)
 
-This repo includes a small RunLedger suite under `{{suite_path}}` for deterministic, replay-only checks of tool-using agents.
+This repo includes a small RunLedger suite under `{{suite_path}}` for deterministic CI checks of tool-using agents (record once, replay in CI).
 
 Run locally:
 
