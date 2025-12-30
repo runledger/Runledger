@@ -17,7 +17,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--title",
-        default="Add optional replay-only agent regression check",
+        default="Add optional deterministic CI check for agent regressions",
         help="PR/issue title",
     )
     parser.add_argument("--body", required=True, help="Path to markdown body")

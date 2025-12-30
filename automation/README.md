@@ -47,8 +47,8 @@ Before opening PRs widely, consider opening a short issue asking if they want a 
 You can use `automation/outreach_bot.py` to draft and submit either an issue or a PR:
 
 ```bash
-python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional RunLedger replay gate?" --body automation/templates/issue_body.md
-python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional RunLedger replay gate?" --body automation/templates/issue_body.md --submit --confirm owner/name
+python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional deterministic CI check for agent regressions?" --body automation/templates/issue_body.md
+python -m automation.outreach_bot --kind issue --repo owner/name --title "Optional deterministic CI check for agent regressions?" --body automation/templates/issue_body.md --submit --confirm owner/name
 ```
 
 ## GitHub App auth (optional / limited)
@@ -62,7 +62,7 @@ Example (token expires ~1 hour):
 ```bash
 token=$(python -m automation.app_token --app-id 12345 --key ~/.config/runledger/app.pem --repo runledger/tuui)
 GITHUB_TOKEN="$token" gh pr create --repo AI-QL/tuui --head runledger:runledger/replay-gate --base main \
-  --title "Add RunLedger replay gate for agent regressions" \
+  --title "Add RunLedger deterministic CI check (record/replay)" \
   --body-file automation/drafts/AI-QL_tuui_pr.md
 unset GITHUB_TOKEN
 ```

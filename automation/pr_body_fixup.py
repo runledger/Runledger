@@ -10,7 +10,7 @@ from typing import Any
 
 DEFAULT_NOTE = (
     "GitHub Actions note: workflows from first-time contributors/forks may require a maintainer to click "
-    "“Approve and run” before checks will execute."
+    "\"Approve and run\" before checks will execute."
 )
 
 

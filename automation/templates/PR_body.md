@@ -1,6 +1,7 @@
 ## What this adds
 
-- A small, replay-only RunLedger suite under `{{suite_path}}` (suite/case/schema/cassette + minimal protocol example agent)
+- A small RunLedger suite under `{{suite_path}}` for deterministic CI checks (record once, replay in CI)
+  - includes suite/case/schema/cassette + a minimal JSONL protocol example agent
 - A short wiring guide at `{{suite_path}}/INTEGRATION.md` (repo-specific entrypoint hints + how to swap in a real agent)
 - A baseline file at `{{baseline_path}}`
 - A GitHub Actions workflow at `{{workflow_path}}` (optional; you can remove it if you don't want a new CI job)
