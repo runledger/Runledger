@@ -80,10 +80,19 @@ Notes:
   - Gate A: approve target list.
   - Gate B: approve draft PR before submission.
 
+## Daily monitoring
+
+If you have multiple open PRs, use `pr_monitor.py` to get a quick, CI-focused status table:
+
+```bash
+python -m automation.pr_monitor
+```
+
 ## Files
 
 - repo_finder.py: GitHub search + scoring.
 - repo_integrator.py: Plans or applies a minimal integration patch.
 - verifier.py: Runs replay + optional tests and emits a PR summary.
 - outreach_bot.py: Drafts issue/PR text, waits for human approval.
+- pr_monitor.py: Lists open PRs for `runledger/replay-gate` and summarizes check status/blockers.
 - templates/: Workflow + README note templates.
