@@ -6,13 +6,24 @@
 
 Website: https://runledger.io
 
-**CI for tool-using agents.** Deterministic eval suites with record/replay tool calls, hard assertions, budgets, and PR regression gates.
+**Deterministic CI regression checks for tool-using agents.** Record tool calls once, replay in CI, and fail PRs on mismatches, contract violations, or budget regressions.
+
+- Demo repo: https://github.com/runledger/runledger-demo (main is green; regression branches fail for real reasons)
+- If this is useful, please star the repo (it helps a lot).
 
 RunLedger is a **CI harness**, not an "eval metrics framework":
 - **DeepEval-style tools** help you *score* behavior.
 - **RunLedger** helps you *ship safely* by making agent tests deterministic and merge-gated.
 
 ---
+
+## Try it now (60 seconds)
+
+```bash
+pipx install runledger
+runledger init
+runledger run ./evals/demo --mode replay --baseline baselines/demo.json
+```
 
 ## Why RunLedger (in one minute)
 
@@ -45,14 +56,6 @@ RunLedger stops regressions by shifting from "vibes-based" evaluation to determi
 Note: you can use both. Use DeepEval to calculate scores, and wrap your agent in RunLedger to ensure it runs deterministically in CI.
 
 ---
-
-## Quickstart (5 minutes)
-
-```bash
-pipx install runledger
-runledger init
-runledger run ./evals/demo --mode replay --baseline baselines/demo.json
-```
 
 ## What it looks like in a PR
 
