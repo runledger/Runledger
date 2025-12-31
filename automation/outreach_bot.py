@@ -58,12 +58,14 @@ def main() -> None:
 
     ensure_tool("gh")
     if args.kind == "issue":
-        run(["gh", "issue", "create", "--repo", args.repo, "--title", args.title, "--body", body])
-        print("Issue created.")
+        result = run(["gh", "issue", "create", "--repo", args.repo, "--title", args.title, "--body", body])
+        url = (result.stdout or "").strip()
+        print(url or "Issue created.")
         return
 
-    run(["gh", "pr", "create", "--repo", args.repo, "--title", args.title, "--body", body])
-    print("PR created.")
+    result = run(["gh", "pr", "create", "--repo", args.repo, "--title", args.title, "--body", body])
+    url = (result.stdout or "").strip()
+    print(url or "PR created.")
 
 
 if __name__ == "__main__":
