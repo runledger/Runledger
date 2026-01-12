@@ -12,9 +12,9 @@ Helpful links:
 
 ## Current progress
 - Shipping: v0.1.0 is live (PyPI + Action tag).
-- Proof: 2 upstream projects have merged RunLedger as an optional CI check (links below).
+- Proof: 3 upstream projects have merged RunLedger as an optional CI check (links below).
 - Outreach: issue-first (ask first, PR only after they say "yes").
-- Active integration work: mcp-agent PR is open and under review.
+- Active integration work: none at the moment; waiting on new approvals.
 
 ## Who is using RunLedger (merged integrations)
 - Agentic-AI-Pipeline: https://github.com/hoangsonww/Agentic-AI-Pipeline/pull/24
@@ -59,3 +59,11 @@ If you're open to it, what's the best existing agent/example entrypoint to wire 
 ## Next targets (not yet contacted issue-first)
 - AgentOps-AI/agentops (note: older PR already exists)
 - microsoft/autogen (note: older PR already exists; may require CLA)
+- langchain-ai/langchain
+- pydantic/pydantic-ai
+- princeton-nlp/SWE-agent
+- assafelovic/gpt-researcher
+- openai/swarm
+- microsoft/semantic-kernel
+- cpacker/MemGPT
+- camel-ai/camel
