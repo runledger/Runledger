@@ -65,5 +65,5 @@ If you're open to it, what's the best existing agent/example entrypoint to wire 
 - assafelovic/gpt-researcher
 - openai/swarm
 - microsoft/semantic-kernel
-- cpacker/MemGPT
+- letta-ai/letta (formerly MemGPT)
 - camel-ai/camel
