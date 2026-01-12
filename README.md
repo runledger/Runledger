@@ -30,6 +30,7 @@ runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 - hoangsonww/Agentic-AI-Pipeline - https://github.com/hoangsonww/Agentic-AI-Pipeline/pull/24
 - zhongyu09/openchatbi - https://github.com/zhongyu09/openchatbi/pull/8
 - joshuaalpuerto/mcp-agent - https://github.com/joshuaalpuerto/mcp-agent/pull/3
+Details: docs/integrations.md
 
 ## Why RunLedger (in one minute)
 

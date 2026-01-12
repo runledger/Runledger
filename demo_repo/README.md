@@ -9,6 +9,12 @@ pipx install runledger
 runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 ```
 
+## Proof from real repos
+
+- Agentic-AI-Pipeline: https://github.com/hoangsonww/Agentic-AI-Pipeline/pull/24
+- OpenChatBI: https://github.com/zhongyu09/openchatbi/pull/8
+- mcp-agent: https://github.com/joshuaalpuerto/mcp-agent/pull/3
+
 ## CI
 
 `.github/workflows/ci.yml` runs the suite in replay mode and uploads artifacts.
