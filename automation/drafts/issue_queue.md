@@ -19,6 +19,7 @@ Helpful links:
 ## Who is using RunLedger (merged integrations)
 - Agentic-AI-Pipeline: https://github.com/hoangsonww/Agentic-AI-Pipeline/pull/24
 - OpenChatBI: https://github.com/zhongyu09/openchatbi/pull/8
+- mcp-agent: https://github.com/joshuaalpuerto/mcp-agent/pull/3
 
 ## Who we reached out to (org/company level)
 Issue-first (we asked before sending a PR):
@@ -44,7 +45,7 @@ PR-first (older approach; some are blocked by CLAs or third-party preview deploy
 - Promptulate
 
 Active PR under review:
-- mcp-agent: https://github.com/joshuaalpuerto/mcp-agent/pull/3
+- None (mcp-agent merged)
 
 ## Standard issue template (copy/paste)
 Title:
