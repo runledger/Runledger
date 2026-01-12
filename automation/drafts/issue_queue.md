@@ -49,12 +49,12 @@ Active PR under review:
 
 ## Standard issue template (copy/paste)
 Title:
-Optional deterministic CI check for agent/tool calls?
+Optional CI check for agent behavior?
 
 Body:
-Hi! I'm working on RunLedger, a small deterministic CI check for agent/tool calls. You record tool outputs once locally, then CI reuses them (no network, no secrets). It adds a tiny eval suite + workflow and is optional/removable.
+Hi! I’m working on a small optional CI check that keeps agent behavior stable. You record the expected outputs once locally, then CI reuses them (no network or secrets). It adds a tiny eval folder + workflow and is fully removable.
 
-If you're open to it, what's the best existing agent/example entrypoint to wire to for a minimal demo?
+If you’re open to it, what’s the best existing agent/example entrypoint to wire to for a minimal demo?
 
 ## Next targets (not yet contacted issue-first)
 - AgentOps-AI/agentops (note: older PR already exists)
