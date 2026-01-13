@@ -19,6 +19,12 @@ This creates:
 - `evals/demo/agent/agent.py` (minimal Python agent)
 - `baselines/demo.json`
 
+To scaffold a Node adapter instead:
+
+```bash
+runledger init --language node
+```
+
 ## Run deterministically (replay)
 
 ```bash
