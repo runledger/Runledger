@@ -122,14 +122,18 @@ def init(
     suite: str = typer.Option("demo", help="Suite name to generate"),
     template: str = typer.Option("support-triage", help="Template name"),
     force: bool = typer.Option(False, "--force", help="Overwrite existing suite files"),
-    language: str = typer.Option("python", help="Agent language (python only in v0.1)"),
+    language: str = typer.Option("python", help="Agent language (python or node)"),
 ) -> None:
     """Initialize an example eval suite."""
     if template != "support-triage":
         console.print(f"[red]Unknown template:[/red] {template}")
         raise typer.Exit(code=1)
-    if language != "python":
+    language = language.lower()
+    if language not in {"python", "node"}:
         console.print(f"[red]Unsupported language:[/red] {language}")
+        raise typer.Exit(code=1)
+    if language == "node" and shutil.which("node") is None:
+        console.print("[red]Node.js not found in PATH:[/red] install Node to use --language node")
         raise typer.Exit(code=1)
 
     base_dir = Path(path).resolve()
@@ -138,7 +142,13 @@ def init(
     cassettes_dir = evals_dir / "cassettes"
     agent_dir = evals_dir / "agent"
     baselines_dir = base_dir.parent / "baselines"
-    agent_path = agent_dir / "agent.py"
+    if language == "node":
+        agent_filename = "agent.js"
+        agent_command = ["node", "agent/agent.js"]
+    else:
+        agent_filename = "agent.py"
+        agent_command = ["python", "agent/agent.py"]
+    agent_path = agent_dir / agent_filename
 
     if evals_dir.exists():
         if not force:
@@ -155,37 +165,93 @@ def init(
     cassettes_dir.mkdir(parents=True, exist_ok=True)
     baselines_dir.mkdir(parents=True, exist_ok=True)
 
-    agent_path.write_text(
-        "\n".join(
-            [
-                "import json",
-                "import sys",
-                "",
-                "def send(payload):",
-                "    sys.stdout.write(json.dumps(payload) + \"\\n\")",
-                "    sys.stdout.flush()",
-                "",
-                "def main():",
-                "    for line in sys.stdin:",
-                "        line = line.strip()",
-                "        if not line:",
-                "            continue",
-                "        msg = json.loads(line)",
-                "        if msg.get(\"type\") == \"task_start\":",
-                "            ticket = msg.get(\"input\", {}).get(\"ticket\", \"\")",
-                "            send({\"type\": \"tool_call\", \"name\": \"search_docs\", \"call_id\": \"c1\", \"args\": {\"q\": ticket}})",
-                "        elif msg.get(\"type\") == \"tool_result\":",
-                "            send({\"type\": \"final_output\", \"output\": {\"category\": \"account\", \"reply\": \"Reset password instructions sent.\"}})",
-                "            return 0",
-                "    return 1",
-                "",
-                "if __name__ == \"__main__\":",
-                "    raise SystemExit(main())",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    if language == "node":
+        agent_path.write_text(
+            "\n".join(
+                [
+                    "const readline = require(\"readline\");",
+                    "",
+                    "function send(payload) {",
+                    "  process.stdout.write(JSON.stringify(payload) + \"\\n\");",
+                    "}",
+                    "",
+                    "async function main() {",
+                    "  const rl = readline.createInterface({",
+                    "    input: process.stdin,",
+                    "    crlfDelay: Infinity,",
+                    "  });",
+                    "  for await (const line of rl) {",
+                    "    const trimmed = line.trim();",
+                    "    if (!trimmed) {",
+                    "      continue;",
+                    "    }",
+                    "    const msg = JSON.parse(trimmed);",
+                    "    if (msg.type === \"task_start\") {",
+                    "      const ticket = (msg.input && msg.input.ticket) || \"\";",
+                    "      send({",
+                    "        type: \"tool_call\",",
+                    "        name: \"search_docs\",",
+                    "        call_id: \"c1\",",
+                    "        args: { q: ticket },",
+                    "      });",
+                    "    } else if (msg.type === \"tool_result\") {",
+                    "      send({",
+                    "        type: \"final_output\",",
+                    "        output: {",
+                    "          category: \"account\",",
+                    "          reply: \"Reset password instructions sent.\",",
+                    "        },",
+                    "      });",
+                    "      return 0;",
+                    "    }",
+                    "  }",
+                    "  return 1;",
+                    "}",
+                    "",
+                    "main().then(",
+                    "  (code) => process.exit(code),",
+                    "  (err) => {",
+                    "    console.error(err);",
+                    "    process.exit(1);",
+                    "  }",
+                    ");",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+    else:
+        agent_path.write_text(
+            "\n".join(
+                [
+                    "import json",
+                    "import sys",
+                    "",
+                    "def send(payload):",
+                    "    sys.stdout.write(json.dumps(payload) + \"\\n\")",
+                    "    sys.stdout.flush()",
+                    "",
+                    "def main():",
+                    "    for line in sys.stdin:",
+                    "        line = line.strip()",
+                    "        if not line:",
+                    "            continue",
+                    "        msg = json.loads(line)",
+                    "        if msg.get(\"type\") == \"task_start\":",
+                    "            ticket = msg.get(\"input\", {}).get(\"ticket\", \"\")",
+                    "            send({\"type\": \"tool_call\", \"name\": \"search_docs\", \"call_id\": \"c1\", \"args\": {\"q\": ticket}})",
+                    "        elif msg.get(\"type\") == \"tool_result\":",
+                    "            send({\"type\": \"final_output\", \"output\": {\"category\": \"account\", \"reply\": \"Reset password instructions sent.\"}})",
+                    "            return 0",
+                    "    return 1",
+                    "",
+                    "if __name__ == \"__main__\":",
+                    "    raise SystemExit(main())",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
 
     schema_path = evals_dir / "schema.json"
     schema_path.write_text(
@@ -242,7 +308,7 @@ def init(
         yaml.safe_dump(
             {
                 "suite_name": suite,
-                "agent_command": ["python", "agent/agent.py"],
+                "agent_command": agent_command,
                 "mode": "replay",
                 "cases_path": "cases",
                 "tool_registry": ["search_docs"],
@@ -268,7 +334,7 @@ def init(
         suite_config = load_suite(suite_path)
         cases = load_cases(evals_dir, suite_config.cases_path)
         suite_run = suite_config.model_copy(
-            update={"agent_command": ["python", str(agent_path)]}
+            update={"agent_command": [agent_command[0], str(agent_path)]}
         )
         suite_result = run_suite(suite_run, cases)
         run_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
