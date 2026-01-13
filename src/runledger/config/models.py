@@ -38,6 +38,23 @@ class RegressionSpec(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class ReplaceTextSpec(BaseModel):
+    pattern: str
+    replacement: str = ""
+    flags: str | None = None
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class NormalizationSpec(BaseModel):
+    strip_keys: list[str] = Field(default_factory=list)
+    strip_paths: list[str] = Field(default_factory=list)
+    replace_paths: dict[str, object] = Field(default_factory=dict)
+    replace_text: list[ReplaceTextSpec] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class SuiteConfig(BaseModel):
     suite_name: str
     agent_command: list[str]
@@ -48,6 +65,7 @@ class SuiteConfig(BaseModel):
     assertions: list[AssertionSpec] = Field(default_factory=list)
     budgets: BudgetSpec | None = None
     regression: RegressionSpec | None = None
+    normalization: NormalizationSpec | None = None
     baseline_path: str | None = None
     output_dir: str | None = None
 
@@ -61,5 +79,6 @@ class CaseConfig(BaseModel):
     cassette: str
     assertions: list[AssertionSpec] | None = None
     budgets: BudgetSpec | None = None
+    normalization: NormalizationSpec | None = None
 
     model_config = ConfigDict(extra="forbid")
