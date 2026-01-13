@@ -347,7 +347,15 @@ jobs:
 * Prefer `--mode replay` in CI.
 * Ensure agent writes **only JSONL protocol messages** to stdout; logs go to stderr.
 * Canonicalize tool call args (stable key ordering, avoid volatile fields).
-* Avoid timestamps/randomness in final output; if needed, exclude or normalize before assertions.
+* Avoid timestamps/randomness in final output; if needed, strip/normalize via `normalization`.
+  ```yaml
+  normalization:
+    strip_keys: ["timestamp", "request_id"]
+    strip_paths: ["meta.seed"]
+    replace_text:
+      - pattern: "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"
+        replacement: "<timestamp>"
+  ```
 * Keep cassettes safe to commit: redact secrets by default.
 
 ---

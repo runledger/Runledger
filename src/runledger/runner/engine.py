@@ -22,6 +22,7 @@ from runledger.protocol.messages import (
 )
 from runledger.runner.subprocess import AgentProcess, AgentProcessError
 from runledger.tools.registry import resolve_tools
+from runledger.util.normalize import merge_normalization, normalize
 
 from .budgets import check_budgets, merge_budgets
 from .models import CaseResult, Failure, SuiteResult
@@ -52,6 +53,7 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
     assertions_total = count_assertions(suite.assertions, case.assertions)
     assertions_failed = 0
     failed_assertions: list[dict[str, str]] | None = None
+    normalization = merge_normalization(suite.normalization, case.normalization)
 
     cassette_path = Path(case.cassette)
     cassette_entries: list[CassetteEntry] = []
@@ -177,17 +179,23 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                             result = None
                             ok = False
                             error = str(exc)
-                        if suite.mode == "record":
-                            append_entry(
-                                cassette_path,
-                                CassetteEntry(
-                                    tool=message.name,
-                                    args=message.args,
-                                    ok=ok,
-                                    result=result,
-                                    error=error,
-                                ),
-                            )
+
+                    if normalization is not None:
+                        result = normalize(result, normalization)
+                        if error is not None:
+                            error = normalize(error, normalization)
+
+                    if suite.mode == "record":
+                        append_entry(
+                            cassette_path,
+                            CassetteEntry(
+                                tool=message.name,
+                                args=message.args,
+                                ok=ok,
+                                result=result,
+                                error=error,
+                            ),
+                        )
 
                     if not ok:
                         tool_errors += 1
@@ -216,6 +224,8 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
 
                 if isinstance(message, FinalOutputMessage):
                     output = message.output
+                    if normalization is not None:
+                        output = normalize(output, normalization)
                     trace.append(_event(case.id, "final_output", output=output))
                     break
 
