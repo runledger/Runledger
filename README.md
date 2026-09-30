@@ -49,7 +49,7 @@ RunLedger stops regressions by shifting from "vibes-based" evaluation to determi
 
 - **Record & replay:** record tool outputs once; replay them in CI for instant, stable tests.
 - **Strict contracts:** enforce tool schemas, calling order, and allowlists.
-- **Budget gating:** fail PRs automatically if execution time, steps, or costs exceed defined limits.
+- **Budget gating:** fail PRs automatically if wall time, tool-call count, or tool errors exceed defined limits.
 
 ### RunLedger vs evaluation frameworks
 
@@ -269,7 +269,8 @@ MVP budgets:
 * `max_tool_calls`
 * `max_tool_errors`
 
-Optional budgets when agents report metrics:
+Not yet enforced (accepted in config, reported in artifacts when the agent sends metrics, but
+they do not fail a run today):
 
 * `max_tokens_out`
 * `max_cost_usd`
@@ -281,8 +282,7 @@ Optional budgets when agents report metrics:
 On each run, you can compare against a baseline and fail CI if:
 
 * success rate drops below threshold
-* costs spike beyond allowed delta
-* latency p95 increases beyond allowed delta
+* average or p95 latency increases beyond allowed delta
 
 Typical workflow:
 
@@ -328,7 +328,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run deterministic evals (replay)
-        uses: runledger/Runledger@v0.1
+        uses: runledger/Runledger@v0.2
         with:
           path: ./evals/demo
           mode: replay

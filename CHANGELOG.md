@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.2.0] - 2026-09-30
+
+### Added
+
+- Output normalization: new `normalization` block in `suite.yaml` and per-case config
+  (`strip_keys`, `strip_paths`, `replace_paths`, `replace_text` with regex flags). Applied to
+  tool results/errors before recording and to final output before assertions, so volatile
+  values (timestamps, IDs, seeds) no longer break replay or baselines.
+- `runledger init --language node` generates a Node.js agent template (`agent/agent.js`);
+  requires `node` on `PATH`.
+
+### Fixed
+
+- Portable baselines/artifacts: `summary.json` and regression output now record
+  cwd-relative, POSIX-style paths for `suite_path`, `agent_command`, cassette paths, and
+  `baseline_path` instead of machine-specific absolute paths.
+- `runledger baseline promote` strips the `regression` block from the promoted summary and
+  recomputes `run.exit_status` from case results.
+- `runledger init` prints relative paths and emits a CI snippet that includes `--baseline`;
+  generated Python agent now exits with a proper status code.
+- Python 3.9 support: added `eval_type_backport` (Python < 3.10 only) so pydantic models using
+  `X | None` annotations load on 3.9 (previously every command failed on 3.9).
+- Fixed an over-escaped regex in the `replace_text` normalization test.
+
+### Changed
+
+- Demo suite regression thresholds stabilized; demo baselines regenerated.
+- CI and release workflows can be triggered manually (`workflow_dispatch`; release takes a `tag` input).
+- Docs: README no longer claims token/cost budgets or cost-regression gates are enforced
+  (only `max_wall_ms`, `max_tool_calls`, `max_tool_errors` fail runs today). README tightened, new `docs/integrations.md`, quickstart updates; Action usage now
+  points to `runledger/Runledger@v0.2`.
+- Packaging: SPDX `license = "MIT"` + `license-files` (clears setuptools deprecation); build
+  requires `setuptools>=77`; dropped redundant `wheel` build requirement.
+
 ## [0.1.1] - 2025-12-26
 
 ### Changed
