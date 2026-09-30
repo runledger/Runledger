@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: runledger/Runledger@v0.1
+      - uses: runledger/Runledger@v0.2
         with:
           path: ./evals/demo
           mode: replay
