@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "runledger"
-version = "0.1.1"
+version = "0.2.0"
 description = "CI for tool-using agents: deterministic eval suites with record/replay, hard assertions, budgets, and PR regression gates."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
   { name = "RunLedger" }
 ]
@@ -30,6 +31,7 @@ dependencies = [
   "pyyaml>=6.0.0",
   "jsonschema>=4.0.0",
   "jinja2>=3.1.0",
+  "eval_type_backport>=0.2.0; python_version < \"3.10\"",
 ]
 
 [project.optional-dependencies]

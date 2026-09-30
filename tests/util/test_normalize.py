@@ -42,7 +42,7 @@ def test_strip_paths_and_replace_paths() -> None:
 
 def test_replace_text() -> None:
     spec = NormalizationSpec(
-        replace_text=[ReplaceTextSpec(pattern=r"\\d{4}-\\d{2}-\\d{2}", replacement="<date>")]
+        replace_text=[ReplaceTextSpec(pattern=r"\d{4}-\d{2}-\d{2}", replacement="<date>")]
     )
     payload = {"message": "created on 2025-01-30", "nested": ["2024-12-01 ok"]}
 
