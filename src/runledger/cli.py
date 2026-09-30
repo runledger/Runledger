@@ -21,6 +21,12 @@ from runledger.baseline.models import BaselineSummary
 from runledger.config.loader import load_cases, load_suite
 from runledger.config.models import RegressionSpec
 from runledger.regression import compute_regression
+from runledger.reporting import (
+    collect_case_failures,
+    collect_gate_failures,
+    format_failure_lines,
+    github_annotation_lines,
+)
 from runledger.runner.engine import run_suite
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -66,6 +72,20 @@ def _regression_from_policy(policy_snapshot: object) -> RegressionSpec | None:
     if not payload:
         return None
     return RegressionSpec.model_validate(payload)
+
+
+def _print_failures(results: list, regression: dict[str, object] | None) -> None:
+    case_failures = collect_case_failures(results)
+    gate_failures = collect_gate_failures(regression)
+    if not case_failures and not gate_failures:
+        return
+    console.print("")
+    for line in format_failure_lines(case_failures, gate_failures):
+        console.print(line, markup=False, highlight=False, soft_wrap=True)
+    console.print("")
+    if os.environ.get("GITHUB_ACTIONS", "").strip().lower() == "true":
+        for line in github_annotation_lines(case_failures, gate_failures):
+            console.print(line, markup=False, highlight=False, soft_wrap=True)
 
 
 def _print_regression(regression: dict[str, object]) -> None:
@@ -514,6 +534,7 @@ def run(
     console.print(table)
     if regression is not None:
         _print_regression(regression)
+    _print_failures(results, regression)
     console.print(f"Artifacts written to: {run_dir}")
 
     raise typer.Exit(code=0 if passed else 1)
