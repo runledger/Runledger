@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.1] - 2026-09-30
+
+### Added
+
+- `runledger run` now explains failures on the console. After the results table it prints a
+  block for every failing case with the case id, assertion type, message, and (where the
+  assertion records them) expected vs. observed values, e.g. for `call_order`:
+  `Tool call order not satisfied: lookup_order -> issue_refund` with the expected and observed
+  tool sequences. Budget failures (`max_tool_calls`, `max_tool_errors`, `max_wall_ms`), runtime
+  failures (tool not allowed, cassette mismatch, task/agent errors), and failing regression
+  gates (e.g. `min_pass_rate`) are reported the same way.
+- When `GITHUB_ACTIONS=true`, each failure is also emitted as a GitHub Actions annotation:
+  `::error title=runledger: <case>::<message>` (gates use `title=runledger: gate <id>`).
+
+### Changed
+
+- No change to exit codes, artifacts, or which checks are enforced; the new output is derived
+  from data already recorded in `run.jsonl` / `summary.json`.
+
 ## [0.2.0] - 2026-09-30
 
 ### Added
