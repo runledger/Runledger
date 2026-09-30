@@ -1,4 +1,5 @@
 name: ci
+# Triggers: pull_request, push to main, manual dispatch.
 on:
   pull_request:
   push:
