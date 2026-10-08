@@ -25,6 +25,57 @@ class AgentProcessError(Exception):
         return f"{self.message}\nAgent stderr (tail):\n{tail}"
 
 
+def _command_basename(program: str) -> str:
+    return program.replace("\\", "/").rsplit("/", 1)[-1].lower()
+
+
+def _agent_start_error(command: Sequence[str], exc: BaseException) -> AgentProcessError:
+    """Turn a failed exec into an actionable error for suite.yaml authors."""
+    program = command[0] if command else ""
+    rendered = " ".join(command) if command else "<empty>"
+    example = '["python3", "agent/agent.py"]'
+    if isinstance(exc, FileNotFoundError):
+        if _command_basename(program) in {"python", "python.exe"}:
+            message = (
+                f"Agent command not found: {program!r}. "
+                "There is no 'python' executable on PATH. "
+                "Ubuntu, macOS, and many pipx installs only provide python3. "
+                f"Set agent_command in suite.yaml to a Python that exists, for example {example}, "
+                "or re-run `runledger init --force` to regenerate the example suite."
+            )
+        elif program:
+            message = (
+                f"Agent command not found: {program!r}. "
+                "RunLedger could not start the agent because that program is not on PATH "
+                "and is not an existing file. "
+                "Install it, or set agent_command in suite.yaml to the command that starts "
+                f"your agent (for example {example})."
+            )
+        else:
+            message = (
+                "Agent command is empty. "
+                "Set agent_command in suite.yaml to the program that starts your agent, "
+                f"for example {example}."
+            )
+    elif isinstance(exc, PermissionError):
+        message = (
+            f"Agent command is not executable: {program!r}. {exc}. "
+            "Grant execute permission, or set agent_command in suite.yaml to a program you can run."
+        )
+    elif isinstance(exc, ValueError):
+        message = (
+            "Agent command is empty or invalid. "
+            "Set agent_command in suite.yaml to the program that starts your agent, "
+            f"for example {example}."
+        )
+    else:
+        message = (
+            f"Failed to start agent command {rendered!r}: {exc}. "
+            "Check that agent_command in suite.yaml points at an installed, runnable program."
+        )
+    return AgentProcessError(message, [])
+
+
 class AgentProcess:
     def __init__(self, command: Sequence[str], timeout_s: float = 30.0, stderr_tail: int = 200):
         self._command = list(command)
@@ -47,14 +98,19 @@ class AgentProcess:
     def start(self) -> None:
         if self._process is not None:
             return
-        self._process = subprocess.Popen(
-            self._command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1,
-        )
+        if not self._command or not self._command[0].strip():
+            raise _agent_start_error(self._command, ValueError("empty command"))
+        try:
+            self._process = subprocess.Popen(
+                self._command,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+            )
+        except OSError as exc:
+            raise _agent_start_error(self._command, exc) from exc
         if self._process.stdout is None or self._process.stdin is None or self._process.stderr is None:
             raise AgentProcessError("Failed to open subprocess pipes", [])
         # Background threads prevent blocking reads from stalling the main loop.

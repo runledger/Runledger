@@ -3,7 +3,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from runledger.runner.subprocess import AgentProcess
+import pytest
+
+from runledger.runner.subprocess import AgentProcess, AgentProcessError
 
 
 def _write_agent(path: Path) -> None:
@@ -32,6 +34,64 @@ def _write_agent(path: Path) -> None:
         ),
         encoding="utf-8",
     )
+
+
+def test_missing_agent_command_is_actionable() -> None:
+    agent = AgentProcess(["runledger-missing-python", "agent/agent.py"])
+    with pytest.raises(AgentProcessError) as exc_info:
+        agent.start()
+    message = str(exc_info.value)
+    assert "Traceback" not in message
+    assert "runledger-missing-python" in message
+    assert "not found" in message
+    assert "suite.yaml" in message
+    assert "python3" in message
+
+
+def test_missing_python_named_command_mentions_python3(tmp_path: Path) -> None:
+    missing = tmp_path / "python"
+    agent = AgentProcess([str(missing), "agent/agent.py"])
+    with pytest.raises(AgentProcessError) as exc_info:
+        agent.start()
+    message = str(exc_info.value)
+    assert "python" in message
+    assert "python3" in message
+    assert "PATH" in message
+    assert "suite.yaml" in message
+    assert "runledger init --force" in message
+
+
+def test_unrunnable_agent_command_is_actionable(tmp_path: Path) -> None:
+    program = tmp_path / "agent-bin"
+    program.write_text("not a program\n", encoding="utf-8")
+    program.chmod(0o644)
+    agent = AgentProcess([str(program)])
+    with pytest.raises(AgentProcessError) as exc_info:
+        agent.start()
+    message = str(exc_info.value)
+    assert "not executable" in message
+    assert str(program) in message
+    assert "suite.yaml" in message
+
+    bad = tmp_path / "bad-elf"
+    bad.write_bytes(b"\x7fELF\x00not-a-real-binary")
+    bad.chmod(0o755)
+    agent = AgentProcess([str(bad)])
+    with pytest.raises(AgentProcessError) as exc_info:
+        agent.start()
+    message = str(exc_info.value)
+    assert "Failed to start agent command" in message
+    assert "suite.yaml" in message
+    assert "Traceback" not in message
+
+
+def test_empty_agent_command_is_actionable() -> None:
+    agent = AgentProcess([])
+    with pytest.raises(AgentProcessError) as exc_info:
+        agent.start()
+    message = str(exc_info.value)
+    assert "empty" in message.lower()
+    assert "suite.yaml" in message
 
 
 def test_agent_process_roundtrip(tmp_path: Path) -> None:
