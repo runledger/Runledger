@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.2] - 2026-10-08
+
+### Fixed
+
+- `runledger init` no longer hardcodes `python` as the generated agent command. It uses
+  `python3` when that executable is on `PATH`, then `python`, then the interpreter running
+  RunLedger (`sys.executable`). The README quickstart works on Ubuntu, macOS, and pipx
+  installs where only `python3` exists.
+- A missing or unrunnable `agent_command` is reported as an actionable error (what was
+  missing, and how to set `agent_command` in `suite.yaml`) instead of a raw Python traceback.
+  `runledger init` also refuses to write a baseline when the example agent does not pass.
+
+### Added
+
+- Package metadata project URLs so the PyPI page links to the homepage (https://runledger.io),
+  the GitHub repository, the docs, and the changelog.
+
+### Changed
+
+- README demo link now points at https://github.com/ZackMitchell910/runledger-demo/pull/1,
+  which is left open to show RunLedger failing a bad agent change.
+
 ## [0.2.1] - 2026-09-30
 
 ### Added
