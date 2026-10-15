@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "runledger"
-version = "0.2.1"
+version = "0.2.2"
 description = "CI for tool-using agents: deterministic eval suites with record/replay, hard assertions, budgets, and PR regression gates."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -33,6 +33,12 @@ dependencies = [
   "jinja2>=3.1.0",
   "eval_type_backport>=0.2.0; python_version < \"3.10\"",
 ]
+
+[project.urls]
+Homepage = "https://runledger.io"
+Repository = "https://github.com/runledger/Runledger"
+Documentation = "https://github.com/runledger/Runledger/tree/main/docs"
+Changelog = "https://github.com/runledger/Runledger/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [

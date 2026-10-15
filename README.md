@@ -8,7 +8,7 @@ Website: https://runledger.io
 
 **Deterministic CI regression checks for tool-using agents.** Record tool calls once, replay in CI, and fail PRs on mismatches, contract violations, or budget regressions.
 
-- Demo repo: https://github.com/runledger/runledger-demo (main is green; regression branches fail for real reasons)
+- Demo: https://github.com/ZackMitchell910/runledger-demo/pull/1 (intentionally left open to show RunLedger failing a bad agent change)
 - If this is useful, please star the repo (it helps a lot).
 
 RunLedger is a **CI harness**, not an "eval metrics framework":
