@@ -56,13 +56,14 @@ The same check as a GitHub Action. `suite.yaml` already points at `baselines/dem
 
 ```yaml
 - id: evals
-  uses: runledger/Runledger@v0.2.3
+  uses: runledger/Runledger@v0.2.4
   with:
     path: ./evals/demo
     mode: replay
+    package: runledger==0.2.4
 ```
 
-`runledger/Runledger@v0.2.3` accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. The in-repo self-test calls the action with `uses: ./`.
+`runledger/Runledger@v0.2.4` accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. The in-repo self-test calls the action with `uses: ./`.
 
 Page copy for runledger.io lives in `docs/site-quickstart.md`.
 
@@ -89,7 +90,9 @@ The process exits non-zero when tool order, the output schema, or the tool-call 
 - zhongyu09/openchatbi - https://github.com/zhongyu09/openchatbi/pull/8
 - joshuaalpuerto/mcp-agent - https://github.com/joshuaalpuerto/mcp-agent/pull/3
 
-Details: docs/integrations.md
+Try the [real mcp-agent integration](docs/mcp-agent-guide.md): a pinned upstream agent, fixed model decisions, ten repeat replays, and three deliberate failures. It runs without API keys or live network calls. See the guide for its scope and upstream dependency limitations.
+
+Details: [merged integrations](docs/integrations.md). For structured feedback after testing, use the [developer trial guide](docs/developer-trial.md).
 
 ## Why a run failed
 
@@ -315,7 +318,7 @@ jobs:
 
       - name: Run deterministic evals (replay)
         id: evals
-        uses: runledger/Runledger@v0.2.3
+        uses: runledger/Runledger@v0.2.4
         with:
           path: ./evals/demo
           mode: replay
@@ -324,7 +327,7 @@ jobs:
         run: echo "result=${{ steps.evals.outputs.result }} exit=${{ steps.evals.outputs.exit-code }}"
 ```
 
-`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml` at `runledger/Runledger@v0.2.3`. It uploads `runledger_out/**` on success and on failure. The step sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`. A failing run fails the job.
+`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml` at `runledger/Runledger@v0.2.4`. It uploads `runledger_out/**` on success and on failure. The step sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`. A failing run fails the job.
 
 ---
 

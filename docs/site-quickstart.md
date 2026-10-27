@@ -30,15 +30,16 @@ To call the action instead of the workflow file:
 
 ```yaml
 - id: evals
-  uses: runledger/Runledger@v0.2.3
+  uses: runledger/Runledger@v0.2.4
   with:
     path: ./evals/demo
     mode: replay
+    package: runledger==0.2.4
 ```
 
 The suite file's `baseline_path` is `baselines/demo.json`, so this compares against the baseline from `runledger init`.
 
-[`action.yml`](https://github.com/runledger/Runledger/blob/main/action.yml) at `runledger/Runledger@v0.2.3` sets three outputs:
+[`action.yml`](https://github.com/runledger/Runledger/blob/main/action.yml) at `runledger/Runledger@v0.2.4` sets three outputs:
 
 - `result` — `pass` when the process exits 0, otherwise `fail`
 - `exit-code` — the process exit code

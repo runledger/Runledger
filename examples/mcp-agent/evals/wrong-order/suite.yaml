@@ -1,0 +1,21 @@
+suite_name: mcp-agent-wrong-order
+agent_command:
+- node
+- ../../agent.mjs
+- wrong-order
+mode: replay
+cases_path: cases
+tool_registry:
+- search_docs
+- read_doc
+assertions:
+- type: json_schema
+  schema_path: ../../schema.json
+- type: call_order
+  order:
+  - search_docs
+  - read_doc
+budgets:
+  max_wall_ms: 20000
+  max_tool_calls: 2
+  max_tool_errors: 0

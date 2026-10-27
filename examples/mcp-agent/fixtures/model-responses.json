@@ -1,0 +1,17 @@
+{
+  "description": "Authored deterministic model responses for an orchestration test; not captured production traffic.",
+  "prompt": "How do I reset my password?",
+  "toolDecisions": [
+    { "name": "search_docs", "args": { "q": "How do I reset my password?" } },
+    { "name": "read_doc", "args": { "id": "reset-password" } }
+  ],
+  "expectedResults": {
+    "search_docs": { "hits": [{ "id": "reset-password", "title": "Reset your password" }] },
+    "read_doc": { "id": "reset-password", "body": "Choose Forgot password on the sign-in page and follow the emailed link." }
+  },
+  "finalOutput": {
+    "category": "account",
+    "reply": "Choose Forgot password on the sign-in page and follow the emailed link.",
+    "source": "reset-password"
+  }
+}

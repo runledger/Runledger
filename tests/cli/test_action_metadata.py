@@ -72,7 +72,7 @@ def test_readme_pins_the_released_action() -> None:
     ci = (ROOT / "docs" / "ci.md").read_text(encoding="utf-8")
     site = (ROOT / "docs" / "site-quickstart.md").read_text(encoding="utf-8")
     for text in (readme, ci, site):
-        assert "runledger/Runledger@v0.2.3" in text
+        assert "runledger/Runledger@v0.2.4" in text
         assert re.search(r"runledger/Runledger@v0\.2(?!\.)", text) is None
 
 
@@ -80,8 +80,8 @@ def test_release_workflow_publishes_the_tagged_version() -> None:
     import runledger
 
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    assert 'version = "0.2.3"' in pyproject
-    assert runledger.__version__ == "0.2.3"
+    assert 'version = "0.2.4"' in pyproject
+    assert runledger.__version__ == "0.2.4"
     workflow = yaml.safe_load((ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8"))
     # PyYAML 1.1 parses the unquoted workflow key "on" as boolean true.
     assert workflow[True]["push"]["tags"] == ["v*"]
