@@ -13,6 +13,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      revision: ${{ steps.version.outputs.revision }}
     permissions:
       contents: write
       id-token: write
@@ -34,23 +37,26 @@ jobs:
         with:
           python-version: "3.11"
       - name: Require the tag to match the package version
+        id: version
         shell: bash
         run: |
           tag="${{ steps.tag.outputs.value }}"
           case "$tag" in
             v*) version="${tag#v}" ;;
             *)
-              echo "Release tag must look like v0.2.3, got: ${tag}"
+              echo "Release tag must look like v0.2.4, got: ${tag}"
               exit 1
               ;;
           esac
           package="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
           if [ "$package" != "$version" ]; then
             echo "Tag ${tag} does not match pyproject version ${package}."
-            echo "Pushing v0.2.3 publishes runledger 0.2.3 only when pyproject.toml says 0.2.3."
+            echo "The release tag and pyproject.toml must identify the same version."
             exit 1
           fi
           echo "Tag ${tag} matches package version ${package}."
+          echo "version=${package}" >> "$GITHUB_OUTPUT"
+          echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Build
         run: |
           python -m pip install --upgrade pip
@@ -82,3 +88,76 @@ jobs:
           body_path: release_notes.md
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  verify-published:
+    needs: publish
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.9", "3.11"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.publish.outputs.revision }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify the published package in a clean environment
+        env:
+          RUNLEDGER_VERSION: ${{ needs.publish.outputs.version }}
+        shell: bash
+        run: python scripts/smoke_published.py --version "$RUNLEDGER_VERSION"
+      - name: Run the released action with the exact published package
+        id: released-action
+        uses: ./
+        with:
+          path: examples/evals/demo
+          baseline: baselines/demo.json
+          python-version: ${{ matrix.python }}
+          package: runledger==${{ needs.publish.outputs.version }}
+          upload-artifacts: "false"
+      - name: Verify action outputs
+        env:
+          RESULT: ${{ steps.released-action.outputs.result }}
+          EXIT_CODE: ${{ steps.released-action.outputs.exit-code }}
+          ARTIFACTS_PATH: ${{ steps.released-action.outputs.artifacts-path }}
+        shell: bash
+        run: |
+          test "$RESULT" = pass
+          test "$EXIT_CODE" = 0
+          test -d "$ARTIFACTS_PATH"
+      - name: Introduce a missing required field
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path("examples/evals/demo/schema.json")
+          schema = json.loads(path.read_text(encoding="utf-8"))
+          schema["required"].append("published_action_missing_field")
+          path.write_text(json.dumps(schema), encoding="utf-8")
+          PY
+      - name: Confirm the released action fails on a regression
+        id: released-failure
+        continue-on-error: true
+        uses: ./
+        with:
+          path: examples/evals/demo
+          baseline: baselines/demo.json
+          python-version: ${{ matrix.python }}
+          package: runledger==${{ needs.publish.outputs.version }}
+          upload-artifacts: "false"
+      - name: Verify failure outputs
+        env:
+          OUTCOME: ${{ steps.released-failure.outcome }}
+          RESULT: ${{ steps.released-failure.outputs.result }}
+          EXIT_CODE: ${{ steps.released-failure.outputs.exit-code }}
+          ARTIFACTS_PATH: ${{ steps.released-failure.outputs.artifacts-path }}
+        shell: bash
+        run: |
+          test "$OUTCOME" = failure
+          test "$RESULT" = fail
+          test "$EXIT_CODE" = 1
+          test -d "$ARTIFACTS_PATH"

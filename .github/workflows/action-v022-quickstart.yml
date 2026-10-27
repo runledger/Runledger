@@ -1,5 +1,5 @@
 name: action-v022-quickstart
-# Exercises the published Marketplace action the README quickstart names.
+# Retains compatibility coverage for the previously published v0.2.2 action.
 on:
   pull_request:
   workflow_dispatch:
