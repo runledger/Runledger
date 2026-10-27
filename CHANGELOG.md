@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.3] - 2026-10-27
 
 ### Fixed
 
@@ -9,7 +9,7 @@
 - Invalid YAML errors include the parser message.
 - A suite whose `agent_command` is bare `python` runs with `python3` when `python` is not on `PATH`. The checked-in demo suite uses `python3`.
 - `required_fields` failure output names the required fields instead of calling them present.
-- The composite action writes `result`, `exit-code`, and `artifacts-path` in a step that succeeds, then fails the job from a later step, so callers can read those outputs when the run fails. Docs and the quickstart pin `runledger/Runledger@v0.2.2` (the `v0.2` tag still points at the 0.2.1 action, which does not set outputs).
+- The composite action writes `result`, `exit-code`, and `artifacts-path` in a step that succeeds, then fails the job from a later step, so callers can read those outputs when the run fails. Docs and the quickstart pin `runledger/Runledger@v0.2.3` (the `v0.2` tag still points at the 0.2.1 action, which does not set outputs).
 - README, `summary.md`, and the quickstart describe only the gates the runner enforces: JSON Schema, required fields, tool order (`must_call`, `must_not_call`, `call_order`), and `max_wall_ms` / `max_tool_calls` / `max_tool_errors`.
 
 ### Added
