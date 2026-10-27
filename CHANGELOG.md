@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `runledger init` writes `.github/workflows/runledger.yml` next to the eval suite and baseline. A second run leaves existing scaffold files unchanged. `--force` regenerates the suite, baseline, and workflow.
+- The init demo gates on JSON Schema (`schema.json`), tool order (`call_order: [search_docs]`), and tool-call budget (`max_tool_calls: 1`).
+- Root action outputs: `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. Optional `baseline` input. `.github/workflows/action-self-test.yml` runs the action with `uses: ./`.
+- Five-minute quickstart at the top of the README and in `docs/site-quickstart.md`.
+
+### Changed
+
+- Action name stays `RunLedger`. A Marketplace search on 2026-10-27 returned no listing with that name, and the `runledger` organization owns the name.
+- Action `path` default is `./evals/demo`, matching `runledger init`.
+
 ## [0.2.2] - 2026-10-08
 
 ### Fixed

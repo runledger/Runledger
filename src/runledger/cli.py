@@ -64,6 +64,57 @@ def _display_path(path: Path, *, base_dir: Path) -> str:
             return path.as_posix()
 
 
+def _posix_rel(path: Path, root: Path) -> str:
+    text = _display_path(path, base_dir=root)
+    if text.startswith(("/", ".")):
+        return text
+    return f"./{text}"
+
+
+def render_init_workflow(*, suite_rel: str, baseline_rel: str) -> str:
+    """GitHub Actions workflow that replays the suite scaffolded by ``runledger init``."""
+    for label, value in (("suite path", suite_rel), ("baseline path", baseline_rel)):
+        if any(char in value for char in '\n\r"'):
+            raise ValueError(f"Unsafe {label} for workflow: {value!r}")
+    lines = [
+        "name: runledger",
+        "on:",
+        "  pull_request:",
+        "",
+        "jobs:",
+        "  evals:",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - uses: actions/checkout@v4",
+        "      - uses: actions/setup-python@v5",
+        "        with:",
+        '          python-version: "3.11"',
+        "      - name: Install RunLedger",
+        "        run: |",
+        "          python -m pip install --upgrade pip",
+        "          python -m pip install runledger",
+        "      - name: Run deterministic evals",
+        f'        run: runledger run "{suite_rel}" --mode replay --baseline "{baseline_rel}"',
+        "      - name: Upload artifacts",
+        "        if: always()",
+        "        uses: actions/upload-artifact@v4",
+        "        with:",
+        "          name: runledger-artifacts",
+        "          path: runledger_out/**",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def _write_unless_present(path: Path, content: str) -> bool:
+    """Write ``content`` when ``path`` is missing. Return True if the file was created."""
+    if path.exists():
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    return True
+
+
 def _resolve_summary_path(run_path: Path) -> Path:
     if run_path.is_dir():
         summary_path = run_path / "summary.json"
@@ -158,7 +209,11 @@ def init(
     ),
     suite: str = typer.Option("demo", help="Suite name to generate"),
     template: str = typer.Option("support-triage", help="Template name"),
-    force: bool = typer.Option(False, "--force", help="Overwrite existing suite files"),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Overwrite existing init files, including the workflow and baseline",
+    ),
     language: str = typer.Option("python", help="Agent language (python or node)"),
 ) -> None:
     """Initialize an example eval suite."""
@@ -187,15 +242,19 @@ def init(
         agent_command = [select_python_launcher(), "agent/agent.py"]
     agent_path = agent_dir / agent_filename
 
-    if evals_dir.exists():
-        if not force:
-            console.print(f"[red]Target already exists:[/red] {evals_dir}")
-            raise typer.Exit(code=1)
-        shutil.rmtree(evals_dir)
-    if baselines_dir.exists():
-        baseline_file = baselines_dir / f"{suite}.json"
-        if baseline_file.exists() and force:
+    project_root = base_dir.parent
+    baseline_file = baselines_dir / f"{suite}.json"
+    workflow_path = project_root / ".github" / "workflows" / "runledger.yml"
+    if evals_dir.exists() and not evals_dir.is_dir():
+        console.print(f"[red]Target exists and is not a directory:[/red] {evals_dir}")
+        raise typer.Exit(code=1)
+    if force:
+        if evals_dir.exists():
+            shutil.rmtree(evals_dir)
+        if baseline_file.exists():
             baseline_file.unlink()
+        if workflow_path.exists():
+            workflow_path.unlink()
 
     agent_dir.mkdir(parents=True, exist_ok=True)
     cases_dir.mkdir(parents=True, exist_ok=True)
@@ -203,7 +262,7 @@ def init(
     baselines_dir.mkdir(parents=True, exist_ok=True)
 
     if language == "node":
-        agent_path.write_text(
+        agent_text = (
             "\n".join(
                 [
                     "const readline = require(\"readline\");",
@@ -254,11 +313,10 @@ def init(
                     ");",
                     "",
                 ]
-            ),
-            encoding="utf-8",
+            )
         )
     else:
-        agent_path.write_text(
+        agent_text = (
             "\n".join(
                 [
                     "import json",
@@ -286,12 +344,10 @@ def init(
                     "    raise SystemExit(main())",
                     "",
                 ]
-            ),
-            encoding="utf-8",
+            )
         )
 
-    schema_path = evals_dir / "schema.json"
-    schema_path.write_text(
+    schema_text = (
         json.dumps(
             {
                 "type": "object",
@@ -303,12 +359,9 @@ def init(
             },
             indent=2,
         )
-        + "\n",
-        encoding="utf-8",
+        + "\n"
     )
-
-    cassette_path = cassettes_dir / "t1.jsonl"
-    cassette_path.write_text(
+    cassette_text = (
         json.dumps(
             {
                 "tool": "search_docs",
@@ -319,126 +372,134 @@ def init(
             ensure_ascii=False,
             sort_keys=True,
         )
-        + "\n",
-        encoding="utf-8",
+        + "\n"
+    )
+    case_text = yaml.safe_dump(
+        {
+            "id": "t1",
+            "description": "triage a login ticket",
+            "input": {"ticket": "reset password"},
+            "cassette": "cassettes/t1.jsonl",
+            "assertions": [
+                {"type": "required_fields", "fields": ["category", "reply"]},
+                {"type": "call_order", "order": ["search_docs"]},
+            ],
+        },
+        sort_keys=False,
+    )
+    suite_text = yaml.safe_dump(
+        {
+            "suite_name": suite,
+            "agent_command": agent_command,
+            "mode": "replay",
+            "cases_path": "cases",
+            "tool_registry": ["search_docs"],
+            "assertions": [
+                {"type": "json_schema", "schema_path": "schema.json"},
+            ],
+            "budgets": {
+                "max_wall_ms": 20000,
+                "max_tool_calls": 1,
+                "max_tool_errors": 0,
+            },
+            "regression": {
+                "min_pass_rate": 1.0,
+            },
+            "baseline_path": f"../../baselines/{suite}.json",
+        },
+        sort_keys=False,
     )
 
+    schema_path = evals_dir / "schema.json"
+    cassette_path = cassettes_dir / "t1.jsonl"
     case_path = cases_dir / "t1.yaml"
-    case_path.write_text(
-        yaml.safe_dump(
-            {
-                "id": "t1",
-                "description": "triage a login ticket",
-                "input": {"ticket": "reset password"},
-                "cassette": "cassettes/t1.jsonl",
-                "assertions": [
-                    {"type": "required_fields", "fields": ["category", "reply"]},
-                ],
-            },
-            sort_keys=False,
-        ),
-        encoding="utf-8",
-    )
-
     suite_path = evals_dir / "suite.yaml"
-    suite_path.write_text(
-        yaml.safe_dump(
-            {
-                "suite_name": suite,
-                "agent_command": agent_command,
-                "mode": "replay",
-                "cases_path": "cases",
-                "tool_registry": ["search_docs"],
-                "assertions": [
-                    {"type": "json_schema", "schema_path": "schema.json"},
-                ],
-                "budgets": {
-                    "max_wall_ms": 20000,
-                    "max_tool_calls": 1,
-                    "max_tool_errors": 0,
-                },
-                "regression": {
-                    "min_pass_rate": 1.0,
-                },
-                "baseline_path": f"../../baselines/{suite}.json",
-            },
-            sort_keys=False,
-        ),
-        encoding="utf-8",
-    )
+    created: list[Path] = []
+    unchanged: list[Path] = []
+    for target, content in (
+        (agent_path, agent_text),
+        (schema_path, schema_text),
+        (cassette_path, cassette_text),
+        (case_path, case_text),
+        (suite_path, suite_text),
+    ):
+        if _write_unless_present(target, content):
+            created.append(target)
+        else:
+            unchanged.append(target)
 
-    try:
-        suite_config = load_suite(suite_path)
-        cases = load_cases(evals_dir, suite_config.cases_path)
-        suite_run = suite_config.model_copy(
-            update={"agent_command": [agent_command[0], str(agent_path)]}
-        )
-        suite_result = run_suite(suite_run, cases)
-    except Exception as exc:
-        console.print(f"[red]Failed to generate baseline:[/red] {exc}")
-        raise typer.Exit(code=1)
+    if baseline_file.exists():
+        unchanged.append(baseline_file)
+    else:
+        try:
+            suite_config = load_suite(suite_path)
+            cases = load_cases(evals_dir, suite_config.cases_path)
+            if suite_path in created:
+                suite_run = suite_config.model_copy(
+                    update={"agent_command": [agent_command[0], str(agent_path)]}
+                )
+            else:
+                suite_run = suite_config
+            suite_result = run_suite(suite_run, cases)
+        except Exception as exc:
+            console.print(f"[red]Failed to generate baseline:[/red] {exc}")
+            raise typer.Exit(code=1)
 
-    if not suite_result.passed:
-        console.print("[red]Failed to generate baseline.[/red] The example agent did not pass.")
-        for line in format_failure_lines(collect_case_failures(suite_result.cases), []):
-            console.print(line, markup=False, highlight=False, soft_wrap=True)
-        raise typer.Exit(code=1)
+        if not suite_result.passed:
+            console.print("[red]Failed to generate baseline.[/red] The example agent did not pass.")
+            for line in format_failure_lines(collect_case_failures(suite_result.cases), []):
+                console.print(line, markup=False, highlight=False, soft_wrap=True)
+            raise typer.Exit(code=1)
 
-    try:
-        run_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-        summary = build_summary(
-            suite=suite_config,
-            suite_path=suite_path,
-            suite_result=suite_result,
-            run_id=run_id,
-            generated_at=datetime.now(timezone.utc),
-        )
-        baseline = BaselineSummary.model_validate(summary)
-        write_baseline(baselines_dir / f"{suite}.json", baseline)
-    except Exception as exc:
-        console.print(f"[red]Failed to generate baseline:[/red] {exc}")
-        raise typer.Exit(code=1)
+        try:
+            run_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+            summary = build_summary(
+                suite=suite_config,
+                suite_path=suite_path,
+                suite_result=suite_result,
+                run_id=run_id,
+                generated_at=datetime.now(timezone.utc),
+            )
+            baseline = BaselineSummary.model_validate(summary)
+            write_baseline(baseline_file, baseline)
+        except Exception as exc:
+            console.print(f"[red]Failed to generate baseline:[/red] {exc}")
+            raise typer.Exit(code=1)
+        created.append(baseline_file)
+
+    if workflow_path.exists():
+        unchanged.append(workflow_path)
+    else:
+        suite_rel = _posix_rel(evals_dir, project_root)
+        baseline_rel = _posix_rel(baseline_file, project_root)
+        try:
+            workflow_text = render_init_workflow(suite_rel=suite_rel, baseline_rel=baseline_rel)
+        except ValueError as exc:
+            console.print(f"[red]{exc}[/red]")
+            raise typer.Exit(code=1)
+        _write_unless_present(workflow_path, workflow_text)
+        created.append(workflow_path)
 
     cwd = Path.cwd()
-    evals_dir_display = _display_path(evals_dir, base_dir=cwd)
-    baseline_display = _display_path(baselines_dir / f"{suite}.json", base_dir=cwd)
 
-    console.print(f"Created eval suite at: {evals_dir_display}")
-    console.print(f"Created baseline at: {baseline_display}")
+    def _show(paths: list[Path]) -> None:
+        for item in paths:
+            console.print(f"  {_display_path(item, base_dir=cwd)}")
+
+    if created:
+        console.print("Created:")
+        _show(created)
+    if unchanged:
+        console.print("Unchanged:")
+        _show(unchanged)
     console.print("")
     console.print("Next steps:")
     console.print(
-        f'  runledger run "{evals_dir_display}" --mode replay --baseline "{baseline_display}"'
+        "  runledger run "
+        f'"{_posix_rel(evals_dir, cwd)}" --mode replay --baseline "{_posix_rel(baseline_file, cwd)}"'
     )
     console.print(f"  open runledger_out/{suite}/<run_id>/report.html")
-    console.print("")
-    console.print("GitHub Actions snippet:")
-    console.print(
-        "\n".join(
-            [
-                "name: runledger-evals",
-                "on:",
-                "  pull_request:",
-                "",
-                "jobs:",
-                "  evals:",
-                "    runs-on: ubuntu-latest",
-                "    steps:",
-                "      - uses: actions/checkout@v4",
-                "      - name: Install RunLedger",
-                "        run: |",
-                "          python -m pip install --upgrade pip",
-                "          python -m pip install runledger",
-                "      - name: Run deterministic evals",
-                f'        run: runledger run "{evals_dir_display}" --mode replay --baseline "{baseline_display}"',
-                "      - name: Upload artifacts",
-                "        uses: actions/upload-artifact@v4",
-                "        with:",
-                "          name: runledger-artifacts",
-                "          path: runledger_out/**",
-            ]
-        )
-    )
+    console.print(f"  commit {_display_path(workflow_path, base_dir=cwd)}")
 
 
 @app.command()
