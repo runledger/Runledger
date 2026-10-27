@@ -43,5 +43,5 @@ runledger run ./evals/demo --mode record
 ## Open the report
 
 ```bash
-open runledger_out/**/report.html
+find runledger_out -name report.html -print
 ```

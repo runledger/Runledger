@@ -1,6 +1,6 @@
 suite_name: demo
 agent_command:
-- python
+- python3
 - agent/agent.py
 mode: replay
 cases_path: cases

@@ -101,6 +101,31 @@ def test_must_call_and_schema_failures() -> None:
     assert failures[1].observed == "missing: reply"
 
 
+def test_required_fields_expected_names_the_requirement() -> None:
+    result = _case(
+        "t3",
+        passed=False,
+        failure=Failure(type="assertion_failed", message="Missing required fields: reply"),
+        trace=[
+            {
+                "type": "assertion_failure",
+                "failures": [
+                    {
+                        "type": "required_fields",
+                        "message": "Missing required fields: reply",
+                        "details": {"missing": ["reply"]},
+                    }
+                ],
+            }
+        ],
+    )
+    (item,) = collect_case_failures([result])
+    assert item.expected == "required fields: reply"
+    assert item.observed == "missing: reply"
+    text = "\n".join(format_failure_lines([item], []))
+    assert "fields present:" not in text
+
+
 def test_budget_and_runtime_failures() -> None:
     budget = _case(
         "b1",

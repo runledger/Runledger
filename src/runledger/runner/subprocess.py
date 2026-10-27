@@ -4,6 +4,7 @@ from collections import deque
 from dataclasses import dataclass
 import json
 import queue
+import shutil
 import subprocess
 import threading
 import time
@@ -27,6 +28,29 @@ class AgentProcessError(Exception):
 
 def _command_basename(program: str) -> str:
     return program.replace("\\", "/").rsplit("/", 1)[-1].lower()
+
+
+def _prefer_available_python(command: Sequence[str]) -> list[str]:
+    """Run ``python3`` when a suite asks for bare ``python`` and only python3 exists.
+
+    Ubuntu, macOS, and pipx installs often have no ``python`` executable. Suites
+    generated before that was the default, and the checked-in examples, still say
+    ``python``. Use ``python3`` instead of failing those runs. An explicit path
+    such as ``/usr/bin/python`` is left unchanged.
+    """
+    if not command:
+        return list(command)
+    program = command[0]
+    normalized = program.replace("\\", "/")
+    if "/" in normalized:
+        return list(command)
+    if _command_basename(program) not in {"python", "python.exe"}:
+        return list(command)
+    if shutil.which(program):
+        return list(command)
+    if shutil.which("python3"):
+        return ["python3", *list(command[1:])]
+    return list(command)
 
 
 def _agent_start_error(command: Sequence[str], exc: BaseException) -> AgentProcessError:
@@ -100,6 +124,7 @@ class AgentProcess:
             return
         if not self._command or not self._command[0].strip():
             raise _agent_start_error(self._command, ValueError("empty command"))
+        self._command = _prefer_available_python(self._command)
         try:
             self._process = subprocess.Popen(
                 self._command,
