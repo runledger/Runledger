@@ -41,13 +41,13 @@ The same check as a GitHub Action. `suite.yaml` already points at `baselines/dem
 
 ```yaml
 - id: evals
-  uses: runledger/Runledger@v0.2.2
+  uses: runledger/Runledger@v0.2.3
   with:
     path: ./evals/demo
     mode: replay
 ```
 
-`runledger/Runledger@v0.2.2` accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. The in-repo self-test calls the action with `uses: ./`.
+`runledger/Runledger@v0.2.3` accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. The in-repo self-test calls the action with `uses: ./`.
 
 Page copy for runledger.io lives in `docs/site-quickstart.md`.
 
@@ -352,7 +352,7 @@ jobs:
 
       - name: Run deterministic evals (replay)
         id: evals
-        uses: runledger/Runledger@v0.2.2
+        uses: runledger/Runledger@v0.2.3
         with:
           path: ./evals/demo
           mode: replay
@@ -361,7 +361,7 @@ jobs:
         run: echo "result=${{ steps.evals.outputs.result }} exit=${{ steps.evals.outputs.exit-code }}"
 ```
 
-`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml` at `runledger/Runledger@v0.2.2`. It uploads `runledger_out/**` on success and on failure. The step sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`. A failing run fails the job.
+`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml` at `runledger/Runledger@v0.2.3`. It uploads `runledger_out/**` on success and on failure. The step sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`. A failing run fails the job.
 
 ---
 

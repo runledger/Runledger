@@ -44,8 +44,28 @@ def test_readme_pins_the_released_action() -> None:
     ci = (ROOT / "docs" / "ci.md").read_text(encoding="utf-8")
     site = (ROOT / "docs" / "site-quickstart.md").read_text(encoding="utf-8")
     for text in (readme, ci, site):
-        assert "runledger/Runledger@v0.2.2" in text
+        assert "runledger/Runledger@v0.2.3" in text
         assert re.search(r"runledger/Runledger@v0\.2(?!\.)", text) is None
+
+
+def test_release_workflow_publishes_the_tagged_version() -> None:
+    import runledger
+
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'version = "0.2.3"' in pyproject
+    assert runledger.__version__ == "0.2.3"
+    workflow = yaml.safe_load((ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8"))
+    # PyYAML 1.1 parses the unquoted workflow key "on" as boolean true.
+    assert workflow[True]["push"]["tags"] == ["v*"]
+    steps = workflow["jobs"]["publish"]["steps"]
+    gate = next(step for step in steps if step.get("name") == "Require the tag to match the package version")
+    build = next(step for step in steps if step.get("name") == "Build")
+    publish = next(step for step in steps if step.get("name") == "Publish to PyPI")
+    assert steps.index(gate) < steps.index(build) < steps.index(publish)
+    assert 'version="${tag#v}"' in gate["run"]
+    assert "[ \"$package\" != \"$version\" ]" in gate["run"]
+    assert "python -m build" in build["run"]
+    assert publish["uses"] == "pypa/gh-action-pypi-publish@release/v1"
 
 
 def test_action_self_test_uses_local_action() -> None:
