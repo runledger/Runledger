@@ -1,5 +1,5 @@
 name: RunLedger
-description: Run RunLedger eval suites in CI and upload artifacts.
+description: Replay a RunLedger suite and fail on schema, tool-order, or tool-call budget gates.
 author: runledger
 branding:
   icon: check-circle
@@ -8,27 +8,41 @@ inputs:
   path:
     description: Path to the eval suite directory.
     required: false
-    default: ./evals
+    default: ./evals/demo
   mode:
-    description: Run mode (replay, record, live).
+    description: Run mode (replay, record, or live).
     required: false
     default: replay
+  baseline:
+    description: Baseline summary to compare against. When empty, suite.yaml baseline_path is used if set.
+    required: false
+    default: ""
   python-version:
-    description: Python version to use.
+    description: Python version to install.
     required: false
     default: "3.11"
   package:
-    description: PyPI package to install.
+    description: Pip install spec. Use runledger for PyPI, or . to install the checked-out repository.
     required: false
     default: runledger
   artifact-path:
-    description: Path pattern to upload as artifacts.
+    description: Path or glob uploaded as the run artifact.
     required: false
     default: runledger_out/**
   upload-artifacts:
-    description: Whether to upload artifacts.
+    description: Upload run artifacts when true.
     required: false
     default: "true"
+outputs:
+  result:
+    description: pass when runledger exits 0, otherwise fail.
+    value: ${{ steps.run.outputs.result }}
+  exit-code:
+    description: Exit code from the runledger process.
+    value: ${{ steps.run.outputs.exit-code }}
+  artifacts-path:
+    description: Artifact directory with a trailing /** glob removed.
+    value: ${{ steps.run.outputs.artifacts-path }}
 runs:
   using: composite
   steps:
@@ -38,15 +52,52 @@ runs:
         python-version: ${{ inputs.python-version }}
     - name: Install RunLedger
       shell: bash
+      env:
+        RUNLEDGER_PACKAGE: ${{ inputs.package }}
       run: |
         python -m pip install --upgrade pip
-        python -m pip install "${{ inputs.package }}"
+        python -m pip install "${RUNLEDGER_PACKAGE}"
     - name: Run evals
+      id: run
       shell: bash
+      env:
+        RUNLEDGER_PATH: ${{ inputs.path }}
+        RUNLEDGER_MODE: ${{ inputs.mode }}
+        RUNLEDGER_BASELINE: ${{ inputs.baseline }}
+        RUNLEDGER_ARTIFACT_PATH: ${{ inputs.artifact-path }}
       run: |
-        runledger run "${{ inputs.path }}" --mode "${{ inputs.mode }}"
+        set +e
+        if [ -n "${RUNLEDGER_BASELINE}" ]; then
+          runledger run "${RUNLEDGER_PATH}" --mode "${RUNLEDGER_MODE}" --baseline "${RUNLEDGER_BASELINE}"
+        else
+          runledger run "${RUNLEDGER_PATH}" --mode "${RUNLEDGER_MODE}"
+        fi
+        code=$?
+        set -e
+        if [ "${code}" -eq 0 ]; then
+          result=pass
+        else
+          result=fail
+        fi
+        artifacts="${RUNLEDGER_ARTIFACT_PATH}"
+        artifacts="${artifacts//$'\n'/}"
+        artifacts="${artifacts//$'\r'/}"
+        while true; do
+          case "${artifacts}" in
+            */) artifacts="${artifacts%/}" ;;
+            *'/**') artifacts="${artifacts%'/**'}" ;;
+            *) break ;;
+          esac
+        done
+        if [ -z "${artifacts}" ]; then
+          artifacts=runledger_out
+        fi
+        printf 'result=%s\n' "${result}" >> "${GITHUB_OUTPUT}"
+        printf 'exit-code=%s\n' "${code}" >> "${GITHUB_OUTPUT}"
+        printf 'artifacts-path=%s\n' "${artifacts}" >> "${GITHUB_OUTPUT}"
+        exit "${code}"
     - name: Upload artifacts
-      if: ${{ inputs.upload-artifacts == 'true' }}
+      if: ${{ always() && inputs.upload-artifacts == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: runledger-artifacts

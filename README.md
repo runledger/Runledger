@@ -6,24 +6,56 @@
 
 Website: https://runledger.io
 
-**Deterministic CI regression checks for tool-using agents.** Record tool calls once, replay in CI, and fail PRs on mismatches, contract violations, or budget regressions.
+**Deterministic CI regression checks for tool-using agents.** Record tool calls once, replay them in CI, and fail the run when a schema, tool-order, or tool-call budget gate fails.
 
 - Demo: https://github.com/ZackMitchell910/runledger-demo/pull/1 (intentionally left open to show RunLedger failing a bad agent change)
 - If this is useful, please star the repo (it helps a lot).
 
-RunLedger is a **CI harness**, not an "eval metrics framework":
-- **DeepEval-style tools** help you *score* behavior.
-- **RunLedger** helps you *ship safely* by making agent tests deterministic and merge-gated.
+## Five-minute quickstart
 
----
-
-## Try it now (60 seconds)
+From an empty directory, with Python 3.9+:
 
 ```bash
-pipx install runledger
+python3 -m pip install runledger
 runledger init
 runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 ```
+
+`runledger init` writes:
+
+- `evals/demo/` — replay suite, cassette, JSON Schema, and a small agent that calls `search_docs`
+- `baselines/demo.json` — baseline from that passing run
+- `.github/workflows/runledger.yml` — pull-request workflow that runs the same command
+
+A second `runledger init` leaves those files unchanged. `--force` regenerates them.
+
+The demo exits non-zero unless all three of these hold:
+
+- **Schema.** The final output matches `evals/demo/schema.json` (`category` and `reply`).
+- **Tool order.** The agent calls `search_docs` (`call_order` in `evals/demo/cases/t1.yaml`).
+- **Tool-call budget.** The run stays within `max_tool_calls: 1`.
+
+A passing run prints `PASS` and writes `runledger_out/demo/<run_id>/` (`summary.json`, `junit.xml`, `report.html`, `run.jsonl`). Commit the init files to run that gate on pull requests.
+
+The same check as a GitHub Action. `suite.yaml` already points at `baselines/demo.json`, so the action compares against that baseline:
+
+```yaml
+- id: evals
+  uses: runledger/Runledger@v0.2
+  with:
+    path: ./evals/demo
+    mode: replay
+```
+
+This repo's `action.yml` also accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. Those fields ship when a release containing this file is tagged. The in-repo self-test calls the action with `uses: ./`.
+
+Page copy for runledger.io lives in `docs/site-quickstart.md`.
+
+---
+
+RunLedger is a **CI harness**, not an "eval metrics framework":
+- **DeepEval-style tools** help you *score* behavior.
+- **RunLedger** helps you *ship safely* by making agent tests deterministic and merge-gated.
 
 ## Integrations (merged)
 
@@ -49,7 +81,7 @@ RunLedger stops regressions by shifting from "vibes-based" evaluation to determi
 
 - **Record & replay:** record tool outputs once; replay them in CI for instant, stable tests.
 - **Strict contracts:** enforce tool schemas, calling order, and allowlists.
-- **Budget gating:** fail PRs automatically if wall time, tool-call count, or tool errors exceed defined limits.
+- **Budget gating:** fail the run when tool-call count exceeds `max_tool_calls`. Wall time and tool-error caps are separate gates, configured with `max_wall_ms` and `max_tool_errors`.
 
 ### RunLedger vs evaluation frameworks
 
@@ -328,17 +360,17 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run deterministic evals (replay)
+        id: evals
         uses: runledger/Runledger@v0.2
         with:
           path: ./evals/demo
           mode: replay
 
-      - name: Upload eval artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: agent-eval-artifacts
-          path: runledger_out/**
+      - name: Show the action result
+        run: echo "result=${{ steps.evals.outputs.result }} exit=${{ steps.evals.outputs.exit-code }}"
 ```
+
+`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml`. It uploads `runledger_out/**` itself. On a release that contains this `action.yml`, the step also sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`.
 
 ---
 
@@ -362,6 +394,7 @@ jobs:
 
 ## Docs
 
+- `docs/site-quickstart.md` -- five-minute copy for runledger.io
 - `docs/quickstart.md` -- install + first run
 - `docs/assertions.md` -- assertions, tool contracts, budgets
 - `docs/baselines.md` -- baselines, diffing, promotion
@@ -374,7 +407,6 @@ jobs:
 ## Roadmap
 
 * `init` templates for Python (OpenAI SDK), LangGraph/LangChain, and Node/TS
-* richer budgets (tokens/cost) via optional `task_metrics`
 * PR comments bot for regression summaries
 * plugin system for custom assertions
 * HTML report trace viewer improvements

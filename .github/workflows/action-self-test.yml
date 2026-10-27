@@ -1,0 +1,26 @@
+name: action-self-test
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run RunLedger action
+        id: runledger
+        uses: ./
+        with:
+          path: examples/evals/demo
+          mode: replay
+          baseline: baselines/demo.json
+          package: .
+      - name: Check action outputs
+        run: |
+          test "${{ steps.runledger.outputs.result }}" = "pass"
+          test "${{ steps.runledger.outputs.exit-code }}" = "0"
+          test -d "${{ steps.runledger.outputs.artifacts-path }}"
