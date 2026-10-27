@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/runledger/Runledger/actions/workflows/ci.yml/badge.svg)](https://github.com/runledger/Runledger/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/runledger)](https://pypi.org/project/runledger/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/runledger)](https://pypi.org/project/runledger/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://pypi.org/project/runledger/)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-runledger-181717?logo=github)](https://github.com/marketplace/actions/runledger)
 [![License](https://img.shields.io/github/license/runledger/Runledger)](LICENSE)
 
 Website: https://runledger.io
 
-**Deterministic CI regression checks for tool-using agents.** Record tool calls once, replay them in CI, and fail the run when a schema, tool-order, or tool-call budget gate fails.
-
-- Demo: https://github.com/ZackMitchell910/runledger-demo/pull/1 (intentionally left open to show RunLedger failing a bad agent change)
-- If this is useful, please star the repo (it helps a lot).
+**pytest-style CI for AI agents: replay recorded tool calls, fail the PR on tool-order, schema, or tool-call-count regressions. No live model calls or API keys in CI.**
 
 ## Five-minute quickstart
 
@@ -23,11 +23,11 @@ runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 
 `runledger init` writes:
 
-- `evals/demo/` — replay suite, cassette, JSON Schema, and a small agent that calls `search_docs`
+- `evals/demo/` — replay suite, cassette, JSON Schema, and a small Python agent that calls `search_docs`
 - `baselines/demo.json` — baseline from that passing run
 - `.github/workflows/runledger.yml` — pull-request workflow that runs the same command
 
-A second `runledger init` leaves those files unchanged. `--force` regenerates them.
+A second `runledger init` leaves those files unchanged. `--force` regenerates them. `runledger init --language node` writes a Node agent for the same suite. `init` writes the baseline only when that example agent passes.
 
 The demo exits non-zero unless all three of these hold:
 
@@ -36,6 +36,19 @@ The demo exits non-zero unless all three of these hold:
 - **Tool-call budget.** The run stays within `max_tool_calls: 1`.
 
 A passing run prints `PASS` and writes `runledger_out/demo/<run_id>/` (`summary.json`, `junit.xml`, `report.html`, `run.jsonl`). Commit the init files to run that gate on pull requests.
+
+<table>
+  <tr>
+    <td width="72%" valign="top">
+      <img src="docs/assets/demo.gif" alt="Terminal demo: pip install runledger, runledger init, a replay that prints PASS, then a one-line edit that fails tool order" width="100%">
+    </td>
+    <td width="28%" valign="top">
+      <img src="docs/pr-failing-checks.png" alt="Pull request whose RunLedger check failed" width="100%">
+    </td>
+  </tr>
+</table>
+
+The edit in the demo replaces the `search_docs` tool call with a final output. Replay then prints `FAIL` for `call_order` (`expected: search_docs`, `observed: <none>`). The screenshot is that same kind of check failing on a pull request: https://github.com/ZackMitchell910/runledger-demo/pull/1
 
 The same check as a GitHub Action. `suite.yaml` already points at `baselines/demo.json`, so the action compares against that baseline:
 
@@ -51,91 +64,38 @@ The same check as a GitHub Action. `suite.yaml` already points at `baselines/dem
 
 Page copy for runledger.io lives in `docs/site-quickstart.md`.
 
----
+## RunLedger vs DeepEval and promptfoo
 
-RunLedger is a **CI harness**, not an "eval metrics framework":
-- **DeepEval-style tools** help you *score* behavior.
-- **RunLedger** helps you *ship safely* by making agent tests deterministic and merge-gated.
+| | RunLedger | DeepEval | promptfoo |
+| --- | --- | --- | --- |
+| Job | Fail CI when a tool-using agent regresses | Score output quality | Evaluate prompts and model outputs |
+| How the run is produced | Replays a recorded cassette. No live model call | Calls a model to generate or grade output | Calls the provider configured for the eval |
+| The check fails when | Tool order, output schema, or the tool-call budget (`max_tool_calls`) | A score misses the threshold you set | An assertion you configured fails |
+| API keys in the replay path | Not used | Needed when the metric calls a hosted model | Needed when the provider is a hosted API |
+
+DeepEval scores quality. promptfoo evaluates prompts and model outputs. RunLedger is the replay harness that fails the CI check. You can use them together.
+
+## Why this catches the regressions
+
+A change can skip a tool, call tools in a different order, return JSON that no longer matches the schema, or exceed `max_tool_calls`. Unit tests do not see the tool trace. Replay uses the recorded tool results, so the CI run does not call a live model or need API keys.
+
+The process exits non-zero when tool order, the output schema, or the tool-call budget fails. `max_wall_ms` and `max_tool_errors` are separate gates. Comparing average or p95 wall time to a baseline is opt-in (`max_avg_wall_ms_delta_pct`, `max_p95_wall_ms_delta_pct`).
 
 ## Integrations (merged)
 
 - hoangsonww/Agentic-AI-Pipeline - https://github.com/hoangsonww/Agentic-AI-Pipeline/pull/24
 - zhongyu09/openchatbi - https://github.com/zhongyu09/openchatbi/pull/8
 - joshuaalpuerto/mcp-agent - https://github.com/joshuaalpuerto/mcp-agent/pull/3
+
 Details: docs/integrations.md
 
-## Why RunLedger (in one minute)
+## Why a run failed
 
-### The problem
-
-Agents regress silently. Standard unit tests can't catch:
-
-- prompt drift that breaks tool schemas
-- hallucinated tool arguments
-- latency spikes or budget overruns
-- flaky external APIs causing false negatives in CI
-
-### The solution
-
-RunLedger stops regressions by shifting from "vibes-based" evaluation to deterministic contracts:
-
-- **Record & replay:** record tool outputs once; replay them in CI for instant, stable tests.
-- **Strict contracts:** enforce tool schemas, calling order, and allowlists.
-- **Budget gating:** fail the run when tool-call count exceeds `max_tool_calls`. Wall time and tool-error caps are separate gates, configured with `max_wall_ms` and `max_tool_errors`.
-
-### RunLedger vs evaluation frameworks
-
-| Feature | DeepEval / Ragas / TruLens | RunLedger |
-| --- | --- | --- |
-| Primary goal | Scoring quality ("Is this answer helpful?") | Shipping safely ("Did we break the build?") |
-| Tool execution | Often live or mocked manually | Record/replay cassettes (automatic mocking) |
-| Pass/fail criteria | LLM-graded scores (0.0 - 1.0) | Hard contracts (schema, budgets, order) |
-| Best for | Improving prompt quality | Preventing regressions in production |
-
-Note: you can use both. Use DeepEval to calculate scores, and wrap your agent in RunLedger to ensure it runs deterministically in CI.
-
----
-
-## What it looks like in a PR
-
-**PR blocked (checks fail):**
-![PR blocked](docs/pr-failing-checks.png)
-
-**Why it failed (RunLedger output):**
-![Failure reason](docs/pr-failure-log.png)
+![RunLedger failure output](docs/pr-failure-log.png)
 
 Artifacts are written to `runledger_out/<suite>/<run_id>/`:
 
 - `report.html`, `summary.json`, `junit.xml`, `run.jsonl`
-
----
-
-## FAQ: Why not just use DeepEval?
-
-DeepEval is excellent for *evaluation metrics* and benchmarking.
-RunLedger is focused on *CI determinism for tool-using agents*:
-
-- Record tool calls once -> replay in CI (stable, fast, no flaky external dependencies)
-- Merge gates based on hard contracts (schema/tool/budgets), not "LLM-judge vibes"
-- Baselines-as-code (diffs + promotions) that fit cleanly into PR workflows
-
-If you already use DeepEval, keep it - RunLedger can be the harness that makes agent tests CI-grade.
-
----
-
-## When to use RunLedger vs DeepEval
-
-Use **RunLedger** when you need:
-
-- deterministic CI for tool-using agents (web/APIs/DBs)
-- hard pass/fail contracts (schema/tool order/budgets)
-- baselines + PR regression gates
-
-Use **DeepEval** when you need:
-
-- rich evaluation metrics / model-graded scoring / benchmarking workflows
-
-Use **both** if you want DeepEval scoring inside a deterministic CI harness.
 
 ---
 
@@ -427,3 +387,4 @@ Contact: [runledger.io/community.html#contact](https://runledger.io/community.ht
 
 MIT
 
+If this is useful, star [runledger/Runledger](https://github.com/runledger/Runledger).
