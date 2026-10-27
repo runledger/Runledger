@@ -15,9 +15,12 @@ runledger init
 
 This creates:
 
-- `evals/demo/` with a working suite and cassette
-- `evals/demo/agent/agent.py` (minimal Python agent)
+- `evals/demo/` with a replay suite, cassette, and JSON Schema
+- `evals/demo/agent/agent.py` (minimal Python agent that calls `search_docs`)
 - `baselines/demo.json`
+- `.github/workflows/runledger.yml` (pull-request replay against that baseline)
+
+The case asserts `call_order: [search_docs]`. The suite asserts `schema.json` and `max_tool_calls: 1`. Running `runledger init` again leaves existing files unchanged. `runledger init --force` regenerates them.
 
 To scaffold a Node adapter instead:
 
