@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from contextlib import ExitStack
 import hashlib
+import math
 import time
 from pathlib import Path
 from typing import Any
@@ -20,11 +22,11 @@ from runledger.protocol.messages import (
     ToolCallMessage,
     ToolResultMessage,
 )
-from runledger.runner.subprocess import AgentProcess, AgentProcessError
-from runledger.tools.registry import resolve_tools
+from runledger.runner.subprocess import AgentDeadlineExceeded, AgentProcess, AgentProcessError
+from runledger.runner.tool_process import ToolProcess, ToolRegistryError
 from runledger.util.normalize import merge_normalization, normalize
 
-from .budgets import check_budgets, merge_budgets
+from .budgets import BudgetExceeded, check_budgets, merge_budgets
 from .models import CaseResult, Failure, SuiteResult
 
 
@@ -44,6 +46,12 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
 
     trace: list[dict[str, Any]] = []
     start = time.monotonic()
+    effective_budget = merge_budgets(suite.budgets, case.budgets)
+    deadline = (
+        start + effective_budget.max_wall_ms / 1000
+        if effective_budget is not None and effective_budget.max_wall_ms is not None
+        else None
+    )
     tool_calls = 0
     tool_errors = 0
     tool_calls_by_name: dict[str, int] = {}
@@ -59,7 +67,19 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
     cassette_entries: list[CassetteEntry] = []
     cassette_sha256: str | None = None
     allowed_tools = set(suite.tool_registry)
-    tool_registry = None
+    tool_process = None
+
+    def enforce_budget() -> None:
+        if effective_budget is None:
+            return
+        failures = check_budgets(
+            effective_budget,
+            wall_ms=math.ceil((time.monotonic() - start) * 1000),
+            tool_calls=tool_calls,
+            tool_errors=tool_errors,
+        )
+        if failures:
+            raise BudgetExceeded(failures)
 
     if suite.mode == "replay":
         try:
@@ -85,38 +105,24 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                 replay_cassette_sha256=cassette_sha256,
                 failure=failure,
             )
-    else:
-        try:
-            tool_registry = resolve_tools(allowed_tools, suite.tool_module)
-        except Exception as exc:
-            failure = Failure(type="tool_registry_error", message=str(exc))
-            wall_ms = int((time.monotonic() - start) * 1000)
-            trace.append(_event(case.id, "case_end", passed=False, wall_ms=wall_ms))
-            return CaseResult(
-                case_id=case.id,
-                passed=False,
-                output=None,
-                trace=trace,
-                wall_ms=wall_ms,
-                tool_calls=tool_calls,
-                tool_errors=tool_errors,
-                tool_calls_by_name=tool_calls_by_name,
-                tool_errors_by_name=tool_errors_by_name,
-                assertions_total=assertions_total,
-                assertions_failed=assertions_failed,
-                failed_assertions=failed_assertions,
-                replay_cassette_path=str(cassette_path) if suite.mode == "record" else None,
-                replay_cassette_sha256=cassette_sha256,
-                failure=failure,
-            )
-        if suite.mode == "record":
-            cassette_path.parent.mkdir(parents=True, exist_ok=True)
-            cassette_path.write_text("", encoding="utf-8")
     task_start = TaskStartMessage(type="task_start", task_id=case.id, input=case.input)
     trace.append(_event(case.id, "task_start", task_id=case.id, input=case.input))
 
     try:
-        with AgentProcess(suite.agent_command) as agent:
+        with ExitStack() as processes:
+            enforce_budget()
+            if suite.mode != "replay":
+                tool_process = processes.enter_context(
+                    ToolProcess(allowed_tools, suite.tool_module, deadline)
+                )
+                if suite.mode == "record":
+                    cassette_path.parent.mkdir(parents=True, exist_ok=True)
+                    cassette_path.write_text("", encoding="utf-8")
+            agent = processes.enter_context(AgentProcess(
+                suite.agent_command,
+                timeout_s=None if deadline is not None else 30.0,
+                deadline=deadline,
+            ))
             agent.send(task_start)
             while True:
                 message = agent.recv()
@@ -143,6 +149,7 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                             ),
                         )
                         break
+                    enforce_budget()
                     if suite.mode == "replay":
                         entry = find_match(cassette_entries, message.name, message.args)
                         if entry is None:
@@ -155,30 +162,14 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                                 ),
                             )
                             break
+                        cassette_entries.remove(entry)
                         ok = entry.ok
                         result = entry.result
                         error = entry.error
                     else:
-                        assert tool_registry is not None
-                        tool = tool_registry.get(message.name)
-                        if tool is None:
-                            allowed_list = ", ".join(sorted(tool_registry)) or "<none>"
-                            failure = Failure(
-                                type="tool_not_registered",
-                                message=(
-                                    f"Tool not registered: {message.name}. "
-                                    f"Registered tools: {allowed_list}"
-                                ),
-                            )
-                            break
-                        try:
-                            result = tool.call(message.args)
-                            ok = True
-                            error = None
-                        except Exception as exc:
-                            result = None
-                            ok = False
-                            error = str(exc)
+                        assert tool_process is not None
+                        response = tool_process.call(message)
+                        result, ok, error = response.result, response.ok, response.error
 
                     if normalization is not None:
                         result = normalize(result, normalization)
@@ -209,7 +200,6 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                         result=result,
                         error=error,
                     )
-                    agent.send(tool_result)
                     trace.append(
                         _event(
                             case.id,
@@ -220,6 +210,8 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                             error=tool_result.error,
                         )
                     )
+                    enforce_budget()
+                    agent.send(tool_result)
                     continue
 
                 if isinstance(message, FinalOutputMessage):
@@ -252,6 +244,19 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
                     )
                     failure = Failure(type="task_error", message=message.message)
                     break
+    except AgentDeadlineExceeded:
+        assert effective_budget is not None and effective_budget.max_wall_ms is not None
+        failures = [{
+            "field": "max_wall_ms", "limit": effective_budget.max_wall_ms,
+            "actual": math.ceil((time.monotonic() - start) * 1000),
+        }]
+        failure = Failure(type="budget_exceeded", message=str(BudgetExceeded(failures)))
+        trace.append(_event(case.id, "budget_failure", failures=failures))
+    except BudgetExceeded as exc:
+        failure = Failure(type="budget_exceeded", message=str(exc))
+        trace.append(_event(case.id, "budget_failure", failures=exc.failures))
+    except ToolRegistryError as exc:
+        failure = Failure(type="tool_registry_error", message=str(exc))
     except AgentProcessError as exc:
         failure = Failure(type="agent_error", message=str(exc))
 
@@ -276,7 +281,6 @@ def run_case(suite: SuiteConfig, case: CaseConfig) -> CaseResult:
             )
 
     wall_ms = int((time.monotonic() - start) * 1000)
-    effective_budget = merge_budgets(suite.budgets, case.budgets)
     if failure is None and effective_budget is not None:
         budget_failures = check_budgets(
             effective_budget,

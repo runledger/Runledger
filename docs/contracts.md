@@ -21,6 +21,8 @@ Optional keys:
 - `output_dir` (string or null)
 - `tool_module` (string or null)
 
+Arguments in `agent_command` that identify existing local paths are resolved against the suite directory, accepting Windows separators. Values that do not identify a path are unchanged. Inline code after `-c`, `-e`, `--eval`, or `--print`, and all arguments that follow that code, are passed through unchanged. Unknown regression threshold names are rejected so a typo cannot silently disable a gate; the documented legacy aliases remain accepted.
+
 ## Case YAML (`cases/*.yaml`)
 
 Required keys:
@@ -50,6 +52,8 @@ Agent -> Runner:
 - `task_error` (optional)
 
 Agents must write protocol JSON only to stdout; logs go to stderr.
+
+Replay replaces only tool requests made through this protocol. Independent model or network calls inside the agent are outside the replay boundary. Each cassette entry is consumed once per case; repeated matching requests use their recorded entries in order and fail with a cassette mismatch when those entries are exhausted.
 
 ## Artifact formats
 

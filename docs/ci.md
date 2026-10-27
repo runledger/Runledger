@@ -19,6 +19,7 @@ jobs:
       - name: Run deterministic evals
         run: runledger run ./evals/demo --mode replay --baseline baselines/demo.json
       - name: Upload artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: runledger-artifacts

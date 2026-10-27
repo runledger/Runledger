@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -90,17 +92,90 @@ def test_windows_separators_resolve_to_existing_files(tmp_path: Path) -> None:
     suite = load_suite(suite_dir)
     cases = load_cases(suite_dir, suite.cases_path)
 
-    assert "\\" not in suite.agent_command[1]
-    assert Path(suite.agent_command[1]).is_file()
+    assert Path(suite.agent_command[1]) == (suite_dir / "agent" / "agent.py").resolve()
     assert suite.baseline_path is not None
-    assert "\\" not in suite.baseline_path
-    assert suite.baseline_path.replace("\\", "/").endswith("baselines/demo.json")
+    assert Path(suite.baseline_path) == (tmp_path / "baselines" / "demo.json").resolve()
     schema_path = suite.assertions[0].schema_path
     assert isinstance(schema_path, str)
-    assert "\\" not in schema_path
-    assert Path(schema_path).is_file()
-    assert "\\" not in cases[0].cassette
-    assert Path(cases[0].cassette).is_file()
+    assert Path(schema_path) == (suite_dir / "schema.json").resolve()
+    assert Path(cases[0].cassette) == (suite_dir / "cassettes" / "t1.jsonl").resolve()
+
+
+@pytest.mark.parametrize("pattern, matched", [(r"\d+", "True"), (".", "False")])
+def test_agent_inline_code_and_regex_arguments_are_preserved(
+    tmp_path: Path, pattern: str, matched: str
+) -> None:
+    code = r'import re, sys; print(bool(re.fullmatch(sys.argv[1], "42"))); print("first\nsecond")'
+    command = [sys.executable, "-c", code, pattern]
+    _write_yaml(
+        tmp_path / "suite.yaml",
+        {
+            "suite_name": "inline",
+            "agent_command": command,
+            "mode": "replay",
+            "cases_path": "cases",
+            "tool_registry": [],
+        },
+    )
+
+    suite = load_suite(tmp_path)
+    assert suite.agent_command[1:] == command[1:]
+    result = subprocess.run(suite.agent_command, capture_output=True, text=True, check=True)
+    assert result.stdout.splitlines() == [matched, "first", "second"]
+
+
+def test_unknown_regression_threshold_is_rejected(tmp_path: Path) -> None:
+    _write_yaml(
+        tmp_path / "suite.yaml",
+        {
+            "suite_name": "demo",
+            "agent_command": ["python", "agent.py"],
+            "mode": "replay",
+            "cases_path": "cases",
+            "tool_registry": [],
+            "regression": {"max_p95_wall_ms_delta_pctx": 0.1},
+        },
+    )
+
+    with pytest.raises(ValueError, match="max_p95_wall_ms_delta_pctx"):
+        load_suite(tmp_path)
+
+
+def test_inline_code_is_not_resolved_as_an_existing_file(tmp_path: Path) -> None:
+    (tmp_path / "pass").write_text("not Python code", encoding="utf-8")
+    _write_yaml(
+        tmp_path / "suite.yaml",
+        {
+            "suite_name": "inline",
+            "agent_command": [sys.executable, "-c", "pass"],
+            "mode": "replay",
+            "cases_path": "cases",
+            "tool_registry": [],
+        },
+    )
+
+    suite = load_suite(tmp_path)
+    assert suite.agent_command[-1] == "pass"
+    subprocess.run(suite.agent_command, capture_output=True, check=True)
+
+
+def test_regression_threshold_aliases_remain_supported(tmp_path: Path) -> None:
+    _write_yaml(
+        tmp_path / "suite.yaml",
+        {
+            "suite_name": "demo",
+            "agent_command": ["python", "agent.py"],
+            "mode": "replay",
+            "cases_path": "cases",
+            "tool_registry": [],
+            "regression": {"min_success_rate": 1.0, "max_p95_wall_ms_increase_pct": 0.1},
+        },
+    )
+
+    suite = load_suite(tmp_path)
+    assert suite.regression is not None
+    assert suite.regression.min_pass_rate == 1.0
+    assert suite.regression.max_p95_wall_ms_delta_pct == 0.1
 
 
 def test_invalid_yaml_includes_parser_detail(tmp_path: Path) -> None:

@@ -1,0 +1,8 @@
+{
+  "name": "runledger-test-tools",
+  "private": true,
+  "description": "Development-only DOM tests for generated HTML reports",
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  }
+}

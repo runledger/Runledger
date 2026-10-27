@@ -35,7 +35,7 @@ class RegressionSpec(BaseModel):
         validation_alias=AliasChoices("max_p95_wall_ms_delta_pct", "max_p95_wall_ms_increase_pct"),
     )
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="forbid")
 
 
 class ReplaceTextSpec(BaseModel):

@@ -70,14 +70,28 @@ def load_suite(path: Path) -> SuiteConfig:
     agent_command = data.get("agent_command")
     if isinstance(agent_command, list):
         resolved_command: list[object] = []
-        for part in agent_command:
+        literal_arguments = False
+        for index, part in enumerate(agent_command):
+            if index and agent_command[index - 1] in ("-c", "-e", "--eval", "--print"):
+                literal_arguments = True
+            if literal_arguments:
+                resolved_command.append(part)
+                continue
             if isinstance(part, str):
-                part = normalize_config_path(part)
-                if not _is_absolute_config_path(part):
-                    candidate = (suite_path.parent / part).resolve()
+                # argv also contains code, regexes, and other literal values.
+                # Normalize only a value that actually identifies a local path;
+                # otherwise preserve the argument byte-for-byte.
+                normalized = normalize_config_path(part)
+                try:
+                    candidate = Path(normalized)
+                    if not _is_absolute_config_path(normalized):
+                        candidate = suite_path.parent / candidate
                     if candidate.exists():
-                        resolved_command.append(str(candidate))
+                        resolved_command.append(str(candidate.resolve()))
                         continue
+                except (OSError, ValueError):
+                    # Arbitrary arguments need not be valid filesystem paths.
+                    pass
             resolved_command.append(part)
         data["agent_command"] = resolved_command
     assertions = data.get("assertions", [])
