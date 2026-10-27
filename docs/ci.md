@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: evals
-        uses: runledger/Runledger@v0.2
+        uses: runledger/Runledger@v0.2.2
         with:
           path: ./evals/demo
           mode: replay
@@ -53,4 +53,4 @@ jobs:
 
 `runledger init` writes `.github/workflows/runledger.yml` for the CLI path above. This repo's `.github/workflows/action-self-test.yml` runs the action with `uses: ./`.
 
-If `suite.yaml` includes `baseline_path` and you omit `baseline`, RunLedger compares against that file. This `action.yml` also accepts `baseline` when you want to override the suite file. The `v0.2` tag exposes that input and the three outputs once a release containing this file is published. Until then, omit `baseline:` — the snippet above works with the action at the current tag because the suite file carries `baseline_path`.
+If `suite.yaml` includes `baseline_path` and you omit `baseline`, RunLedger compares against that file. `runledger/Runledger@v0.2.2` also accepts `baseline` when you want to override the suite file. That tag sets `result`, `exit-code`, and `artifacts-path`, and a failing run fails the job.

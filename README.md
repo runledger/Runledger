@@ -41,13 +41,13 @@ The same check as a GitHub Action. `suite.yaml` already points at `baselines/dem
 
 ```yaml
 - id: evals
-  uses: runledger/Runledger@v0.2
+  uses: runledger/Runledger@v0.2.2
   with:
     path: ./evals/demo
     mode: replay
 ```
 
-This repo's `action.yml` also accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. Those fields ship when a release containing this file is tagged. The in-repo self-test calls the action with `uses: ./`.
+`runledger/Runledger@v0.2.2` accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. The in-repo self-test calls the action with `uses: ./`.
 
 Page copy for runledger.io lives in `docs/site-quickstart.md`.
 
@@ -201,7 +201,7 @@ Optional:
 
 ```yaml
 suite_name: support-triage
-agent_command: ["python", "agent.py"]
+agent_command: ["python3", "agent.py"]
 mode: replay            # replay | record | live
 cases_path: cases
 tool_registry:
@@ -278,13 +278,10 @@ Each line is one tool invocation:
 MVP assertions:
 
 * `json_schema` (validate final output with JSON Schema)
-* `required_fields` (keys exist / basic typing)
-* `regex` / `contains` (for specific fields)
-* `tool_contract`:
-
-  * must call tool X
-  * must not call tool Y
-  * X before Y (ordering)
+* `required_fields` (keys exist)
+* `must_call` (must call tool X)
+* `must_not_call` (must not call tool Y)
+* `call_order` (X before Y; tools do not have to be adjacent)
 
 Not default-gating (optional later):
 
@@ -295,17 +292,11 @@ Not default-gating (optional later):
 
 ## Budgets (merge gates)
 
-MVP budgets:
+Budgets that fail a run:
 
 * `max_wall_ms`
 * `max_tool_calls`
 * `max_tool_errors`
-
-Not yet enforced (accepted in config, reported in artifacts when the agent sends metrics, but
-they do not fail a run today):
-
-* `max_tokens_out`
-* `max_cost_usd`
 
 ---
 
@@ -361,7 +352,7 @@ jobs:
 
       - name: Run deterministic evals (replay)
         id: evals
-        uses: runledger/Runledger@v0.2
+        uses: runledger/Runledger@v0.2.2
         with:
           path: ./evals/demo
           mode: replay
@@ -370,7 +361,7 @@ jobs:
         run: echo "result=${{ steps.evals.outputs.result }} exit=${{ steps.evals.outputs.exit-code }}"
 ```
 
-`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml`. It uploads `runledger_out/**` itself. On a release that contains this `action.yml`, the step also sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`.
+`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml` at `runledger/Runledger@v0.2.2`. It uploads `runledger_out/**` on success and on failure. The step sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`. A failing run fails the job.
 
 ---
 

@@ -63,7 +63,7 @@ def _expected_observed(assertion_type: str, details: Mapping[str, Any] | None) -
     if assertion_type == "required_fields":
         missing = details.get("missing")
         return (
-            f"fields present: {_join_names(missing)}",
+            f"required fields: {_join_names(missing)}",
             f"missing: {_join_names(missing)}",
         )
     if assertion_type == "json_schema":

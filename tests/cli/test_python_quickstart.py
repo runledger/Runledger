@@ -171,6 +171,57 @@ def test_quickstart_falls_back_to_running_interpreter(tmp_path: Path) -> None:
     _assert_no_traceback(run)
 
 
+def test_bare_python_runs_when_only_python3_is_on_path(tmp_path: Path) -> None:
+    """Suites that still say `python` must run on Ubuntu, where only python3 exists."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _link_interpreter(bin_dir, "python3")
+    env = _env_with_path(bin_dir)
+    suite_dir = tmp_path / "evals" / "demo"
+    _write_min_suite(suite_dir, ["python", "agent/agent.py"])
+    agent_dir = suite_dir / "agent"
+    agent_dir.mkdir()
+    (agent_dir / "agent.py").write_text(
+        "\n".join(
+            [
+                "import json",
+                "import sys",
+                "",
+                "def send(payload):",
+                "    sys.stdout.write(json.dumps(payload) + '\\n')",
+                "    sys.stdout.flush()",
+                "",
+                "def main():",
+                "    for line in sys.stdin:",
+                "        line = line.strip()",
+                "        if not line:",
+                "            continue",
+                "        msg = json.loads(line)",
+                "        if msg.get('type') == 'task_start':",
+                "            send({'type': 'tool_call', 'name': 'search_docs', 'call_id': 'c1', 'args': {'q': 'x'}})",
+                "        elif msg.get('type') == 'tool_result':",
+                "            send({'type': 'final_output', 'output': {'category': 'account', 'reply': 'ok'}})",
+                "            return 0",
+                "    return 1",
+                "",
+                "if __name__ == '__main__':",
+                "    raise SystemExit(main())",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_module(["run", str(suite_dir), "--mode", "replay"], cwd=tmp_path, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "PASS" in result.stdout
+
+
+def test_checked_in_demo_uses_python3() -> None:
+    suite = yaml.safe_load((ROOT / "examples" / "evals" / "demo" / "suite.yaml").read_text(encoding="utf-8"))
+    assert suite["agent_command"][0] == "python3"
+
+
 def test_run_missing_agent_command_has_no_traceback(tmp_path: Path) -> None:
     suite_dir = tmp_path / "evals" / "demo"
     _write_min_suite(suite_dir, ["python", "agent/agent.py"])

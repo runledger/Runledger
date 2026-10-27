@@ -21,11 +21,11 @@ _SENSITIVE_PARTS = {
 
 _PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"(?i)bearer\s+[a-z0-9._~+/=-]+"), "Bearer [REDACTED]"),
-    (re.compile(r"\\bsk-[A-Za-z0-9]{20,}\\b"), "[REDACTED]"),
-    (re.compile(r"\\bghp_[A-Za-z0-9]{36}\\b"), "[REDACTED]"),
-    (re.compile(r"\\bAKIA[0-9A-Z]{16}\\b"), "[REDACTED]"),
+    (re.compile(r"\bsk-[A-Za-z0-9]{20,}\b"), "[REDACTED]"),
+    (re.compile(r"\bghp_[A-Za-z0-9]{36}\b"), "[REDACTED]"),
+    (re.compile(r"\bAKIA[0-9A-Z]{16}\b"), "[REDACTED]"),
     (
-        re.compile(r"\\beyJ[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+\\b"),
+        re.compile(r"\beyJ[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9_-]{8,}\b"),
         "[REDACTED]",
     ),
 ]

@@ -498,7 +498,7 @@ def init(
         "  runledger run "
         f'"{_posix_rel(evals_dir, cwd)}" --mode replay --baseline "{_posix_rel(baseline_file, cwd)}"'
     )
-    console.print(f"  open runledger_out/{suite}/<run_id>/report.html")
+    console.print(f"  report: runledger_out/{suite}/<run_id>/report.html")
     console.print(f"  commit {_display_path(workflow_path, base_dir=cwd)}")
 
 

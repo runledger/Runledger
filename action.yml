@@ -95,10 +95,13 @@ runs:
         printf 'result=%s\n' "${result}" >> "${GITHUB_OUTPUT}"
         printf 'exit-code=%s\n' "${code}" >> "${GITHUB_OUTPUT}"
         printf 'artifacts-path=%s\n' "${artifacts}" >> "${GITHUB_OUTPUT}"
-        exit "${code}"
     - name: Upload artifacts
       if: ${{ always() && inputs.upload-artifacts == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: runledger-artifacts
         path: ${{ inputs.artifact-path }}
+    - name: Fail the job when the run fails
+      if: steps.run.outputs.exit-code != '0'
+      shell: bash
+      run: exit "${{ steps.run.outputs.exit-code }}"

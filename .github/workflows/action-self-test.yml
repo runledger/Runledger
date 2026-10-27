@@ -24,3 +24,33 @@ jobs:
           test "${{ steps.runledger.outputs.result }}" = "pass"
           test "${{ steps.runledger.outputs.exit-code }}" = "0"
           test -d "${{ steps.runledger.outputs.artifacts-path }}"
+
+  failure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Break the demo schema
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path("examples/evals/demo/schema.json")
+          schema = json.loads(path.read_text(encoding="utf-8"))
+          schema["required"] = ["category", "reply", "not_a_real_field"]
+          path.write_text(json.dumps(schema), encoding="utf-8")
+          PY
+      - id: runledger
+        continue-on-error: true
+        uses: ./
+        with:
+          path: examples/evals/demo
+          mode: replay
+          baseline: baselines/demo.json
+          package: .
+      - name: Failure sets outputs and fails the step
+        run: |
+          test "${{ steps.runledger.outcome }}" = "failure"
+          test "${{ steps.runledger.outputs.result }}" = "fail"
+          test "${{ steps.runledger.outputs.exit-code }}" != "0"
+          test "${{ steps.runledger.outputs.exit-code }}" != ""
+          test -d "${{ steps.runledger.outputs.artifacts-path }}"

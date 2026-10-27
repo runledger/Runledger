@@ -25,6 +25,29 @@ def test_action_metadata_is_marketplace_ready() -> None:
     assert len(description) <= 125
 
 
+def test_action_records_outputs_before_failing_the_job() -> None:
+    action = yaml.safe_load((ROOT / "action.yml").read_text(encoding="utf-8"))
+    steps = action["runs"]["steps"]
+    run_step = next(step for step in steps if step.get("id") == "run")
+    assert 'exit "${code}"' not in run_step["run"]
+    fail_step = next(step for step in steps if "exit-code" in str(step.get("if", "")))
+    assert fail_step["if"] == "steps.run.outputs.exit-code != '0'"
+    assert steps.index(fail_step) > steps.index(run_step)
+    upload_step = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact"))
+    assert steps.index(upload_step) < steps.index(fail_step)
+
+
+def test_readme_pins_the_released_action() -> None:
+    import re
+
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    ci = (ROOT / "docs" / "ci.md").read_text(encoding="utf-8")
+    site = (ROOT / "docs" / "site-quickstart.md").read_text(encoding="utf-8")
+    for text in (readme, ci, site):
+        assert "runledger/Runledger@v0.2.2" in text
+        assert re.search(r"runledger/Runledger@v0\.2(?!\.)", text) is None
+
+
 def test_action_self_test_uses_local_action() -> None:
     workflow = (ROOT / ".github" / "workflows" / "action-self-test.yml").read_text(encoding="utf-8")
     assert "uses: ./" in workflow
