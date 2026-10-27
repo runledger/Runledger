@@ -10,7 +10,7 @@ RunLedger is not an eval metrics framework. Use metrics tooling (for example, De
 
 - Deterministic replay: record tool calls and results once, replay them in CI.
 - Hard contracts: enforce JSON schema, required fields, tool allowlists, and tool ordering.
-- Budgets: cap wall time, tool calls, and tool errors (plus optional tokens/costs when reported).
+- Budgets: cap wall time, tool calls, and tool errors.
 - Baselines: compare runs to a known-good baseline and fail on regressions.
 - CI-ready outputs: write JSONL logs, summary JSON, JUnit, and HTML reports.
 
@@ -40,9 +40,9 @@ A cassette is a JSONL log of tool calls and results recorded during a live run. 
 Assertions are hard gates applied to the agent's final output and tool behavior:
 
 - `json_schema` for JSON Schema validation.
-- `required_fields` to enforce required keys and basic typing.
-- `regex` and `contains` for field-level checks.
-- `tool_contract` for tool allowlist/denylist and ordering requirements.
+- `required_fields` to enforce required keys.
+- `must_call` and `must_not_call` for required and forbidden tools.
+- `call_order` for tool ordering (tools do not have to be adjacent).
 
 ### Budgets
 Budgets enforce hard caps that fail the run when exceeded:
@@ -50,10 +50,9 @@ Budgets enforce hard caps that fail the run when exceeded:
 - `max_wall_ms`
 - `max_tool_calls`
 - `max_tool_errors`
-- Optional: `max_tokens_out`, `max_cost_usd` when agents report metrics.
 
 ### Baselines
-Baselines store a known-good run summary and enable regression gating. On each run, RunLedger compares against the baseline and fails CI if success rate drops, costs spike beyond allowed deltas, or latency p95 increases.
+Baselines store a known-good run summary and enable regression gating. On each run, RunLedger compares against the baseline and fails CI if the pass rate drops below the threshold, or if average or p95 latency increases beyond the allowed delta.
 
 ### Artifacts
 RunLedger outputs stable artifacts suitable for PR diffs and CI uploads:
@@ -84,7 +83,7 @@ Artifacts are written to `runledger_out/<suite>/<run_id>/`.
 
 ```yaml
 suite_name: support-triage
-agent_command: ["python", "agent.py"]
+agent_command: ["python3", "agent.py"]
 mode: replay            # replay | record | live
 cases_path: cases
 tool_registry:
@@ -191,8 +190,7 @@ runledger run ./evals/<suite> --mode replay --baseline baselines/<suite>.json
 
 Runs can fail if:
 - Success rate drops below threshold.
-- Costs spike beyond allowed deltas.
-- Latency p95 increases beyond allowed deltas.
+- Average or p95 latency increases beyond the allowed delta.
 
 ## CI Integration
 Example GitHub Actions workflow:
@@ -209,7 +207,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run deterministic evals (replay)
-        uses: runledger/Runledger@v0.1.0
+        uses: runledger/Runledger@v0.2.3
         with:
           path: ./evals/demo
           mode: replay

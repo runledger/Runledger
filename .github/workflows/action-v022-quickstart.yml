@@ -1,0 +1,70 @@
+name: action-v022-quickstart
+# Exercises the published Marketplace action the README quickstart names.
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pass:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: README quickstart
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "runledger==0.2.2"
+          runledger init
+          runledger run ./evals/demo --mode replay --baseline baselines/demo.json
+      - id: evals
+        uses: runledger/Runledger@v0.2.2
+        with:
+          path: ./evals/demo
+          mode: replay
+      - name: Outputs are set
+        run: |
+          test "${{ steps.evals.outputs.result }}" = "pass"
+          test "${{ steps.evals.outputs.exit-code }}" = "0"
+          test -d "${{ steps.evals.outputs.artifacts-path }}"
+
+  fail:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: README quickstart with a broken tool order
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "runledger==0.2.2"
+          runledger init
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("evals/demo/agent/agent.py")
+          text = path.read_text(encoding="utf-8")
+          old = 'send({"type": "tool_call", "name": "search_docs", "call_id": "c1", "args": {"q": ticket}})'
+          new = 'send({"type": "final_output", "output": {"category": "account", "reply": "Reset password instructions sent."}})\n            return 0'
+          if old not in text:
+              raise SystemExit("demo agent did not contain the tool call")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+      - id: evals
+        continue-on-error: true
+        uses: runledger/Runledger@v0.2.2
+        with:
+          path: ./evals/demo
+          mode: replay
+      - name: Failure fails the step and still sets outputs
+        run: |
+          echo "result=${{ steps.evals.outputs.result }}"
+          echo "exit=${{ steps.evals.outputs.exit-code }}"
+          echo "artifacts=${{ steps.evals.outputs.artifacts-path }}"
+          echo "outcome=${{ steps.evals.outcome }}"
+          test "${{ steps.evals.outcome }}" = "failure"
+          test "${{ steps.evals.outputs.result }}" = "fail"
+          test "${{ steps.evals.outputs.exit-code }}" != "0"
+          test "${{ steps.evals.outputs.exit-code }}" != ""
+          test -d "${{ steps.evals.outputs.artifacts-path }}"

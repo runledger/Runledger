@@ -30,7 +30,7 @@ To call the action instead of the workflow file:
 
 ```yaml
 - id: evals
-  uses: runledger/Runledger@v0.2
+  uses: runledger/Runledger@v0.2.3
   with:
     path: ./evals/demo
     mode: replay
@@ -38,12 +38,12 @@ To call the action instead of the workflow file:
 
 The suite file's `baseline_path` is `baselines/demo.json`, so this compares against the baseline from `runledger init`.
 
-[`action.yml`](https://github.com/runledger/Runledger/blob/main/action.yml) in this repository also sets three outputs once you use a release that contains it:
+[`action.yml`](https://github.com/runledger/Runledger/blob/main/action.yml) at `runledger/Runledger@v0.2.3` sets three outputs:
 
 - `result` — `pass` when the process exits 0, otherwise `fail`
 - `exit-code` — the process exit code
 - `artifacts-path` — the artifact directory (`runledger_out` for the default upload path)
 
-The same file accepts a `baseline` input. The `v0.2` tag picks both up when that release is published. This repository's self-test workflow calls the action with `uses: ./`.
+The same release accepts a `baseline` input. A failing run fails the job. This repository's self-test workflow calls the action with `uses: ./`.
 
 More detail: [quickstart](https://github.com/runledger/Runledger/blob/main/docs/quickstart.md), [assertions](https://github.com/runledger/Runledger/blob/main/docs/assertions.md), and [CI](https://github.com/runledger/Runledger/blob/main/docs/ci.md).

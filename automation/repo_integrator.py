@@ -133,7 +133,7 @@ def main() -> None:
 
     suite_yaml = {
         "suite_name": suite_name,
-        "agent_command": ["python", "agent/agent.py"],
+        "agent_command": ["python3", "agent/agent.py"],
         "mode": "replay" if replay_only else "record",
         "cases_path": "cases",
         "tool_registry": ["search_docs"],

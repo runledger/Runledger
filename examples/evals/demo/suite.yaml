@@ -1,5 +1,5 @@
 suite_name: demo
-agent_command: ["python", "examples/demo_agent_py/agent.py"]
+agent_command: ["python3", "examples/demo_agent_py/agent.py"]
 mode: replay
 cases_path: cases
 tool_registry:
