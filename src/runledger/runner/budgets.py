@@ -5,6 +5,16 @@ from typing import Any
 from runledger.config.models import BudgetSpec
 
 
+class BudgetExceeded(Exception):
+    def __init__(self, failures: list[dict[str, int]]):
+        self.failures = failures
+        details = "; ".join(
+            f"{item['field']} limit={item['limit']} actual={item['actual']}"
+            for item in failures
+        )
+        super().__init__(f"Budget exceeded: {details}")
+
+
 def merge_budgets(suite_budget: BudgetSpec | None, case_budget: BudgetSpec | None) -> BudgetSpec | None:
     if suite_budget is None and case_budget is None:
         return None

@@ -2,7 +2,7 @@
 
 ## Overview
 
-RunLedger is a CI harness for tool-using agents. It makes agent evaluation deterministic by recording tool calls once, replaying them in CI, and enforcing hard contracts, budgets, and baselines. The goal is to catch regressions before merge and keep agent workflows stable as prompts, tools, models, and external dependencies change.
+RunLedger is a CI harness for tool-using agents. It records requests made through its JSONL tool protocol, replays their results in CI, and enforces hard contracts, budgets, and baselines. Independent model or network calls inside the agent remain live and need to be captured or replaced with fixtures for a deterministic test. The goal is to catch regressions before merge and keep agent workflows stable as prompts, tools, models, and external dependencies change.
 
 RunLedger is not an eval metrics framework. Use metrics tooling (for example, DeepEval-style scoring) for quality scoring and benchmarking, and use RunLedger for deterministic CI gates and regression control.
 
@@ -34,7 +34,7 @@ A suite bundles cases, tool registry, contracts, budgets, and baseline paths int
 Each case defines a task input and a cassette for deterministic replay. Cases can add or override assertions and budgets to target specific tasks.
 
 ### Cassette
-A cassette is a JSONL log of tool calls and results recorded during a live run. RunLedger replays these entries in CI to remove external nondeterminism. Matching is exact on tool name and canonicalized arguments; missing matches fail the case with a cassette mismatch error.
+A cassette is a JSONL log of protocol tool calls and results recorded during a live run. RunLedger replays these entries in CI instead of executing those tools. Matching is exact on tool name and canonicalized arguments. Each matching entry is consumed once per case, in recorded order; missing or exhausted matches fail the case with a cassette mismatch error.
 
 ### Assertions
 Assertions are hard gates applied to the agent's final output and tool behavior:

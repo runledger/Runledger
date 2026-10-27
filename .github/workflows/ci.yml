@@ -9,7 +9,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -19,13 +23,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install report test dependencies
+        run: npm ci
       - name: Run tests
-        run: pytest
+        run: pytest --timeout=60
       - name: Run demo suite (replay)
         run: runledger run examples/evals/demo --mode replay --baseline baselines/demo.json
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: runledger-artifacts
+          name: runledger-artifacts-${{ runner.os }}
           path: runledger_out/**

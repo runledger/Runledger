@@ -609,7 +609,7 @@ def run(
         regression=regression,
         generated_at=generated_at,
     )
-    write_junit(run_dir, suite.suite_name, results)
+    write_junit(run_dir, suite.suite_name, results, regression=regression)
     write_report(run_dir, summary=summary_data, run_log_path=run_dir / "run.jsonl")
 
     passed = suite_result.passed and (regression is None or regression.get("passed", True))

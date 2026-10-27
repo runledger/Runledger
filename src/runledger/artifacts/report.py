@@ -5,10 +5,9 @@ from pathlib import Path
 from typing import Any
 
 from jinja2 import Template
-from markupsafe import Markup
+from jinja2.utils import htmlsafe_json_dumps
 
 from runledger.util.redaction import redact
-
 
 _REPORT_TEMPLATE = """<!doctype html>
 <html lang="en">
@@ -234,6 +233,20 @@ _REPORT_TEMPLATE = """<!doctype html>
     const cases = summary.cases || [];
     const traces = data.traces || {};
 
+    // Agent and tool output is untrusted, even in an offline report.
+    function textElement(tag, text, className) {
+      const node = document.createElement(tag);
+      node.textContent = String(text);
+      if (className) node.className = className;
+      return node;
+    }
+
+    function metricLine(...parts) {
+      const line = document.createElement("p");
+      line.append(...parts);
+      return line;
+    }
+
     const suiteName = summary.suite?.name || "unknown";
     const runId = summary.run?.run_id || "n/a";
     const mode = summary.run?.mode || summary.suite?.tool_mode || "n/a";
@@ -243,11 +256,11 @@ _REPORT_TEMPLATE = """<!doctype html>
       `${suiteName} • run ${runId}`;
 
     const meta = document.getElementById("meta");
-    meta.innerHTML = [
-      `<span class="pill">Mode: ${mode}</span>`,
-      `<span class="pill">Status: ${status}</span>`,
-      `<span class="pill">Generated: ${summary.generated_at || "n/a"}</span>`
-    ].join("");
+    meta.replaceChildren(
+      textElement("span", `Mode: ${mode}`, "pill"),
+      textElement("span", `Status: ${status}`, "pill"),
+      textElement("span", `Generated: ${summary.generated_at || "n/a"}`, "pill")
+    );
 
     const aggregates = summary.aggregates || {};
     const metrics = aggregates.metrics || {};
@@ -269,7 +282,10 @@ _REPORT_TEMPLATE = """<!doctype html>
       const card = document.createElement("div");
       card.className = "card";
       card.style.animationDelay = `${0.05 * idx}s`;
-      card.innerHTML = `<h3>${item.label}</h3><div class="value">${item.value}</div>`;
+      card.append(
+        textElement("h3", item.label),
+        textElement("div", item.value, "value")
+      );
       kpiWrap.appendChild(card);
     });
 
@@ -278,7 +294,7 @@ _REPORT_TEMPLATE = """<!doctype html>
     let activeFilter = "all";
 
     function renderFilters() {
-      filters.innerHTML = "";
+      filters.replaceChildren();
       statusFilters.forEach((filter) => {
         const btn = document.createElement("button");
         btn.className = "filter" + (filter === activeFilter ? " active" : "");
@@ -294,20 +310,23 @@ _REPORT_TEMPLATE = """<!doctype html>
 
     function renderTable() {
       const tbody = document.getElementById("case-rows");
-      tbody.innerHTML = "";
+      tbody.replaceChildren();
       const filtered = cases.filter((item) => {
         if (activeFilter === "all") return true;
         return item.status === activeFilter;
       });
       filtered.forEach((item) => {
         const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${item.id}</td>
-          <td><span class="status ${item.status}">${item.status}</span></td>
-          <td>${item.wall_ms}</td>
-          <td>${item.tool_calls}</td>
-          <td>${item.tool_errors}</td>
-        `;
+        const statusCell = document.createElement("td");
+        const statusClass = statusFilters.includes(item.status) ? item.status : "";
+        statusCell.appendChild(textElement("span", item.status, `status ${statusClass}`));
+        row.append(
+          textElement("td", item.id),
+          statusCell,
+          textElement("td", item.wall_ms),
+          textElement("td", item.tool_calls),
+          textElement("td", item.tool_errors)
+        );
         row.onclick = () => selectCase(item.id);
         tbody.appendChild(row);
       });
@@ -321,7 +340,7 @@ _REPORT_TEMPLATE = """<!doctype html>
 
     function renderTraceFilters() {
       const container = document.getElementById("trace-filters");
-      container.innerHTML = "";
+      container.replaceChildren();
       traceFilters.forEach((filter) => {
         const btn = document.createElement("button");
         btn.className = "filter" + (filter === activeTraceFilter ? " active" : "");
@@ -341,19 +360,24 @@ _REPORT_TEMPLATE = """<!doctype html>
       selectedCaseId = caseId;
       const item = cases.find((c) => c.id === caseId);
       if (!item) return;
-      document.getElementById("case-meta").innerHTML = [
-        `<span class="badge">Case: ${item.id}</span>`,
-        `<span class="badge">Status: ${item.status}</span>`,
-        `<span class="badge">Assertions: ${item.assertions?.failed ?? 0}/${item.assertions?.total ?? 0}</span>`
-      ].join("");
-      document.getElementById("case-metrics").innerHTML = `
-        <p>Wall: <strong>${item.wall_ms}</strong> ms</p>
-        <p>Tool calls: <strong>${item.tool_calls}</strong> • errors: <strong>${item.tool_errors}</strong></p>
-        <p>Tokens in/out: <strong>${item.tokens_in ?? "n/a"}</strong> / <strong>${item.tokens_out ?? "n/a"}</strong></p>
-        <p>Cost USD: <strong>${item.cost_usd ?? "n/a"}</strong> • Steps: <strong>${item.steps ?? "n/a"}</strong></p>
-      `;
+      document.getElementById("case-meta").replaceChildren(
+        textElement("span", `Case: ${item.id}`, "badge"),
+        textElement("span", `Status: ${item.status}`, "badge"),
+        textElement("span", `Assertions: ${item.assertions?.failed ?? 0}/${item.assertions?.total ?? 0}`, "badge")
+      );
+      document.getElementById("case-metrics").replaceChildren(
+        metricLine("Wall: ", textElement("strong", item.wall_ms), " ms"),
+        metricLine("Tool calls: ", textElement("strong", item.tool_calls),
+          " • errors: ", textElement("strong", item.tool_errors)),
+        metricLine("Tokens in/out: ", textElement("strong", item.tokens_in ?? "n/a"),
+          " / ", textElement("strong", item.tokens_out ?? "n/a")),
+        metricLine("Cost USD: ", textElement("strong", item.cost_usd ?? "n/a"),
+          " • Steps: ", textElement("strong", item.steps ?? "n/a"))
+      );
       const failure = item.failure_reason || "None";
-      document.getElementById("case-failure").innerHTML = `<p>Failure: <strong>${failure}</strong></p>`;
+      document.getElementById("case-failure").replaceChildren(
+        metricLine("Failure: ", textElement("strong", failure))
+      );
       renderTrace();
     }
 
@@ -364,19 +388,20 @@ _REPORT_TEMPLATE = """<!doctype html>
         if (activeTraceFilter === "all") return true;
         return event.type === activeTraceFilter;
       });
+      traceView.replaceChildren();
       if (!filtered.length) {
-        traceView.innerHTML = "<em>No trace events to display.</em>";
+        traceView.appendChild(textElement("em", "No trace events to display."));
         return;
       }
-      traceView.innerHTML = filtered.map((event) => {
-        const payload = JSON.stringify(event, null, 2);
-        return `
-          <div class="trace-event">
-            <strong>${event.type}</strong>
-            <pre>${payload}</pre>
-          </div>
-        `;
-      }).join("");
+      filtered.forEach((event) => {
+        const entry = document.createElement("div");
+        entry.className = "trace-event";
+        entry.append(
+          textElement("strong", event.type),
+          textElement("pre", JSON.stringify(event, null, 2))
+        );
+        traceView.appendChild(entry);
+      });
     }
 
     renderFilters();
@@ -417,8 +442,8 @@ def write_report(
         "summary": redact(summary),
         "traces": redact(traces),
     }
-    data_json = json.dumps(report_data, ensure_ascii=False).replace("</", "<\\/")
-    html = Template(_REPORT_TEMPLATE).render(data_json=Markup(data_json))
+    data_json = htmlsafe_json_dumps(report_data, ensure_ascii=False)
+    html = Template(_REPORT_TEMPLATE).render(data_json=data_json)
     report_path = run_dir / "report.html"
     report_path.write_text(html, encoding="utf-8")
     return report_path
