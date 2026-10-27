@@ -1,0 +1,4 @@
+id: password-reset
+input:
+  prompt: How do I reset my password?
+cassette: ../../cassettes/password-reset.jsonl

@@ -1,0 +1,11 @@
+{
+  "name": "runledger-mcp-agent-example",
+  "private": true,
+  "type": "module",
+  "description": "Replay an actual mcp-agent Agent loop through RunLedger",
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "@joshuacalpuerto/mcp-agent": "1.1.1",
+    "tsx": "4.23.15"
+  }
+}

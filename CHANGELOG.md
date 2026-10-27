@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.4] - 2026-10-27
+
+### Fixed
+
+- HTML reports render agent and tool output as text, preventing script injection through traces, case IDs, and failure messages.
+- Wall-time budgets interrupt agent waits, blocked writes, tool imports, and live tool calls. Tool-call limits stop excess calls before execution, and tool-error limits stop further execution immediately.
+- Repeated identical tool requests consume their matching cassette entries in recorded order. An extra request now fails with a cassette mismatch rather than reusing an earlier response.
+- JUnit includes failed baseline regression gates and redacts failure messages.
+- Inline agent code and its arguments retain literal backslashes. Unknown regression threshold names are rejected instead of silently disabling a gate.
+- Windows protocol pipes use UTF-8, Python launcher aliases work in both directions, and child processes are cleaned up even when their parent has already exited.
+
+### Changed
+
+- Record/live tool modules now run in a cancellable worker per case. State persists between calls within a case and resets between cases. Existing cassette files remain readable, but suites that depended on reusing one recorded response must record one entry per call.
+- Documentation distinguishes recorded protocol calls from independent model/network calls made by the agent.
+
+### Added
+
+- A runnable, pinned `mcp-agent` integration with a fixed model fixture, ten unchanged replay checks, and three deliberate regression scenarios.
+- Ubuntu/Windows CI, Python 3.9 compatibility coverage, DOM security tests, and clean-install verification of published releases.
+- A developer trial guide and structured acceptance output for testing before outreach.
+
 ## [0.2.3] - 2026-10-27
 
 ### Fixed
