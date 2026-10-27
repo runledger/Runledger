@@ -25,3 +25,14 @@ runledger diff --baseline baselines/<suite>.json --run runledger_out/<suite>/<ru
 ```bash
 runledger run ./evals/<suite> --mode replay --baseline baselines/<suite>.json
 ```
+
+Configure optional gates under `regression` in `suite.yaml`:
+
+```yaml
+regression:
+  min_pass_rate: 1.0
+  max_avg_wall_ms_delta_pct: 0.2
+  max_p95_wall_ms_delta_pct: 0.2
+```
+
+The wall-time deltas are fractions (`0.2` permits a 20% increase). Legacy names `min_success_rate` and `max_p95_wall_ms_increase_pct` are accepted aliases. Unknown names are rejected instead of silently skipping the intended gate.

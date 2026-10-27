@@ -86,6 +86,7 @@ def _write_min_suite(suite_dir: Path, agent_command: list[str]) -> None:
     (suite_dir / "suite.yaml").write_text(yaml.safe_dump(suite, sort_keys=False), encoding="utf-8")
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX python3-only PATH and symlink fixture")
 def test_quickstart_without_python_on_path(tmp_path: Path) -> None:
     """README quickstart must pass when PATH contains python3 and not python."""
     if shutil.which("python3") is None and not sys.executable:
@@ -131,9 +132,22 @@ def test_quickstart_without_python_on_path(tmp_path: Path) -> None:
 
 def test_quickstart_uses_python_when_python3_is_absent(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    _link_interpreter(bin_dir, "python")
+    if os.name == "nt":
+        # A real Windows launcher needs its venv metadata; a renamed executable
+        # or POSIX symlink is not a faithful Python installation on Windows.
+        venv_dir = tmp_path / "python-only"
+        subprocess.run(
+            [sys.executable, "-m", "venv", "--without-pip", str(venv_dir)],
+            check=True,
+            capture_output=True,
+        )
+        bin_dir = venv_dir / "Scripts"
+    else:
+        bin_dir.mkdir()
+        _link_interpreter(bin_dir, "python")
     env = _env_with_path(bin_dir)
+    assert shutil.which("python", path=env["PATH"]) is not None
+    assert shutil.which("python3", path=env["PATH"]) is None
     work = tmp_path / "work"
     work.mkdir()
 
@@ -171,6 +185,7 @@ def test_quickstart_falls_back_to_running_interpreter(tmp_path: Path) -> None:
     _assert_no_traceback(run)
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX python3-only PATH and symlink fixture")
 def test_bare_python_runs_when_only_python3_is_on_path(tmp_path: Path) -> None:
     """Suites that still say `python` must run on Ubuntu, where only python3 exists."""
     bin_dir = tmp_path / "bin"
@@ -222,9 +237,22 @@ def test_checked_in_demo_uses_python3() -> None:
     assert suite["agent_command"][0] == "python3"
 
 
-def test_run_missing_agent_command_has_no_traceback(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "program",
+    [
+        "runledger-test-missing-agent-command",
+        pytest.param(
+            "python",
+            marks=pytest.mark.skipif(
+                os.name == "nt",
+                reason="Windows also searches the calling executable directory, outside PATH",
+            ),
+        ),
+    ],
+)
+def test_run_missing_agent_command_has_no_traceback(tmp_path: Path, program: str) -> None:
     suite_dir = tmp_path / "evals" / "demo"
-    _write_min_suite(suite_dir, ["python", "agent/agent.py"])
+    _write_min_suite(suite_dir, [program, "agent/agent.py"])
     env = _env_with_path(tmp_path / "empty-bin")
     (tmp_path / "empty-bin").mkdir()
 
@@ -236,12 +264,13 @@ def test_run_missing_agent_command_has_no_traceback(tmp_path: Path) -> None:
     assert result.returncode == 1
     _assert_no_traceback(result)
     combined = result.stdout + result.stderr
-    assert "Agent command not found: 'python'" in combined
+    assert f"Agent command not found: {program!r}" in combined
     assert "python3" in combined
     assert "suite.yaml" in combined
     assert "PATH" in combined
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX execute permission bits")
 def test_run_unrunnable_agent_command_has_no_traceback(tmp_path: Path) -> None:
     program = tmp_path / "agent-bin"
     program.write_text("not a program\n", encoding="utf-8")
@@ -262,6 +291,7 @@ def test_run_unrunnable_agent_command_has_no_traceback(tmp_path: Path) -> None:
     assert "suite.yaml" in combined
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX ELF executable and permission fixture")
 def test_init_unrunnable_python3_does_not_traceback(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -279,3 +309,22 @@ def test_init_unrunnable_python3_does_not_traceback(tmp_path: Path) -> None:
     assert "Failed to generate baseline" in combined
     assert "python3" in combined
     assert not (work / "baselines" / "demo.json").exists()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows executable format")
+def test_windows_invalid_executable_has_no_traceback(tmp_path: Path) -> None:
+    program = tmp_path / "agent.exe"
+    program.write_bytes(b"not a Windows executable")
+    suite_dir = tmp_path / "evals" / "demo"
+    _write_min_suite(suite_dir, [str(program)])
+
+    result = _run_module(
+        ["run", str(suite_dir), "--mode", "replay"],
+        cwd=tmp_path,
+        env=os.environ.copy() | {"PYTHONPATH": str(ROOT / "src")},
+    )
+
+    assert result.returncode == 1
+    _assert_no_traceback(result)
+    assert "Failed to start agent command" in result.stdout + result.stderr
+    assert repr(str(program)) in result.stdout + result.stderr

@@ -9,7 +9,9 @@
 
 Website: https://runledger.io
 
-**pytest-style CI for AI agents: replay recorded tool calls, fail the PR on tool-order, schema, or tool-call-count regressions. No live model calls or API keys in CI.**
+**pytest-style CI for AI agents: replay recorded tool calls and fail the PR on tool-order, schema, or tool-call-count regressions. Recorded tools need no API keys during replay.**
+
+Replay covers requests your agent sends through RunLedger's JSONL tool protocol. Model or network calls made independently by the agent still run live. To keep a test offline, route those calls through the protocol or replace them with fixtures in your adapter. The included demo makes no live model calls.
 
 ## Five-minute quickstart
 
@@ -69,15 +71,15 @@ Page copy for runledger.io lives in `docs/site-quickstart.md`.
 | | RunLedger | DeepEval | promptfoo |
 | --- | --- | --- | --- |
 | Job | Fail CI when a tool-using agent regresses | Score output quality | Evaluate prompts and model outputs |
-| How the run is produced | Replays a recorded cassette. No live model call | Calls a model to generate or grade output | Calls the provider configured for the eval |
+| How the run is produced | Runs the agent with recorded results for protocol tool calls | Calls a model to generate or grade output | Calls the provider configured for the eval |
 | The check fails when | Tool order, output schema, or the tool-call budget (`max_tool_calls`) | A score misses the threshold you set | An assertion you configured fails |
-| API keys in the replay path | Not used | Needed when the metric calls a hosted model | Needed when the provider is a hosted API |
+| API keys in the replay path | Not needed for recorded tools; independent agent calls may need them | Needed when the metric calls a hosted model | Needed when the provider is a hosted API |
 
 DeepEval scores quality. promptfoo evaluates prompts and model outputs. RunLedger is the replay harness that fails the CI check. You can use them together.
 
 ## Why this catches the regressions
 
-A change can skip a tool, call tools in a different order, return JSON that no longer matches the schema, or exceed `max_tool_calls`. Unit tests do not see the tool trace. Replay uses the recorded tool results, so the CI run does not call a live model or need API keys.
+A change can skip a tool, call tools in a different order, return JSON that no longer matches the schema, or exceed `max_tool_calls`. RunLedger checks the tool trace and returns recorded results for protocol tool calls. Deterministic CI also requires the agent's model calls and other inputs to be fixed or replayed.
 
 The process exits non-zero when tool order, the output schema, or the tool-call budget fails. `max_wall_ms` and `max_tool_errors` are separate gates. Comparing average or p95 wall time to a baseline is opt-in (`max_avg_wall_ms_delta_pct`, `max_p95_wall_ms_delta_pct`).
 
@@ -229,7 +231,8 @@ Each line is one tool invocation:
 **Replay matching (MVP):**
 
 * exact match on `tool` + canonicalized `args`
-* if not found: the case fails with a clear "cassette mismatch" error
+* each matching entry is consumed once per case; repeated identical requests receive their recorded results in order
+* if no unused matching entry remains: the case fails with a clear "cassette mismatch" error
 
 ---
 

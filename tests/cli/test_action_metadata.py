@@ -1,11 +1,39 @@
 from __future__ import annotations
 
+import os
+import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _usable_bash() -> str:
+    candidates = []
+    if os.name == "nt":
+        # Windows' WSL shim can exist even when no WSL distro is installed.
+        # Git for Windows supplies the same Bash used by Windows Actions jobs.
+        git_bash = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Git/bin/bash.exe"
+        candidates.append(str(git_bash))
+    candidates.append(shutil.which("bash"))
+    for candidate in candidates:
+        if not candidate or not Path(candidate).is_file():
+            continue
+        try:
+            probe = subprocess.run(
+                [candidate, "-c", "printf runledger-bash-ready"],
+                capture_output=True,
+                timeout=10,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        if probe.returncode == 0 and probe.stdout == b"runledger-bash-ready":
+            return candidate
+    pytest.skip("No runnable Bash available for the composite action shell test")
 
 
 def test_action_metadata_is_marketplace_ready() -> None:
@@ -76,8 +104,9 @@ def test_action_self_test_uses_local_action() -> None:
 
 
 def test_artifact_path_output_strips_glob() -> None:
+    bash = _usable_bash()
     script = r"""
-artifacts="$1"
+artifacts="${RUNLEDGER_TEST_ARTIFACT_PATH}"
 artifacts="${artifacts//$'\n'/}"
 artifacts="${artifacts//$'\r'/}"
 while true; do
@@ -100,7 +129,8 @@ printf '%s' "${artifacts}"
     }
     for raw, expected in cases.items():
         result = subprocess.run(
-            ["bash", "-c", script, "bash", raw],
+            [bash, "-c", script],
+            env=os.environ.copy() | {"RUNLEDGER_TEST_ARTIFACT_PATH": raw},
             text=True,
             capture_output=True,
             check=True,

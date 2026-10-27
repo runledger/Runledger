@@ -17,3 +17,4 @@ automation/approved_targets.txt
 .idea/
 .vscode/
 .DS_Store
+node_modules/
