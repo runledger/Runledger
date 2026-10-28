@@ -168,6 +168,9 @@ def test_agent_uses_separate_venv_selected_by_child_path(alias: str, tmp_path: P
 
     assert output["dependency"] == "dependency from selected environment"
     assert Path(output["prefix"]).samefile(selected_venv)
-    assert Path(output["executable"]).samefile(python)
+    expected_executable = bin_dir / (f"{alias}.exe" if os.name == "nt" else alias)
+    if not expected_executable.exists():
+        expected_executable = python
+    assert Path(output["executable"]).samefile(expected_executable)
     assert Path(output["module"]).samefile(sentinel)
     assert output["args"] == arguments
