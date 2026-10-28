@@ -247,6 +247,95 @@ def check_doctor_and_verify(python, *, project, env, result):
     )
 
 
+def check_action_and_incident_features(python, *, project, env, result):
+    """Exercise new commands through the installed package, outside the checkout."""
+    executable = python.with_name("runledger.exe" if os.name == "nt" else "runledger")
+    help_result = execute([executable, "--help"], cwd=project, env=env)
+    require(help_result.returncode == 0, "Installed console entry point failed")
+    for name in ("scenario", "incident", "doctor", "verify"):
+        require(name in help_result.stdout, f"Installed CLI is missing {name}")
+
+    def run(*args, exit_code=0):
+        completed = execute([python, "-I", "-m", "runledger", *args], cwd=project, env=env)
+        require(
+            completed.returncode == exit_code,
+            f"Installed {args[0]} command returned {completed.returncode}, expected {exit_code}:\n"
+            + command_error(completed),
+        )
+        return completed
+
+    print("Checking installed support-agent scenarios", file=sys.stderr, flush=True)
+    comparison_dir = project / "scenario-comparison"
+    run("scenario", "verify", "--out", comparison_dir)
+    comparison = json.loads((comparison_dir / "comparison.json").read_text(encoding="utf-8"))
+    cases = comparison["scenarios"]
+    require(len(cases) == 5, "Installed scenario pack does not contain five cases")
+    require(
+        all(case["comparison"]["verified"] and case["after"]["passed"] for case in cases),
+        "A fixed support-agent scenario failed",
+    )
+    broken = project / "scenario-failure"
+    run("scenario", "run", "--scenario", "timeout-after-commit", "--agent", "unsafe",
+        "--out", broken, exit_code=1)
+    reproduction_dir = project / "scenario-reproduction"
+    run("scenario", "reproduce", broken / "incident.json", "--out", reproduction_dir)
+    reproduction = json.loads((reproduction_dir / "reproduction.json").read_text(encoding="utf-8"))
+    require(
+        reproduction["matched"] is True and reproduction["result"]["passed"] is False,
+        "Synthetic failure was not faithfully reproduced",
+    )
+    result["checks"].append(
+        {"name": "support_agent_scenarios", "passed": True, "cases": 5,
+         "known_failure_reproduced": True}
+    )
+
+    print("Checking installed production incident import and replay", file=sys.stderr, flush=True)
+    source = Path(__file__).resolve().parents[1] / "examples" / "incidents"
+    example = project / "production-example.json"
+    adapter = project / "replay_agent.py"
+    shutil.copyfile(source / example.name, example)
+    shutil.copyfile(source / adapter.name, adapter)
+    imported = project / "incident-imported"
+    run("incident", "import", example, "--out", imported)
+    bundle_path = imported / "incident.json"
+    bundle_text = bundle_path.read_text(encoding="utf-8")
+    bundle = json.loads(bundle_text)
+    original = json.loads(example.read_text(encoding="utf-8"))
+    private_values = [original["input"]["order_id"], original["input"]["authorization"],
+                      *original["input"]["customer"].values()]
+    require(all(value not in bundle_text for value in private_values),
+            "Incident import retained a known sensitive example value")
+    require(bundle["redaction"]["review_required"] is True, "Redaction review notice missing")
+    require(bundle["incident"]["effects_complete"] is True, "Captured ledger declaration lost")
+    run("incident", "inspect", bundle_path, "--out", project / "incident-inspected", "--gate",
+        exit_code=1)
+    fixture = project / "regressions" / "refund.json"
+    run("incident", "promote", bundle_path, "--to", fixture)
+    require(fixture.read_bytes() == bundle_path.read_bytes(), "Promotion changed the evidence")
+    command = json.dumps([str(python), "-I", str(adapter)])
+    for gated in (False, True):
+        output = project / ("incident-gated" if gated else "incident-replayed")
+        args = ["incident", "replay", fixture, "--agent-command", command, "--out", output]
+        if gated:
+            args.append("--gate")
+        run(*args, exit_code=1 if gated else 0)
+        replay = json.loads((output / "replay.json").read_text(encoding="utf-8"))
+        require(replay["matched"] is True, "Installed agent replay diverged from the recording")
+        require(replay["consumed_tool_calls"] == 3, "Replay did not consume three ordered calls")
+        require(replay["observed"]["passed"] is False, "Known double-refund failure passed")
+        require(len(replay["observed"]["effects"]) == 2, "Replay lost recorded refunds")
+        require(ET.parse(output / "junit.xml").getroot().get("failures") == "1",
+                "Incident JUnit must record the known failed business gate")
+        for artifact in output.iterdir():
+            require(all(value not in artifact.read_text(encoding="utf-8")
+                        for value in private_values), "An incident artifact retained a sensitive value")
+    result["checks"].append(
+        {"name": "production_incident_replay", "passed": True, "tool_calls": 3,
+         "recorded_effects": 2, "reproduced": True, "business_gate_exit_code": 1,
+         "redaction_checked": True}
+    )
+
+
 def smoke(version, *, attempts, retry_delay, result, wheel=None):
     with tempfile.TemporaryDirectory(prefix="runledger-published-smoke-") as scratch:
         root = Path(scratch)
@@ -388,6 +477,7 @@ def smoke(version, *, attempts, retry_delay, result, wheel=None):
         schema_path.write_text(json.dumps(schema), encoding="utf-8")
         run("intentional_schema_failure", "replay", passed=False, missing_field=missing_field)
         check_doctor_and_verify(python, project=project, env=env, result=result)
+        check_action_and_incident_features(python, project=project, env=env, result=result)
 
 
 def main():

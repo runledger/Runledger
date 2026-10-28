@@ -1,0 +1,398 @@
+{
+  "agent": "unsafe",
+  "boundary": {
+    "agent": "built-in deterministic action policy",
+    "automatic_redaction": false,
+    "customer_data": false,
+    "environment": "local synthetic support simulator",
+    "external_network": false,
+    "inputs": "versioned built-in synthetic fixtures only",
+    "live_models": false,
+    "live_payments": false,
+    "tools": "simulated orders, approvals, and refunds"
+  },
+  "fingerprints": {
+    "result_sha256": "05ecde92e1e38d4d8ad1ad563481bb3b093c09911233f45e183358ba102574f9",
+    "scenario_sha256": "22de3ec9376ef090157ccc0bd66e4d2bb98d0d8b78c22ebcda857aa022a2ebbc",
+    "simulator_sha256": "08b53ad8e565d21f496821f14a58441e3db306f548606ed1b879e50de873fed3"
+  },
+  "kind": "runledger.synthetic-incident",
+  "observed_result": {
+    "agent": "unsafe",
+    "assertions": [
+      {
+        "actual": 2,
+        "detail": "Observed 2 committed refund(s) for demo-order-1042.",
+        "expected": 1,
+        "id": "at-most-one-refund",
+        "label": "At most one refund per order",
+        "passed": false
+      },
+      {
+        "actual": [
+          {
+            "amount_cents": 4900,
+            "currency": "USD"
+          },
+          {
+            "amount_cents": 4900,
+            "currency": "USD"
+          }
+        ],
+        "detail": "Each committed refund must match the requested amount.",
+        "expected": {
+          "amount_cents": 4900,
+          "currency": "USD"
+        },
+        "id": "refund-amount",
+        "label": "Refund amount and currency match the order",
+        "passed": true
+      },
+      {
+        "actual": 0,
+        "detail": "Observed 0 refund(s) without required approval.",
+        "expected": 0,
+        "id": "approval-required",
+        "label": "Required approval precedes any refund",
+        "passed": true
+      },
+      {
+        "actual": {
+          "receipt_verified": true,
+          "status": "refunded"
+        },
+        "detail": "A provider error must not be represented as a completed refund.",
+        "expected": "A committed receipt for any success claim",
+        "id": "truthful-success",
+        "label": "A success reply has a committed refund receipt",
+        "passed": true
+      },
+      {
+        "actual": {
+          "refund_count": 2,
+          "status": "refunded"
+        },
+        "detail": "The agent must resolve the request; doing nothing does not pass.",
+        "expected": {
+          "refund_count": 1,
+          "status": "refunded"
+        },
+        "id": "expected-outcome",
+        "label": "The requested case reaches its expected outcome",
+        "passed": false
+      }
+    ],
+    "effects": [
+      {
+        "amount_cents": 4900,
+        "approved": true,
+        "currency": "USD",
+        "idempotency_key": "refund-demo-order-1042-1",
+        "order_id": "demo-order-1042",
+        "refund_id": "demo-refund-001",
+        "type": "refund"
+      },
+      {
+        "amount_cents": 4900,
+        "approved": true,
+        "currency": "USD",
+        "idempotency_key": "refund-demo-order-1042-2",
+        "order_id": "demo-order-1042",
+        "refund_id": "demo-refund-002",
+        "type": "refund"
+      }
+    ],
+    "error": null,
+    "final_state": {
+      "approval_requests": [],
+      "order": {
+        "amount_cents": 4900,
+        "approved": true,
+        "currency": "USD",
+        "customer_id": "demo-customer-17",
+        "order_id": "demo-order-1042",
+        "requires_approval": false
+      },
+      "refunds": [
+        {
+          "amount_cents": 4900,
+          "approved": true,
+          "currency": "USD",
+          "idempotency_key": "refund-demo-order-1042-1",
+          "order_id": "demo-order-1042",
+          "refund_id": "demo-refund-001",
+          "type": "refund"
+        },
+        {
+          "amount_cents": 4900,
+          "approved": true,
+          "currency": "USD",
+          "idempotency_key": "refund-demo-order-1042-2",
+          "order_id": "demo-order-1042",
+          "refund_id": "demo-refund-002",
+          "type": "refund"
+        }
+      ]
+    },
+    "initial_state": {
+      "order": {
+        "amount_cents": 4900,
+        "approved": true,
+        "currency": "USD",
+        "customer_id": "demo-customer-17",
+        "order_id": "demo-order-1042",
+        "requires_approval": false
+      },
+      "refunds": []
+    },
+    "output": {
+      "message": "Your refund has been issued.",
+      "order_id": "demo-order-1042",
+      "refund_id": "demo-refund-002",
+      "status": "refunded"
+    },
+    "passed": false,
+    "scenario_id": "timeout-after-commit",
+    "schema_version": 1,
+    "title": "Timeout after commitment",
+    "trace": [
+      {
+        "agent": "unsafe",
+        "initial_state": {
+          "order": {
+            "amount_cents": 4900,
+            "approved": true,
+            "currency": "USD",
+            "customer_id": "demo-customer-17",
+            "order_id": "demo-order-1042",
+            "requires_approval": false
+          },
+          "refunds": []
+        },
+        "scenario_id": "timeout-after-commit",
+        "simulated": true,
+        "step": 1,
+        "type": "scenario_start"
+      },
+      {
+        "args": {
+          "order_id": "demo-order-1042"
+        },
+        "call_id": "call-001",
+        "name": "lookup_order",
+        "step": 2,
+        "type": "tool_call"
+      },
+      {
+        "call_id": "call-001",
+        "error": null,
+        "ok": true,
+        "result": {
+          "amount_cents": 4900,
+          "approved": true,
+          "currency": "USD",
+          "customer_id": "demo-customer-17",
+          "order_id": "demo-order-1042",
+          "requires_approval": false
+        },
+        "step": 3,
+        "type": "tool_result"
+      },
+      {
+        "args": {
+          "amount_cents": 4900,
+          "currency": "USD",
+          "idempotency_key": "refund-demo-order-1042-1",
+          "order_id": "demo-order-1042"
+        },
+        "call_id": "call-002",
+        "name": "issue_refund",
+        "step": 4,
+        "type": "tool_call"
+      },
+      {
+        "effect": {
+          "amount_cents": 4900,
+          "approved": true,
+          "currency": "USD",
+          "idempotency_key": "refund-demo-order-1042-1",
+          "order_id": "demo-order-1042",
+          "refund_id": "demo-refund-001",
+          "type": "refund"
+        },
+        "step": 5,
+        "type": "business_effect"
+      },
+      {
+        "fault": "timeout_after_commit",
+        "message": "Refund committed, but the provider response timed out.",
+        "occurrence": 1,
+        "step": 6,
+        "tool": "issue_refund",
+        "type": "fault"
+      },
+      {
+        "call_id": "call-002",
+        "error": "provider_timeout",
+        "ok": false,
+        "result": null,
+        "step": 7,
+        "type": "tool_result"
+      },
+      {
+        "args": {
+          "amount_cents": 4900,
+          "currency": "USD",
+          "idempotency_key": "refund-demo-order-1042-2",
+          "order_id": "demo-order-1042"
+        },
+        "call_id": "call-003",
+        "name": "issue_refund",
+        "step": 8,
+        "type": "tool_call"
+      },
+      {
+        "effect": {
+          "amount_cents": 4900,
+          "approved": true,
+          "currency": "USD",
+          "idempotency_key": "refund-demo-order-1042-2",
+          "order_id": "demo-order-1042",
+          "refund_id": "demo-refund-002",
+          "type": "refund"
+        },
+        "step": 9,
+        "type": "business_effect"
+      },
+      {
+        "call_id": "call-003",
+        "error": null,
+        "ok": true,
+        "result": {
+          "amount_cents": 4900,
+          "currency": "USD",
+          "order_id": "demo-order-1042",
+          "refund_id": "demo-refund-002",
+          "status": "refunded"
+        },
+        "step": 10,
+        "type": "tool_result"
+      },
+      {
+        "output": {
+          "message": "Your refund has been issued.",
+          "order_id": "demo-order-1042",
+          "refund_id": "demo-refund-002",
+          "status": "refunded"
+        },
+        "step": 11,
+        "type": "final_output"
+      },
+      {
+        "actual": 2,
+        "detail": "Observed 2 committed refund(s) for demo-order-1042.",
+        "expected": 1,
+        "id": "at-most-one-refund",
+        "label": "At most one refund per order",
+        "passed": false,
+        "step": 12,
+        "type": "assertion"
+      },
+      {
+        "actual": [
+          {
+            "amount_cents": 4900,
+            "currency": "USD"
+          },
+          {
+            "amount_cents": 4900,
+            "currency": "USD"
+          }
+        ],
+        "detail": "Each committed refund must match the requested amount.",
+        "expected": {
+          "amount_cents": 4900,
+          "currency": "USD"
+        },
+        "id": "refund-amount",
+        "label": "Refund amount and currency match the order",
+        "passed": true,
+        "step": 13,
+        "type": "assertion"
+      },
+      {
+        "actual": 0,
+        "detail": "Observed 0 refund(s) without required approval.",
+        "expected": 0,
+        "id": "approval-required",
+        "label": "Required approval precedes any refund",
+        "passed": true,
+        "step": 14,
+        "type": "assertion"
+      },
+      {
+        "actual": {
+          "receipt_verified": true,
+          "status": "refunded"
+        },
+        "detail": "A provider error must not be represented as a completed refund.",
+        "expected": "A committed receipt for any success claim",
+        "id": "truthful-success",
+        "label": "A success reply has a committed refund receipt",
+        "passed": true,
+        "step": 15,
+        "type": "assertion"
+      },
+      {
+        "actual": {
+          "refund_count": 2,
+          "status": "refunded"
+        },
+        "detail": "The agent must resolve the request; doing nothing does not pass.",
+        "expected": {
+          "refund_count": 1,
+          "status": "refunded"
+        },
+        "id": "expected-outcome",
+        "label": "The requested case reaches its expected outcome",
+        "passed": false,
+        "step": 16,
+        "type": "assertion"
+      },
+      {
+        "passed": false,
+        "refund_count": 2,
+        "step": 17,
+        "type": "scenario_end"
+      }
+    ]
+  },
+  "scenario": {
+    "description": "The provider commits a refund but its response times out. A retry must not refund twice.",
+    "expected": {
+      "refund_count": 1,
+      "status": "refunded"
+    },
+    "fault": {
+      "occurrence": 1,
+      "tool": "issue_refund",
+      "type": "timeout_after_commit"
+    },
+    "id": "timeout-after-commit",
+    "initial_state": {
+      "order": {
+        "amount_cents": 4900,
+        "approved": true,
+        "currency": "USD",
+        "customer_id": "demo-customer-17",
+        "order_id": "demo-order-1042",
+        "requires_approval": false
+      },
+      "refunds": []
+    },
+    "schema_version": 1,
+    "title": "Timeout after commitment"
+  },
+  "schema_version": 1,
+  "synthetic_only": true
+}
