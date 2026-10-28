@@ -1,0 +1,22 @@
+schema_version: 1
+regressions:
+  - name: missing-field
+    case_id: password-reset
+    agent_command: [node, agent.mjs, missing-field]
+    expect:
+      assertion: json_schema
+      message_contains: reply
+      tool_calls: 2
+  - name: wrong-order
+    case_id: password-reset
+    agent_command: [node, agent.mjs, wrong-order]
+    expect:
+      assertion: call_order
+      tool_calls: 2
+  - name: excess-tool-call
+    case_id: password-reset
+    agent_command: [node, agent.mjs, extra-tool]
+    expect:
+      budget: max_tool_calls
+      details: {limit: 2, actual: 3}
+      tool_calls: 3

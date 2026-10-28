@@ -29,6 +29,7 @@ from runledger.reporting import (
     github_annotation_lines,
 )
 from runledger.runner.engine import run_suite
+from runledger.util.redaction import redact
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 console = Console()
@@ -627,6 +628,140 @@ def run(
     console.print(f"Artifacts written to: {run_dir}")
 
     raise typer.Exit(code=0 if passed else 1)
+
+
+@app.command()
+def doctor(
+    suite_dir: str = typer.Argument(..., help="Suite directory or suite.yaml to inspect"),
+    probe: bool = typer.Option(
+        False, help="Execute one bounded replay case to check runtime/protocol readiness"
+    ),
+    case: Optional[str] = typer.Option(
+        None, help="Case ID for --probe (defaults to the first case)"
+    ),
+    timeout: float = typer.Option(30.0, help="Maximum seconds for the optional replay probe"),
+    output_dir: str = typer.Option("runledger_out", help="Artifact directory for --probe"),
+    json_output: bool = typer.Option(
+        False, "--json", help="Print a machine-readable diagnostic report"
+    ),
+) -> None:
+    """Check configuration without executing the agent, unless --probe is requested."""
+    from runledger.doctor import doctor_suite
+    from runledger.verification import bounded_cases, run_with_artifacts
+
+    source = Path(suite_dir)
+    report = doctor_suite(source)
+    if case is not None and not probe:
+        report["checks"].append(
+            {"name": "probe_options", "status": "fail", "message": "--case requires --probe"}
+        )
+        report["ok"] = False
+    if probe and report["ok"]:
+        try:
+            source = (source / "suite.yaml" if source.is_dir() else source).resolve()
+            suite = load_suite(source).model_copy(deep=True, update={"mode": "replay"})
+            cases = load_cases(source.parent, suite.cases_path)
+            selected = (
+                [item for item in cases if item.id == case] if case is not None else cases[:1]
+            )
+            if not selected:
+                raise ValueError(f"Case not found: {case}")
+            selected = bounded_cases(suite, selected, timeout)
+            parent, _ = create_run_dir(Path(output_dir), "doctor")
+            result, passed = run_with_artifacts(suite, selected, parent / "probe", source)
+            item = result.cases[0]
+            message = f"Replay probe passed for case {item.case_id}"
+            if not passed:
+                message = f"Replay probe failed: {item.failure.message if item.failure else 'case failed'}"
+            report["checks"].append(
+                {
+                    "name": "replay_probe",
+                    "status": "pass" if passed else "fail",
+                    "message": message,
+                    "artifact_directory": str((parent / "probe").resolve()),
+                }
+            )
+            report["ok"] = report["ok"] and passed
+        except Exception as exc:  # noqa: BLE001 - report runtime probe failures without a CLI traceback
+            report["checks"].append({"name": "replay_probe", "status": "fail", "message": str(exc)})
+            report["ok"] = False
+    report = redact(report)
+    if json_output:
+        typer.echo(json.dumps(report, indent=2))
+    else:
+        console.print("Doctor: " + ("PASS" if report["ok"] else "FAIL"), markup=False)
+        for check in report["checks"]:
+            console.print(
+                f"{check['status'].upper()}: {check['name']}: {check['message']}", markup=False
+            )
+            if check.get("artifact_directory"):
+                console.print(f"Artifacts: {check['artifact_directory']}", markup=False)
+    raise typer.Exit(code=0 if report["ok"] else 1)
+
+
+@app.command()
+def verify(
+    suite_dir: str = typer.Argument(..., help="Known-good replay suite directory or suite.yaml"),
+    plan: Optional[str] = typer.Option(
+        None, help="Verification plan (default: verification.yaml beside suite.yaml)"
+    ),
+    repeats: int = typer.Option(3, min=1, max=100, help="Number of unchanged full-suite replays"),
+    timeout: float = typer.Option(
+        30.0, help="Maximum seconds per case; preserves tighter suite budgets"
+    ),
+    output_dir: str = typer.Option(
+        "runledger_out", help="Directory for verification evidence and per-run artifacts"
+    ),
+    json_output: bool = typer.Option(
+        False, "--json", help="Print the machine-readable verification result"
+    ),
+) -> None:
+    """Prove repeatability, detect planned regressions, and verify restored behavior."""
+    from pydantic import ValidationError
+    from runledger.verification import verify_suite
+
+    source = Path(suite_dir)
+    plan_path = (
+        Path(plan) if plan else (source if source.is_dir() else source.parent) / "verification.yaml"
+    )
+    try:
+        report = verify_suite(
+            source, plan_path, repeats=repeats, timeout=timeout, output_dir=Path(output_dir)
+        )
+    except ValidationError as exc:
+        errors = exc.errors(include_input=False, include_url=False)
+        report = {
+            "schema_version": 1,
+            "passed": False,
+            "checks": [],
+            "error": "; ".join(
+                f"{'.'.join(str(part) for part in error['loc'])}: {error['msg']}"
+                for error in errors
+            ),
+        }
+    except Exception as exc:  # noqa: BLE001 - preserve the machine-readable CLI error contract
+        # YAML parser errors can echo arbitrary source values, including secrets.
+        message = (
+            "Invalid configuration YAML; check its syntax."
+            if isinstance(exc.__cause__, yaml.YAMLError)
+            else str(exc)
+        )
+        report = {"schema_version": 1, "passed": False, "checks": [], "error": message}
+    report = redact(report)
+    if json_output:
+        typer.echo(json.dumps(report, indent=2))
+    else:
+        console.print("Verification: " + ("PASS" if report["passed"] else "FAIL"), markup=False)
+        for check in report["checks"]:
+            console.print(
+                f"{'PASS' if check['passed'] else 'FAIL'}: {check['name']}: {check['message']}",
+                markup=False,
+            )
+        if report.get("error"):
+            console.print(f"FAIL: {report['error']}", markup=False)
+        if report.get("artifact_directory"):
+            console.print(f"Evidence: {report['artifact_directory']}", markup=False)
+    raise typer.Exit(code=0 if report["passed"] else 1)
 
 
 @app.command()
