@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": ["category", "reply"],
+  "properties": {
+    "category": {"const": "support"},
+    "reply": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -57,6 +58,35 @@ def _resolve_schema_paths(assertions: list[object], base_dir: Path) -> None:
             entry["schema_path"] = schema_path
 
 
+def resolve_command_paths(command: list[Any], base_dir: Path) -> list[Any]:
+    """Resolve existing command paths while preserving inline code and literals."""
+    resolved: list[Any] = []
+    literal_arguments = False
+    for index, part in enumerate(command):
+        if index and command[index - 1] in ("-c", "-e", "-p", "--eval", "--print"):
+            literal_arguments = True
+        if literal_arguments or (index and command[index - 1] == "-m"):
+            resolved.append(part)
+            continue
+        if isinstance(part, str):
+            normalized = normalize_config_path(part)
+            try:
+                candidate = Path(normalized)
+                if not _is_absolute_config_path(normalized):
+                    candidate = base_dir / candidate
+                if candidate.exists():
+                    # Preserve a venv executable's location: following its symlink
+                    # to base Python would lose the adjacent pyvenv.cfg metadata.
+                    resolved.append(
+                        os.path.abspath(candidate) if index == 0 else str(candidate.resolve())
+                    )
+                    continue
+            except (OSError, ValueError):
+                pass
+        resolved.append(part)
+    return resolved
+
+
 def load_suite(path: Path) -> SuiteConfig:
     suite_path = path
     if suite_path.is_dir():
@@ -69,31 +99,7 @@ def load_suite(path: Path) -> SuiteConfig:
         data["cases_path"] = normalize_config_path(cases_path)
     agent_command = data.get("agent_command")
     if isinstance(agent_command, list):
-        resolved_command: list[object] = []
-        literal_arguments = False
-        for index, part in enumerate(agent_command):
-            if index and agent_command[index - 1] in ("-c", "-e", "--eval", "--print"):
-                literal_arguments = True
-            if literal_arguments:
-                resolved_command.append(part)
-                continue
-            if isinstance(part, str):
-                # argv also contains code, regexes, and other literal values.
-                # Normalize only a value that actually identifies a local path;
-                # otherwise preserve the argument byte-for-byte.
-                normalized = normalize_config_path(part)
-                try:
-                    candidate = Path(normalized)
-                    if not _is_absolute_config_path(normalized):
-                        candidate = suite_path.parent / candidate
-                    if candidate.exists():
-                        resolved_command.append(str(candidate.resolve()))
-                        continue
-                except (OSError, ValueError):
-                    # Arbitrary arguments need not be valid filesystem paths.
-                    pass
-            resolved_command.append(part)
-        data["agent_command"] = resolved_command
+        data["agent_command"] = resolve_command_paths(agent_command, suite_path.parent)
     assertions = data.get("assertions", [])
     if isinstance(assertions, list):
         _resolve_schema_paths(assertions, suite_path.parent)

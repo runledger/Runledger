@@ -1,0 +1,23 @@
+schema_version: 1
+regressions:
+  - name: missing-field
+    case_id: password-reset
+    input: {scenario: missing-field}
+    expect:
+      assertion: json_schema
+      message_contains: reply
+      tool_calls: 1
+  - name: skipped-lookup
+    case_id: password-reset
+    input: {scenario: skip-tool}
+    expect:
+      assertion: must_call
+      details: {missing: [search_docs]}
+      tool_calls: 0
+  - name: excess-tool-call
+    case_id: password-reset
+    input: {scenario: extra-tool}
+    expect:
+      budget: max_tool_calls
+      details: {limit: 1, actual: 2}
+      tool_calls: 2

@@ -52,8 +52,15 @@ def _command_basename(program: str) -> str:
     return program.replace("\\", "/").rsplit("/", 1)[-1].lower()
 
 
-def _prefer_available_python(command: Sequence[str]) -> list[str]:
-    """Use the available Python alias, without replacing an explicit path."""
+def resolve_agent_command(
+    command: Sequence[str], env: Mapping[str, str] | None = None
+) -> list[str]:
+    """Resolve bare Python aliases against the environment used to start the agent.
+
+    An absolute executable prevents Windows from choosing the parent application's
+    Python ahead of the child's PATH. Keep explicit paths, other programs, and all
+    arguments untouched. Missing aliases remain unchanged for startup diagnostics.
+    """
     if not command:
         return list(command)
     program = command[0]
@@ -63,12 +70,27 @@ def _prefer_available_python(command: Sequence[str]) -> list[str]:
     basename = _command_basename(program)
     if basename not in {"python", "python.exe", "python3", "python3.exe"}:
         return list(command)
-    if shutil.which(program):
-        return list(command)
+    environment = os.environ if env is None else env
+    if os.name == "nt":
+        path = next(
+            (value for key, value in environment.items() if key.upper() == "PATH"), os.defpath
+        )
+    else:
+        path = environment.get("PATH", os.defpath)
     alternate = "python3" if basename in {"python", "python.exe"} else "python"
-    if shutil.which(alternate):
-        return [alternate, *list(command[1:])]
+    for candidate in (program, alternate):
+        executable = shutil.which(candidate, path=path)
+        if executable is not None:
+            # Do not resolve symlinks: a venv launcher may point to the base Python.
+            return [os.path.abspath(executable), *command[1:]]
     return list(command)
+
+
+def _prefer_available_python(
+    command: Sequence[str], env: Mapping[str, str] | None = None
+) -> list[str]:
+    """Compatibility alias for callers of the original private helper."""
+    return resolve_agent_command(command, env)
 
 
 def _agent_start_error(command: Sequence[str], exc: BaseException) -> AgentProcessError:
@@ -156,7 +178,7 @@ class AgentProcess:
             return
         if not self._command or not self._command[0].strip():
             raise _agent_start_error(self._command, ValueError("empty command"))
-        self._command = _prefer_available_python(self._command)
+        self._command = resolve_agent_command(self._command, self._env)
         self._check_deadline()
         try:
             self._process = subprocess.Popen(

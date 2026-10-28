@@ -1,0 +1,14 @@
+suite_name: verification-example
+agent_command: [python, agent.py]
+mode: replay
+cases_path: cases
+tool_registry: [search_docs]
+assertions:
+  - type: json_schema
+    schema_path: schema.json
+  - type: must_call
+    tools: [search_docs]
+budgets:
+  max_wall_ms: 10000
+  max_tool_calls: 1
+  max_tool_errors: 0
