@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.5] - 2026-10-28
 
 ### Added
 
@@ -13,8 +13,6 @@
 - Bare Python launcher aliases resolve against the child process's PATH before launch, preventing Windows from selecting a different parent-application interpreter. Alias resolution preserves virtual-environment symlinks and does not rewrite explicit executable paths.
 - Command configuration preserves explicit virtual-environment executable symlinks, Python module names after `-m`, and Node inline code after `-p`.
 - JUnit reports replace XML-invalid control characters in agent errors with readable replacement characters, so both expected-failure evidence and ordinary test reports remain parseable.
-
-These changes are available from the source checkout and are not part of the published 0.2.4 package.
 
 ## [0.2.4] - 2026-10-27
 

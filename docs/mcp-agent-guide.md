@@ -28,15 +28,17 @@ Independent model calls normally remain live in RunLedger replay. Here, `Fixture
 
 ## Install and run
 
-Use Python 3.9+ and Node.js 22+. Start from a checkout of this repository containing `examples/mcp-agent`, and run commands from its root:
+Use Python 3.9+ and Node.js 22+. The RunLedger wheel does not contain this example. Use a checkout of the `v0.2.5` tag, and run commands from its root. If you do not already have that checkout:
 
 ```bash
-python -m pip install "runledger==0.2.4"
+git clone --branch v0.2.5 --depth 1 https://github.com/runledger/Runledger.git runledger-examples
+cd runledger-examples
+python -m pip install "runledger==0.2.5"
 npm --prefix examples/mcp-agent ci --ignore-scripts
 python examples/mcp-agent/verify.py --repeats 10
 ```
 
-The first two commands install dependencies and need network access. The acceptance runs use local fixtures. `mcp-agent@1.1.1` and its transitive dependencies are frozen for this optional compatibility example; several have known security advisories. Read the [upstream attribution and advisory details](../examples/mcp-agent/UPSTREAM.md). This pin is not a recommendation for a production dependency, and installing the RunLedger CLI does not install it.
+Cloning and installing dependencies need network access. The acceptance runs use local fixtures. `mcp-agent@1.1.1` and its transitive dependencies are frozen for this optional compatibility example; several have known security advisories. Read the [upstream attribution and advisory details](../examples/mcp-agent/UPSTREAM.md). This pin is not a recommendation for a production dependency, and installing the RunLedger CLI does not install it.
 
 Expected final output:
 
@@ -54,6 +56,15 @@ To run only the successful case:
 ```bash
 runledger run examples/mcp-agent/evals/pass --mode replay
 ```
+
+The same checkout also has a plan for RunLedger's generic setup and regression commands:
+
+```bash
+runledger doctor examples/mcp-agent/evals/pass --probe
+runledger verify examples/mcp-agent/evals/pass --plan examples/mcp-agent/verification.yaml --repeats 10
+```
+
+The generic verifier runs ten unchanged replays, three deliberate regressions, and three recovery checks. Its gate is `verification.junit.xml`; raw `probe.junit.xml` files retain intentional failures. See [setup and regression verification](setup-verification.md) for plan details. The example-specific `verify.py` additionally checks upstream lifecycle events and network-denial guards.
 
 ## Watch each gate fail
 
@@ -91,7 +102,7 @@ These contracts gate directly, so this example does not need an aggregate baseli
 
 ## Add the check to CI
 
-This workflow verifies all 13 runs using the released CLI. RunLedger itself remains a Python CLI; Node is required by this particular upstream agent.
+This workflow verifies all 13 runs using the released CLI. It assumes the example files and lockfile from the `v0.2.5` checkout are committed in your repository at the shown paths; checkout then tests the PR's files. RunLedger itself remains a Python CLI; Node is required by this particular upstream agent.
 
 ```yaml
 name: mcp-agent replay
@@ -107,7 +118,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install "runledger==0.2.4"
+      - run: python -m pip install "runledger==0.2.5"
       - run: npm --prefix examples/mcp-agent ci --ignore-scripts
       - run: python examples/mcp-agent/verify.py --repeats 10 --output-dir runledger_out/mcp-acceptance
       - uses: actions/upload-artifact@v4
@@ -120,11 +131,11 @@ jobs:
 For a single passing-suite gate, after installing the example's Node dependencies, the Marketplace action can replace the CLI run:
 
 ```yaml
-- uses: runledger/Runledger@v0.2.4
+- uses: runledger/Runledger@v0.2.5
   with:
     path: examples/mcp-agent/evals/pass
     mode: replay
-    package: runledger==0.2.4
+    package: runledger==0.2.5
 ```
 
 ## Adapt the pattern to your agent

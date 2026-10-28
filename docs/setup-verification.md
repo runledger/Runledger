@@ -1,9 +1,11 @@
 # Check setup and prove a regression gate
 
-`runledger doctor` and `runledger verify` are **unreleased, source-only commands**. The published `runledger==0.2.4` package does not include them. Install a checkout containing these changes, using the Python environment that will run your agent:
+`runledger doctor` and `runledger verify` are included in RunLedger 0.2.5. Install the published package in the Python environment that will run your agent. The wheel does not contain repository examples; obtain those from the `v0.2.5` tag:
 
 ```bash
-python -m pip install -e .
+git clone --branch v0.2.5 --depth 1 https://github.com/runledger/Runledger.git runledger-examples
+cd runledger-examples
+python -m pip install "runledger==0.2.5"
 runledger doctor examples/verification
 runledger doctor examples/verification --probe
 runledger verify examples/verification
@@ -74,13 +76,13 @@ For example, the [mcp-agent plan](../examples/mcp-agent/verification.yaml) lives
 agent_command: [node, agent.mjs, wrong-order]
 ```
 
-After installing that optional example's Node dependencies as described in its [guide](mcp-agent-guide.md), run the generic verifier from this source checkout:
+After installing that optional example's Node dependencies as described in its [guide](mcp-agent-guide.md), run the generic verifier from the `v0.2.5` checkout:
 
 ```bash
 runledger verify examples/mcp-agent/evals/pass --plan examples/mcp-agent/verification.yaml --repeats 10
 ```
 
-This does not replace the example's separate `verify.py` checker for the released 0.2.4 CLI. The upstream dependency and fixture limitations in the mcp-agent guide still apply.
+The generic verifier adds recovery checks to the example's contract tests. Its separate `verify.py` checker also tests upstream lifecycle events and the adapter's network-denial guards. The upstream dependency and fixture limitations in the mcp-agent guide still apply.
 
 ## Require the intended failure
 
