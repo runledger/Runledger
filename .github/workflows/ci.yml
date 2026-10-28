@@ -34,6 +34,10 @@ jobs:
         run: pytest --timeout=60
       - name: Run demo suite (replay)
         run: runledger run examples/evals/demo --mode replay --baseline baselines/demo.json
+      - name: Diagnose and verify the Python integration
+        run: |
+          runledger doctor examples/verification --probe
+          runledger verify examples/verification
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,6 +67,8 @@ jobs:
           npm --prefix examples/mcp-agent ci --ignore-scripts
       - name: Verify repeat replay and deliberate failures
         run: python examples/mcp-agent/verify.py --repeats 10
+      - name: Verify reusable plan against the real MCP agent
+        run: runledger verify examples/mcp-agent/evals/pass --plan examples/mcp-agent/verification.yaml --output-dir examples/mcp-agent/runledger_out
       - name: Upload example evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -67,6 +67,20 @@ The same check as a GitHub Action. `suite.yaml` already points at `baselines/dem
 
 Page copy for runledger.io lives in `docs/site-quickstart.md`.
 
+## Verify setup and regression coverage (unreleased)
+
+The source checkout adds `runledger doctor` for static setup checks and an optional replay probe, plus `runledger verify` for repeated passing runs, explicit regression checks, and recovery checks. These commands are **not included in the published 0.2.4 package**.
+
+From a checkout containing these changes, try the self-contained Python example:
+
+```bash
+python -m pip install -e .
+runledger doctor examples/verification --probe
+runledger verify examples/verification
+```
+
+See [setup and regression verification](docs/setup-verification.md) for plan format, expected failure matching, runtime limits, and CI evidence. `doctor` without `--probe` does not execute your agent. Execution probes use replay, which does not isolate independent model or network calls.
+
 ## RunLedger vs DeepEval and promptfoo
 
 | | RunLedger | DeepEval | promptfoo |
@@ -356,6 +370,7 @@ jobs:
 - `docs/assertions.md` -- assertions, tool contracts, budgets
 - `docs/baselines.md` -- baselines, diffing, promotion
 - `docs/ci.md` -- CI setup with GitHub Actions
+- [Setup and regression verification](docs/setup-verification.md) -- unreleased `doctor` and `verify` commands
 - `docs/contracts.md` -- public contracts (YAML, protocol, artifacts)
 - `docs/troubleshooting.md` -- common errors and fixes
 

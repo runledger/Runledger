@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `runledger doctor` inspects suite files, paths, assertions, budgets, cassettes, and baselines without executing agent or tool code. An explicit `--probe` runs one bounded replay case to check runtime and protocol readiness.
+- `runledger verify` repeats the original suite, checks declared regressions against structured assertion or budget failures, and verifies recovery to the original behavior. It retains per-run artifacts plus aggregate JSON and JUnit evidence; raw `probe.junit.xml` files preserve intentional failures.
+- A self-contained Python verification example, a generic verification plan for the existing mcp-agent example, and a guide covering setup, plan authoring, replay boundaries, and CI collection.
+
+### Fixed
+
+- Bare Python launcher aliases resolve against the child process's PATH before launch, preventing Windows from selecting a different parent-application interpreter. Alias resolution preserves virtual-environment symlinks and does not rewrite explicit executable paths.
+- Command configuration preserves explicit virtual-environment executable symlinks, Python module names after `-m`, and Node inline code after `-p`.
+- JUnit reports replace XML-invalid control characters in agent errors with readable replacement characters, so both expected-failure evidence and ordinary test reports remain parseable.
+
+These changes are available from the source checkout and are not part of the published 0.2.4 package.
+
 ## [0.2.4] - 2026-10-27
 
 ### Fixed

@@ -8,6 +8,7 @@ from typing import Any
 from runledger.reporting import collect_gate_failures
 from runledger.runner.models import CaseResult
 from runledger.util.redaction import redact_text
+from runledger.util.xml import sanitize_xml_text
 
 
 def write_junit(
@@ -29,7 +30,7 @@ def write_junit(
     suite = ET.Element(
         "testsuite",
         attrib={
-            "name": suite_name,
+            "name": sanitize_xml_text(suite_name),
             "tests": str(tests),
             "failures": str(failures),
             "time": f"{time_seconds:.3f}",
@@ -41,7 +42,7 @@ def write_junit(
             suite,
             "testcase",
             attrib={
-                "name": case.case_id,
+                "name": sanitize_xml_text(case.case_id),
                 "time": f"{case.wall_ms / 1000.0:.3f}",
             },
         )
@@ -49,16 +50,16 @@ def write_junit(
             failure = ET.SubElement(
                 testcase,
                 "failure",
-                attrib={"message": redact_text(case.failure.message)},
+                attrib={"message": sanitize_xml_text(redact_text(case.failure.message))},
             )
-            failure.text = redact_text(case.failure.type)
+            failure.text = sanitize_xml_text(redact_text(case.failure.type))
 
     for gate in gate_failures:
         testcase = ET.SubElement(
             suite,
             "testcase",
             attrib={
-                "name": f"regression:{gate.gate}",
+                "name": sanitize_xml_text(f"regression:{gate.gate}"),
                 "classname": "runledger.regression",
                 "time": "0.000",
             },
@@ -66,9 +67,9 @@ def write_junit(
         failure = ET.SubElement(
             testcase,
             "failure",
-            attrib={"message": redact_text(gate.message), "type": "regression"},
+            attrib={"message": sanitize_xml_text(redact_text(gate.message)), "type": "regression"},
         )
-        failure.text = redact_text(gate.message)
+        failure.text = sanitize_xml_text(redact_text(gate.message))
 
     tree = ET.ElementTree(suite)
     junit_path.write_text(

@@ -128,10 +128,15 @@ def test_agent_process_roundtrip(tmp_path: Path) -> None:
     ],
 )
 def test_python_launcher_fallback(command, available, expected, monkeypatch) -> None:
+    def selected_path(name):
+        return str((Path("interpreters") / name).absolute())
+
     monkeypatch.setattr(
         "runledger.runner.subprocess.shutil.which",
-        lambda name: name if name in available else None,
+        lambda name, *, path: selected_path(name) if name in available else None,
     )
+    if expected[0] in available:
+        expected = [selected_path(expected[0]), *expected[1:]]
     assert _prefer_available_python(command) == expected
 
 
