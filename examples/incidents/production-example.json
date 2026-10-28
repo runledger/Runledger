@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "incident_id": "example-export-2026-10-28",
+  "title": "Fictional production-format incident",
+  "metadata": {"notice": "Invented example only. No customer data or real credentials.", "internal_host": "worker.example.test"},
+  "effects_complete": true,
+  "input": {
+    "order_id": "order-example-1042",
+    "customer": {"name": "Dana Example", "email": "dana@example.test", "phone": "+1 202-555-0147"},
+    "authorization": "Bearer example-only-credential-not-valid-anywhere",
+    "request": "Please refund the order for Dana Example at dana@example.test.",
+    "retry_keys": ["refund-order-example-1042-attempt-1", "refund-order-example-1042-attempt-2"]
+  },
+  "events": [
+    {"type": "tool_call", "call_id": "prod-call-01", "name": "lookup_order", "args": {"order_id": "order-example-1042"}},
+    {"type": "tool_result", "call_id": "prod-call-01", "ok": true, "result": {"order_id": "order-example-1042", "amount_cents": 4900, "currency": "USD"}, "error": null},
+    {"type": "tool_call", "call_id": "prod-call-02", "name": "issue_refund", "args": {"order_id": "order-example-1042", "amount_cents": 4900, "currency": "USD", "idempotency_key": "refund-order-example-1042-attempt-1"}},
+    {"type": "business_effect", "call_id": "prod-call-02", "effect": {"type": "refund", "order_id": "order-example-1042", "refund_id": "refund-example-01", "amount_cents": 4900, "currency": "USD"}},
+    {"type": "tool_result", "call_id": "prod-call-02", "ok": false, "result": null, "error": "provider_timeout"},
+    {"type": "tool_call", "call_id": "prod-call-03", "name": "issue_refund", "args": {"order_id": "order-example-1042", "amount_cents": 4900, "currency": "USD", "idempotency_key": "refund-order-example-1042-attempt-2"}},
+    {"type": "business_effect", "call_id": "prod-call-03", "effect": {"type": "refund", "order_id": "order-example-1042", "refund_id": "refund-example-02", "amount_cents": 4900, "currency": "USD"}},
+    {"type": "tool_result", "call_id": "prod-call-03", "ok": true, "result": {"refund_id": "refund-example-02", "status": "refunded"}, "error": null},
+    {"type": "final_output", "output": {"status": "refunded", "order_id": "order-example-1042", "refund_id": "refund-example-02"}}
+  ],
+  "assertions": [
+    {"id": "one-refund-per-order", "type": "effect_count", "effect_type": "refund", "group_by": "order_id", "min": 1, "max": 1},
+    {"id": "has-refund-receipt", "type": "required_output", "fields": ["status", "order_id", "refund_id"]},
+    {"id": "structured-outcome", "type": "output_equals", "path": "/status", "value": "refunded"}
+  ]
+}

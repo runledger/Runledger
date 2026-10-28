@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "source_text_normalization": "lf",
+  "sources": {
+    "src/runledger/incidents/__init__.py": "e36a93c8596eeae08094d3a42c76b5c0217d7ade967df451c18c34879d88c13a",
+    "src/runledger/incidents/artifacts.py": "ecb38fc1a15b628675a6e8ab360a4bca7cb9bf6e3471a711f1557d676e8e135b",
+    "src/runledger/incidents/cli.py": "d5905f1fdce5e61e6e209265a844db0cc1ad5e5b4d34ca7f7eed5c557feb2184",
+    "src/runledger/incidents/importer.py": "bd76eb42ee653d43afb8216bd5c9124db62f5dc51f48ac5d7bc6be7ba39d5f40",
+    "src/runledger/incidents/redaction.py": "b67bfe435a77a627c36e6796ec5c5090e5f5d9a8d3fab1dfe60fb8e81fb8f908",
+    "src/runledger/incidents/replay.py": "1781db776002ceda02340e79e71a5d389e9cd0da4e441c2865c130be92153318",
+    "src/runledger/incidents/schema.py": "7a0710ca54b7d1e508c0677253a418ee123a3fe97fccbb28774bb2149d0b08fe",
+    "examples/incidents/production-example.json": "dbd62c80e307269a87b9f13a7a7339fc58dfa574b6051c2848384247ea722c23",
+    "examples/incidents/replay_agent.py": "6396ccfea569dbd5ad2f28c6aa0f4ac9b3578cbd7dec3f66c07530aa53bdaa57",
+    "docs/production-incidents.md": "a786eb0ab2f1246683a7cc178313498081afe27db789ad0d0c8e7940ec31a123"
+  },
+  "files": {
+    "demo.json": "3e3d7d7331ab18a3d5ee2d77be9f68da3093564b104c67b8c48547fb603b2ad3",
+    "redacted-incident.json": "a11650f2160e19df2a3455d10abef7e0a2121c2007da29a512a47c8e8c8b9aa6",
+    "production-example.json": "dbd62c80e307269a87b9f13a7a7339fc58dfa574b6051c2848384247ea722c23",
+    "README.md": "a786eb0ab2f1246683a7cc178313498081afe27db789ad0d0c8e7940ec31a123"
+  }
+}

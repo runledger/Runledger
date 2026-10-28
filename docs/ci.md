@@ -15,7 +15,7 @@ jobs:
       - name: Install RunLedger
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "runledger==0.2.5"
+          python -m pip install "runledger==0.3.0"
       - name: Run deterministic evals
         run: runledger run ./evals/demo --mode replay --baseline baselines/demo.json
       - name: Upload artifacts
@@ -39,11 +39,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: evals
-        uses: runledger/Runledger@v0.2.5
+        uses: runledger/Runledger@v0.3.0
         with:
           path: ./evals/demo
           mode: replay
-          package: runledger==0.2.5
+          package: runledger==0.3.0
       - name: Read action outputs
         run: |
           echo "result=${{ steps.evals.outputs.result }}"
@@ -57,10 +57,10 @@ Pin both the action tag and `package` for a repeatable installation. Without `pa
 
 `runledger init` writes `.github/workflows/runledger.yml` for the CLI path above. This repo's `.github/workflows/action-self-test.yml` runs the action with `uses: ./`.
 
-If `suite.yaml` includes `baseline_path` and you omit `baseline`, RunLedger compares against that file. `runledger/Runledger@v0.2.5` also accepts `baseline` when you want to override the suite file. That tag sets `result`, `exit-code`, and `artifacts-path`, and a failing run fails the job.
+If `suite.yaml` includes `baseline_path` and you omit `baseline`, RunLedger compares against that file. `runledger/Runledger@v0.3.0` also accepts `baseline` when you want to override the suite file. That tag sets `result`, `exit-code`, and `artifacts-path`, and a failing run fails the job.
 
 ## Verify setup and deliberate regressions
 
-The 0.2.5 CLI also provides `runledger doctor` and `runledger verify`. See [setup and regression verification](setup-verification.md) for the versioned example checkout and plan format. The package installs the CLI; it does not install repository examples.
+The 0.3.0 CLI also provides `runledger doctor` and `runledger verify`. See [setup and regression verification](setup-verification.md) for the versioned example checkout and plan format. The package installs the CLI; it does not install repository examples.
 
 For a plan committed with your own suite, run `runledger verify ./evals/my-suite`. Collect `**/verification.junit.xml` as the verification gate and upload the entire evidence directory for diagnostics. Raw `probe.junit.xml` files intentionally include the failures being tested and should not be counted as separate CI failures. The composite action above invokes `runledger run`; invoke `runledger verify` directly when you want planned negative tests and recovery checks.

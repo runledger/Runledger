@@ -3,7 +3,7 @@
 Copy this into an empty directory. You need Python 3.9 or newer.
 
 ```bash
-python3 -m pip install "runledger==0.2.5"
+python3 -m pip install "runledger==0.3.0"
 runledger init
 runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 ```
@@ -30,16 +30,16 @@ To call the action instead of the workflow file:
 
 ```yaml
 - id: evals
-  uses: runledger/Runledger@v0.2.5
+  uses: runledger/Runledger@v0.3.0
   with:
     path: ./evals/demo
     mode: replay
-    package: runledger==0.2.5
+    package: runledger==0.3.0
 ```
 
 The suite file's `baseline_path` is `baselines/demo.json`, so this compares against the baseline from `runledger init`.
 
-[`action.yml`](https://github.com/runledger/Runledger/blob/main/action.yml) at `runledger/Runledger@v0.2.5` sets three outputs:
+[`action.yml`](https://github.com/runledger/Runledger/blob/main/action.yml) at `runledger/Runledger@v0.3.0` sets three outputs:
 
 - `result` — `pass` when the process exits 0, otherwise `fail`
 - `exit-code` — the process exit code

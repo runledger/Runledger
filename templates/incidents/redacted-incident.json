@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "kind": "runledger.production-incident",
+  "incident": {
+    "id": "incident-96372e55d2605785",
+    "input": {
+      "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+      "customer": {
+        "name": "<redacted:personal:c48f8ce39a221f894ba168c5e36275c0>",
+        "email": "<redacted:personal:b9457abfa933d157d87a69119ad5ab70>",
+        "phone": "<redacted:personal:38706dcffda6e2710ac391af1c797633>"
+      },
+      "authorization": "<redacted:secret:dd77604cc6e270bc40af9434048e2176>",
+      "request": "<redacted:freeform:8b2214ffe6a3d2c77082361cd84c576f>",
+      "retry_keys": [
+        "<redacted:identifier:59193f8951a21b63a1c8a20126ab6452>",
+        "<redacted:identifier:02cd59778707342e8d43c23e91773c6c>"
+      ]
+    },
+    "events": [
+      {
+        "type": "tool_call",
+        "call_id": "c1",
+        "name": "lookup_order",
+        "args": {
+          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>"
+        }
+      },
+      {
+        "type": "tool_result",
+        "call_id": "c1",
+        "ok": true,
+        "result": {
+          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "amount_cents": 4900,
+          "currency": "USD"
+        },
+        "error": null
+      },
+      {
+        "type": "tool_call",
+        "call_id": "c2",
+        "name": "issue_refund",
+        "args": {
+          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "amount_cents": 4900,
+          "currency": "USD",
+          "idempotency_key": "<redacted:identifier:59193f8951a21b63a1c8a20126ab6452>"
+        }
+      },
+      {
+        "type": "business_effect",
+        "call_id": "c2",
+        "effect": {
+          "type": "refund",
+          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "refund_id": "<redacted:identifier:341a83d340f0c321e89c50597863c473>",
+          "amount_cents": 4900,
+          "currency": "USD"
+        }
+      },
+      {
+        "type": "tool_result",
+        "call_id": "c2",
+        "ok": false,
+        "result": null,
+        "error": "provider_timeout"
+      },
+      {
+        "type": "tool_call",
+        "call_id": "c3",
+        "name": "issue_refund",
+        "args": {
+          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "amount_cents": 4900,
+          "currency": "USD",
+          "idempotency_key": "<redacted:identifier:02cd59778707342e8d43c23e91773c6c>"
+        }
+      },
+      {
+        "type": "business_effect",
+        "call_id": "c3",
+        "effect": {
+          "type": "refund",
+          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+          "amount_cents": 4900,
+          "currency": "USD"
+        }
+      },
+      {
+        "type": "tool_result",
+        "call_id": "c3",
+        "ok": true,
+        "result": {
+          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+          "status": "refunded"
+        },
+        "error": null
+      },
+      {
+        "type": "final_output",
+        "output": {
+          "status": "refunded",
+          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>"
+        }
+      }
+    ],
+    "assertions": [
+      {
+        "id": "one-refund-per-order",
+        "type": "effect_count",
+        "effect_type": "refund",
+        "group_by": "order_id",
+        "min": 1,
+        "max": 1
+      },
+      {
+        "id": "has-refund-receipt",
+        "type": "required_output",
+        "fields": [
+          "status",
+          "order_id",
+          "refund_id"
+        ]
+      },
+      {
+        "id": "structured-outcome",
+        "type": "output_equals",
+        "path": "/status",
+        "value": "refunded"
+      }
+    ],
+    "effects_complete": true
+  },
+  "redaction": {
+    "policy_version": "incident-redaction-v1",
+    "fields_changed": 21,
+    "object_keys_changed": 0,
+    "numeric_values_replaced": 0,
+    "unique_values_replaced": 11,
+    "categories": {
+      "freeform": 1,
+      "identifier": 16,
+      "personal": 3,
+      "secret": 1
+    },
+    "custom_paths_applied": 0,
+    "warnings": [
+      "Review the redacted bundle locally before sharing; custom schemas and unrecognized personal data may require additional paths.",
+      "Freeform text is removed by default. Redaction can change model decisions and type-sensitive behavior; replay covers the retained tool boundary.",
+      "Aliases are consistent only inside this import; the original values and random mapping key are not exported."
+    ],
+    "metadata_exported": false,
+    "review_required": true,
+    "source_format": "canonical",
+    "raw_source_copied": false,
+    "note": "No originals, lookup table, or redaction key are saved. Review before sharing."
+  },
+  "boundary": {
+    "tools": "ordered recorded responses; no tool implementation is executed",
+    "effects": "historical evidence supplied by the exporter; not recreated provider state",
+    "agent": "explicit trusted local command only; not sandboxed",
+    "models": "calls outside the JSONL tool boundary are not frozen or intercepted",
+    "redaction": "review required; content transformations can change agent behavior"
+  },
+  "integrity": {
+    "sha256": "865455d12abb36344de8b31cb614adeefe9bfa8a1bea78ebc667735c8df106a8"
+  }
+}

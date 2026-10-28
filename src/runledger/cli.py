@@ -116,6 +116,24 @@ def _write_unless_present(path: Path, content: str) -> bool:
     return True
 
 
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True,
+                              "help_option_names": []})
+def scenario(ctx: typer.Context) -> None:
+    """Run, compare, reproduce, and promote support-agent scenarios (use --help)."""
+    from runledger.scenarios.cli import main
+
+    raise typer.Exit(main(ctx.args, prog="runledger scenario"))
+
+
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True,
+                              "help_option_names": []})
+def incident(ctx: typer.Context) -> None:
+    """Import, redact, and replay production incident exports (use --help)."""
+    from runledger.incidents.cli import main
+
+    raise typer.Exit(main(ctx.args, prog="runledger incident"))
+
+
 def _resolve_summary_path(run_path: Path) -> Path:
     if run_path.is_dir():
         summary_path = run_path / "summary.json"

@@ -2,19 +2,19 @@
 
 This optional example imports the published `@joshuacalpuerto/mcp-agent@1.1.1` implementation. Its actual `Agent.generateStructuredResult()` loop dispatches two registered tools through RunLedger. Model decisions and tool results are local fixtures; no live model, MCP server, or API key is needed.
 
-The RunLedger wheel does not contain example files. Use a checkout of the `v0.2.5` tag, with Python 3.9+ and Node.js 22+. If you do not already have that checkout:
+The RunLedger wheel does not contain example files. Use a checkout of the `v0.3.0` tag, with Python 3.9+ and Node.js 22+. If you do not already have that checkout:
 
 ```bash
-git clone --branch v0.2.5 --depth 1 https://github.com/runledger/Runledger.git runledger-examples
+git clone --branch v0.3.0 --depth 1 https://github.com/runledger/Runledger.git runledger-examples
 cd runledger-examples
-python -m pip install "runledger==0.2.5"
+python -m pip install "runledger==0.3.0"
 npm --prefix examples/mcp-agent ci --ignore-scripts
 python examples/mcp-agent/verify.py --repeats 10
 ```
 
 The checker succeeds only when 10 identical replays pass, three deliberate regressions fail at their intended gates, upstream lifecycle events are present, and the adapter's outbound network denial probes pass. It prints the location of `acceptance.json` and per-run artifacts. These are automated checks, not results from developer trials.
 
-RunLedger 0.2.5 also accepts this example's generic verification plan:
+RunLedger 0.3.0 also accepts this example's generic verification plan:
 
 ```bash
 runledger doctor examples/mcp-agent/evals/pass --probe
