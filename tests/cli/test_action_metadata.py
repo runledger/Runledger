@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
+EXPECTED_RELEASE = "0.2.5"
 
 
 def _usable_bash() -> str:
@@ -72,16 +73,16 @@ def test_readme_pins_the_released_action() -> None:
     ci = (ROOT / "docs" / "ci.md").read_text(encoding="utf-8")
     site = (ROOT / "docs" / "site-quickstart.md").read_text(encoding="utf-8")
     for text in (readme, ci, site):
-        assert "runledger/Runledger@v0.2.4" in text
-        assert re.search(r"runledger/Runledger@v0\.2(?!\.)", text) is None
+        refs = set(re.findall(r"runledger/Runledger@([A-Za-z0-9][A-Za-z0-9._-]*)", text))
+        assert refs == {f"v{EXPECTED_RELEASE}"}
 
 
 def test_release_workflow_publishes_the_tagged_version() -> None:
     import runledger
 
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    assert 'version = "0.2.4"' in pyproject
-    assert runledger.__version__ == "0.2.4"
+    assert f'version = "{EXPECTED_RELEASE}"' in pyproject
+    assert runledger.__version__ == EXPECTED_RELEASE
     workflow = yaml.safe_load((ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8"))
     # PyYAML 1.1 parses the unquoted workflow key "on" as boolean true.
     assert workflow[True]["push"]["tags"] == ["v*"]
