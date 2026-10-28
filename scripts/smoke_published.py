@@ -26,6 +26,7 @@ def execute(command, *, cwd, env, timeout=120):
         encoding="utf-8",
         errors="replace",
         timeout=timeout,
+        check=False,
     )
 
 
@@ -314,9 +315,11 @@ def smoke(version, *, attempts, retry_delay, result, wheel=None):
                 python,
                 "-I",
                 "-c",
-                "import json, sys, runledger; from importlib.metadata import version; "
-                "print(json.dumps({'module':runledger.__file__,'prefix':sys.prefix,"
-                "'metadata_version':version('runledger'),'module_version':runledger.__version__}))",
+                (
+                    "import json, sys, runledger; from importlib.metadata import version; "
+                    "print(json.dumps({'module':runledger.__file__,'prefix':sys.prefix,"
+                    "'metadata_version':version('runledger'),'module_version':runledger.__version__}))"
+                ),
             ],
             cwd=project,
             env=env,
@@ -431,7 +434,7 @@ def main():
             wheel=args.wheel,
         )
         result["ok"] = True
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - Emit a JSON failure for every smoke error.
         result["error"] = f"{type(exc).__name__}: {exc}"
     result["elapsed_seconds"] = round(time.monotonic() - started, 2)
     print(json.dumps(result, indent=2))
