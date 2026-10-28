@@ -1,0 +1,3 @@
+# Download manifests hash exact artifact bytes on every platform.
+templates/incidents/* -text
+templates/support-agent/* -text

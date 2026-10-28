@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-EXPECTED_RELEASE = "0.2.5"
+EXPECTED_RELEASE = "0.3.0"
 
 
 def _usable_bash() -> str:

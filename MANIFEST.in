@@ -1,0 +1,11 @@
+# Public documentation and fictional examples shipped in the source distribution.
+# Do not recursively include the repository: it also hosts website/runtime files.
+include CHANGELOG.md
+include docs/support-agent-pack.md
+include docs/production-incidents.md
+include examples/support-agent/agent.py
+include examples/support-agent/verify_adapter.py
+include examples/incidents/production-example.json
+include examples/incidents/replay_agent.py
+include examples/incidents/replay_example.py
+global-exclude *.py[cod] .env .env.*

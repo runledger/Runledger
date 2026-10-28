@@ -28,12 +28,12 @@ Independent model calls normally remain live in RunLedger replay. Here, `Fixture
 
 ## Install and run
 
-Use Python 3.9+ and Node.js 22+. The RunLedger wheel does not contain this example. Use a checkout of the `v0.2.5` tag, and run commands from its root. If you do not already have that checkout:
+Use Python 3.9+ and Node.js 22+. The RunLedger wheel does not contain this example. Use a checkout of the `v0.3.0` tag, and run commands from its root. If you do not already have that checkout:
 
 ```bash
-git clone --branch v0.2.5 --depth 1 https://github.com/runledger/Runledger.git runledger-examples
+git clone --branch v0.3.0 --depth 1 https://github.com/runledger/Runledger.git runledger-examples
 cd runledger-examples
-python -m pip install "runledger==0.2.5"
+python -m pip install "runledger==0.3.0"
 npm --prefix examples/mcp-agent ci --ignore-scripts
 python examples/mcp-agent/verify.py --repeats 10
 ```
@@ -102,7 +102,7 @@ These contracts gate directly, so this example does not need an aggregate baseli
 
 ## Add the check to CI
 
-This workflow verifies all 13 runs using the released CLI. It assumes the example files and lockfile from the `v0.2.5` checkout are committed in your repository at the shown paths; checkout then tests the PR's files. RunLedger itself remains a Python CLI; Node is required by this particular upstream agent.
+This workflow verifies all 13 runs using the released CLI. It assumes the example files and lockfile from the `v0.3.0` checkout are committed in your repository at the shown paths; checkout then tests the PR's files. RunLedger itself remains a Python CLI; Node is required by this particular upstream agent.
 
 ```yaml
 name: mcp-agent replay
@@ -118,7 +118,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install "runledger==0.2.5"
+      - run: python -m pip install "runledger==0.3.0"
       - run: npm --prefix examples/mcp-agent ci --ignore-scripts
       - run: python examples/mcp-agent/verify.py --repeats 10 --output-dir runledger_out/mcp-acceptance
       - uses: actions/upload-artifact@v4
@@ -131,11 +131,11 @@ jobs:
 For a single passing-suite gate, after installing the example's Node dependencies, the Marketplace action can replace the CLI run:
 
 ```yaml
-- uses: runledger/Runledger@v0.2.5
+- uses: runledger/Runledger@v0.3.0
   with:
     path: examples/mcp-agent/evals/pass
     mode: replay
-    package: runledger==0.2.5
+    package: runledger==0.3.0
 ```
 
 ## Adapt the pattern to your agent

@@ -1,0 +1,19 @@
+name: Support-agent refund regressions
+on: [push, pull_request]
+jobs:
+  support-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # Check the extracted portable pack into tests/support-agent/ first.
+      # This validates the bundled policy. Use your explicit custom adapter with
+      # the full RunLedger source installation to guard your own agent.
+      - run: python tests/support-agent/run_demo.py run --agent fixed --out support-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: support-agent-evidence
+          path: support-results/

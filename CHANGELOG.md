@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0] - 2026-10-28
+
+### Added
+
+- `runledger scenario` runs five synthetic support-agent scenarios, compares unsafe and fixed refund policies, and reports committed effects independently of tool responses. Built-in demonstrations need no model keys; explicit JSONL adapters test application agents.
+- `runledger incident import` accepts the versioned production export format or a selected case from RunLedger JSONL. Local redaction replaces recognized secrets, personal details, identifiers, and freeform text with consistent per-import aliases; custom JSON Pointer paths cover application-specific fields.
+- `runledger incident inspect`, `replay`, and `promote` evaluate explicit business rules, replay ordered recorded tool responses, and retain validated sanitized regression fixtures. Unrecorded paths stop as divergences; no live fallback tool is executed.
+- Incident artifacts include redaction audit counts, escaped HTML reports, JSON evaluations, JSONL traces, and JUnit evidence. `--gate` separates a successful reproduction from a passing business-rule check.
+- Public fictional refund exports, executable adapters, format guides, and clean-install checks for the new commands.
+
+### Compatibility
+
+- Preserves all 0.2.5 doctor, verification, replay-order, normalization, execution-limit, report-safety, and command-resolution fixes.
+- Supports Python 3.9 and later. Existing record/replay suites and cassette formats remain available.
+- Production imports require supported complete serial traces and explicit assertions. Effect-count checks need a declared complete audit ledger. Redaction requires review; model/network calls outside the JSONL tool boundary are not intercepted.
+
+
 ## [0.2.5] - 2026-10-28
 
 ### Added
