@@ -18,7 +18,7 @@ Replay covers requests your agent sends through RunLedger's JSONL tool protocol.
 From an empty directory, with Python 3.9+:
 
 ```bash
-python3 -m pip install runledger
+python3 -m pip install "runledger==0.2.5"
 runledger init
 runledger run ./evals/demo --mode replay --baseline baselines/demo.json
 ```
@@ -56,25 +56,27 @@ The same check as a GitHub Action. `suite.yaml` already points at `baselines/dem
 
 ```yaml
 - id: evals
-  uses: runledger/Runledger@v0.2.4
+  uses: runledger/Runledger@v0.2.5
   with:
     path: ./evals/demo
     mode: replay
-    package: runledger==0.2.4
+    package: runledger==0.2.5
 ```
 
-`runledger/Runledger@v0.2.4` accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. The in-repo self-test calls the action with `uses: ./`.
+`runledger/Runledger@v0.2.5` accepts a `baseline` input and sets `result` (`pass` or `fail`), `exit-code`, and `artifacts-path`. The in-repo self-test calls the action with `uses: ./`.
 
 Page copy for runledger.io lives in `docs/site-quickstart.md`.
 
-## Verify setup and regression coverage (unreleased)
+## Verify setup and regression coverage
 
-The source checkout adds `runledger doctor` for static setup checks and an optional replay probe, plus `runledger verify` for repeated passing runs, explicit regression checks, and recovery checks. These commands are **not included in the published 0.2.4 package**.
+RunLedger 0.2.5 includes `runledger doctor` for static setup checks and an optional replay probe, plus `runledger verify` for repeated passing runs, explicit regression checks, and recovery checks.
 
-From a checkout containing these changes, try the self-contained Python example:
+The wheel installs the CLI; repository examples require a checkout of the `v0.2.5` tag. To try the self-contained Python example:
 
 ```bash
-python -m pip install -e .
+git clone --branch v0.2.5 --depth 1 https://github.com/runledger/Runledger.git runledger-examples
+cd runledger-examples
+python -m pip install "runledger==0.2.5"
 runledger doctor examples/verification --probe
 runledger verify examples/verification
 ```
@@ -332,16 +334,17 @@ jobs:
 
       - name: Run deterministic evals (replay)
         id: evals
-        uses: runledger/Runledger@v0.2.4
+        uses: runledger/Runledger@v0.2.5
         with:
           path: ./evals/demo
           mode: replay
+          package: runledger==0.2.5
 
       - name: Show the action result
         run: echo "result=${{ steps.evals.outputs.result }} exit=${{ steps.evals.outputs.exit-code }}"
 ```
 
-`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml` at `runledger/Runledger@v0.2.4`. It uploads `runledger_out/**` on success and on failure. The step sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`. A failing run fails the job.
+`runledger init` writes `.github/workflows/runledger.yml`, which installs the CLI and runs the suite with `--baseline`. The action above is the Marketplace entry in `action.yml` at `runledger/Runledger@v0.2.5`. It uploads `runledger_out/**` on success and on failure. The step sets `result`, `exit-code`, and `artifacts-path`, and you can pass `baseline:` to override `suite.yaml`. A failing run fails the job.
 
 ---
 
@@ -370,7 +373,7 @@ jobs:
 - `docs/assertions.md` -- assertions, tool contracts, budgets
 - `docs/baselines.md` -- baselines, diffing, promotion
 - `docs/ci.md` -- CI setup with GitHub Actions
-- [Setup and regression verification](docs/setup-verification.md) -- unreleased `doctor` and `verify` commands
+- [Setup and regression verification](docs/setup-verification.md) -- `doctor` and `verify` commands
 - `docs/contracts.md` -- public contracts (YAML, protocol, artifacts)
 - `docs/troubleshooting.md` -- common errors and fixes
 
