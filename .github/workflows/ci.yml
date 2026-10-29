@@ -38,6 +38,8 @@ jobs:
         run: |
           runledger doctor examples/verification --probe
           runledger verify examples/verification
+      - name: Verify incident to corrected regression
+        run: python examples/incident-to-fix/verify.py --out runledger_out/incident-to-fix
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4

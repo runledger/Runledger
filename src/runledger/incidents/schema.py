@@ -130,6 +130,15 @@ def validate_rules(rules: Any) -> list[dict]:
             if (not isinstance(rule["fields"], list) or not 1 <= len(rule["fields"]) <= 30
                     or not all(isinstance(field, str) and FIELD.fullmatch(field) for field in rule["fields"])):
                 raise IncidentError("Required output fields must be bounded identifiers")
+        elif kind == "must_call":
+            _fields(rule, {"id", "type", "tools"})
+            names = rule["tools"]
+            if not isinstance(names, list) or not 1 <= len(names) <= 30:
+                raise IncidentError("Required tools must contain between 1 and 30 identifiers")
+            for name in names:
+                _name(name)
+            if len(set(names)) != len(names):
+                raise IncidentError("Required tools must be unique")
         elif kind == "max_tool_errors":
             _fields(rule, {"id", "type", "max"})
             if type(rule["max"]) is not int or not 0 <= rule["max"] <= MAX_EVENTS:
