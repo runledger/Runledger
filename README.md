@@ -59,6 +59,14 @@ runs with Python's standard library and no installation.
 
 ## Five-minute quickstart
 
+For setup delivery from this source checkout, use the
+[incident-to-fix acceptance workflow](examples/incident-to-fix/README.md),
+[OpenChatBI application recipe](examples/openchatbi-handoff/README.md), and
+[customer handoff checklist](docs/customer-handoff.md).
+The [adoption evidence](docs/adoption-evidence.md) records three maintainer-merged
+integrations and their observed continued use. These new delivery helpers and
+the incident `must_call` rule are unreleased; install this checkout to use them.
+
 From an empty directory, with Python 3.9+:
 
 ```bash
