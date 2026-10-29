@@ -101,7 +101,7 @@ def _structural(path: tuple[str, ...]) -> bool:
         return path[3] == "type"
     if len(path) == 3 and path[0] == "assertions" and path[1].isdigit():
         return path[2] in {"type", "id", "field", "path", "group_by", "effect_type", "min", "max"}
-    if len(path) == 4 and path[0] == "assertions" and path[1].isdigit() and path[2] == "fields":
+    if len(path) == 4 and path[0] == "assertions" and path[1].isdigit() and path[2] in {"fields", "tools"}:
         return True
     return len(path) == 1 and path[0] in {"schema_version", "kind", "id", "effects_complete"}
 

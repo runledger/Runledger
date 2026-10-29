@@ -55,6 +55,24 @@ def test_full_source_download_is_allowlisted_and_runs_custom_adapter(tmp_path):
                   "docs/production-incidents.md", "examples/support-agent/agent.py",
                   "examples/support-agent/verify_adapter.py", "examples/incidents/production-example.json",
                   "examples/incidents/replay_agent.py", "examples/incidents/replay_example.py"}
+    supporting.update({
+        "examples/incident-to-fix/README.md",
+        "examples/incident-to-fix/verify.py",
+        "examples/openchatbi-handoff/README.md",
+        "examples/openchatbi-handoff/capture.py",
+        "examples/openchatbi-handoff/adapter_bridge.py",
+        "examples/openchatbi-handoff/manifest.json",
+        "docs/customer-handoff.md",
+        "docs/adoption-evidence.md",
+        "docs/integrations.md",
+        "docs/developer-trial.md",
+        "docs/setup-verification.md",
+        "templates/customer-handoff/README.md",
+        "templates/customer-handoff/intake.md",
+        "templates/customer-handoff/scope.md",
+        "templates/customer-handoff/evidence.md",
+        "templates/customer-handoff/acceptance.md",
+    })
     expected = {path.relative_to(ROOT).as_posix()
                 for path in (ROOT / "src" / "runledger").rglob("*.py")
                 if "__pycache__" not in path.parts} | supporting
@@ -120,3 +138,7 @@ def test_full_source_download_is_allowlisted_and_runs_custom_adapter(tmp_path):
     assert gated.returncode == 1, gated.stdout + gated.stderr
     gate = json.loads((tmp_path / "incident-example-gated/replay.json").read_text(encoding="utf-8"))
     assert gate["matched"] is True, "The gate must fail for the reproduced rule failure, not divergence"
+
+    lifecycle = execute("examples/incident-to-fix/verify.py", "--out", "lifecycle-results")
+    assert lifecycle.returncode == 0, lifecycle.stdout + lifecycle.stderr
+    assert json.loads((tmp_path / "lifecycle-results/acceptance.json").read_text())["passed"]

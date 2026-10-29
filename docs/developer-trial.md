@@ -1,12 +1,24 @@
 # Three-developer RunLedger trial
 
-Draft for the pilot owner. Send only after RunLedger 0.2.4 is published and the package, action, and example have passed the release checks. No invitations have been sent.
+Trial protocol for the pilot owner, using the published RunLedger 0.3.0 examples. Feedback requests have been sent; the measured three-developer session table remains unfilled. Automated acceptance results, maintainer review, and completed human trials are recorded separately.
+
+## Outreach and evidence already available
+
+Status checked on 2026-10-29 at 04:03 UTC. Three tailored follow-ups were sent on 2026-10-27 in the existing merged integration PRs:
+
+| Project | Feedback request | Observed response or related work |
+| --- | --- | --- |
+| OpenChatBI | [PR #8 follow-up](https://github.com/zhongyu09/openchatbi/pull/8#issuecomment-6453241559) | No direct issue-comment reply to this request. Related [upgrade PR #61](https://github.com/zhongyu09/openchatbi/pull/61) is open and received maintainer review requesting an [explicit jsonschema dependency](https://github.com/zhongyu09/openchatbi/pull/61#discussion_r4401006127) and [negative-check execution or an explanation](https://github.com/zhongyu09/openchatbi/pull/61#discussion_r4401024343). This is actionable integration feedback. |
+| mcp-agent | [PR #3 follow-up](https://github.com/joshuaalpuerto/mcp-agent/pull/3#issuecomment-6453242126) | No direct reply to this follow-up at the check time. Earlier maintainer guidance confirmed the real `Agent.callTool` integration; it is not a new measured trial result. |
+| Agentic-AI-Pipeline | [PR #24 follow-up](https://github.com/hoangsonww/Agentic-AI-Pipeline/pull/24#issuecomment-6453242703) | No direct reply to this follow-up at the check time. The merged optional integration alone does not establish current use. |
+
+The [merged integrations](integrations.md) and linked reviews establish concrete adoption or review activity at those revisions. They do not establish three completed onboarding sessions, customer payment, owner acceptance of a paid delivery, or retention in the next two PRs. Those outcomes remain pending unless their own evidence is recorded. Use the [customer handoff](customer-handoff.md) for a scoped delivery and signoff.
 
 ## Test here, then contact a small number of relevant developers
 
-Finish local and CI verification of the release and the real integration before outreach. Save actual command output as technical evidence. The participant table below is intentionally empty: automated checks are not human trial results.
+Keep local and CI verification evidence for the exact release and integration used in each session. The participant table below is intentionally empty: automated checks are not human trial results.
 
-Then identify three developers whose current projects actually use tool calls and PR checks. Tailor each invitation to a specific integration they could try, keep the ask to a 30-minute session, and record responses. Send only after the owner chooses the targets and authorizes the messages. A public repository, package download, or automated passing run does not imply that its maintainer has tried or endorsed RunLedger.
+Use relevant existing conversations before contacting additional developers. Tailor any further invitation to a specific integration, keep the ask to a 30-minute session, and record responses. An existing follow-up is not permission for repeated reminders; send further messages only with the owner's authorization and respect the recipient's response. A public repository, package download, or automated passing run does not imply that its maintainer completed a trial or endorsed RunLedger.
 
 ## What this trial should establish
 
@@ -16,8 +28,9 @@ Recruit three developers with an existing small tool-using agent: ideally one Wi
 
 ## Pilot-owner preparation
 
-- Confirm `runledger==0.2.4` installs from PyPI in a clean environment and `runledger/Runledger@v0.2.4` resolves to the intended release commit.
-- Pin the CLI as well as the action: set `package: runledger==0.2.4` in trial CI. An action tag alone does not pin its default PyPI installation.
+- Confirm `runledger==0.3.0` installs from PyPI in a clean environment and `runledger/Runledger@v0.3.0` resolves to the intended release commit.
+- Pin the CLI as well as the action: set `package: runledger==0.3.0` in trial CI. An action tag alone does not pin its default PyPI installation.
+- Obtain the `v0.3.0` repository checkout for the sample files; they are not installed with the CLI wheel. Record the checkout commit alongside the package version.
 - Verify the commands below from the delivered project root. The real integration guide is `docs/mcp-agent-guide.md`.
 - Tell participants that the example uses the real npm agent package with fixed model decisions. It exercises the agent/tool integration without measuring live-model behavior.
 - Prepare one short intake sheet and a stopwatch. Do not change the guide mid-session; log corrections for the next cohort.
@@ -29,7 +42,7 @@ Start the clock before installing. Record total elapsed time, including download
 1. **Install and run the supplied example (target: minutes 0–8).** Use a fresh Python environment and Node 22 or newer. From the project root:
 
    ```sh
-   python -m pip install "runledger==0.2.4"
+   python -m pip install "runledger==0.3.0"
    npm --prefix examples/mcp-agent ci --ignore-scripts
    runledger run examples/mcp-agent/evals/pass --mode replay
    ```
@@ -66,7 +79,7 @@ Do not treat a positive reaction as product validation. The strongest evidence i
 | --- | --- | --- | --- |
 | Date; OS; Python; Node | | | |
 | Agent/framework and tool selected | | | |
-| RunLedger version; example commit | | | |
+| RunLedger version; example/application commits | | | |
 | First sample pass, elapsed minutes | | | |
 | First sample failure understood, minutes | | | |
 | First own-agent pass, minutes | | | |
@@ -76,6 +89,8 @@ Do not treat a positive reaction as product validation. The strongest evidence i
 | Outcome at 30 minutes | | | |
 | Blocking step and exact message | | | |
 | Case/artifact reference | | | |
+| Owner walkthrough: case updated and explained | | | |
+| Next two relevant PRs: gate/check links or pending | | | |
 
 Use one outcome: **own-agent success**, **sample-only success**, **assisted success**, or **blocked**. Own-agent success requires a passing cassette replay and an intentional regression that fails for the expected reason, independently within 30 minutes.
 

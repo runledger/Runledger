@@ -25,6 +25,24 @@ FULL_SOURCE_FILES = ["pyproject.toml", "README.md", "LICENSE", "MANIFEST.in", "C
                      "docs/production-incidents.md", "examples/support-agent/agent.py",
                      "examples/support-agent/verify_adapter.py", "examples/incidents/production-example.json",
                      "examples/incidents/replay_agent.py", "examples/incidents/replay_example.py"]
+FULL_SOURCE_FILES += [
+    "examples/incident-to-fix/README.md",
+    "examples/incident-to-fix/verify.py",
+    "examples/openchatbi-handoff/README.md",
+    "examples/openchatbi-handoff/capture.py",
+    "examples/openchatbi-handoff/adapter_bridge.py",
+    "examples/openchatbi-handoff/manifest.json",
+    "docs/customer-handoff.md",
+    "docs/adoption-evidence.md",
+    "docs/integrations.md",
+    "docs/developer-trial.md",
+    "docs/setup-verification.md",
+    "templates/customer-handoff/README.md",
+    "templates/customer-handoff/intake.md",
+    "templates/customer-handoff/scope.md",
+    "templates/customer-handoff/evidence.md",
+    "templates/customer-handoff/acceptance.md",
+]
 LAUNCHER = b'from runledger.scenarios.cli import main\n\nif __name__ == "__main__":\n    raise SystemExit(main())\n'
 
 

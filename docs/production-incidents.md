@@ -155,7 +155,12 @@ Imported bundles are data only and never choose or execute an agent command.
 | `effect_count` | `effect_type`, `max`, optional `min` and `group_by` | Number of captured effects, optionally per top-level effect field |
 | `output_equals` | `path`, `value` | Exact typed value at an output JSON Pointer |
 | `required_output` | `fields` | Required top-level output keys are present |
+| `must_call` | `tools` | Every named tool appears in the captured calls (does not require success or order) |
 | `max_tool_errors` | `max` | Recorded tool error count is within the limit |
+
+The incident `must_call` rule is new in this source checkout and is not included
+in the published 0.3.0 release. It accepts 1–30 unique tool identifiers and checks
+presence only; use additional rules to require successful results or output.
 
 Each rule has a unique `id`. At least one explicit rule is required. No code,
 regular expressions, templates, or executable assertions are loaded from imports.

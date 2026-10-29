@@ -6,17 +6,17 @@
     "src/runledger/incidents/artifacts.py": "ecb38fc1a15b628675a6e8ab360a4bca7cb9bf6e3471a711f1557d676e8e135b",
     "src/runledger/incidents/cli.py": "d5905f1fdce5e61e6e209265a844db0cc1ad5e5b4d34ca7f7eed5c557feb2184",
     "src/runledger/incidents/importer.py": "bd76eb42ee653d43afb8216bd5c9124db62f5dc51f48ac5d7bc6be7ba39d5f40",
-    "src/runledger/incidents/redaction.py": "b67bfe435a77a627c36e6796ec5c5090e5f5d9a8d3fab1dfe60fb8e81fb8f908",
-    "src/runledger/incidents/replay.py": "1781db776002ceda02340e79e71a5d389e9cd0da4e441c2865c130be92153318",
-    "src/runledger/incidents/schema.py": "7a0710ca54b7d1e508c0677253a418ee123a3fe97fccbb28774bb2149d0b08fe",
+    "src/runledger/incidents/redaction.py": "67d4f75bb3a01ddea2b451198e0714525c96ee195f6d44dd35e722c50a0ac3a6",
+    "src/runledger/incidents/replay.py": "091532a1b778c8257bb0095fa0742abc555796b942af169989904c37e333f48b",
+    "src/runledger/incidents/schema.py": "83c11749972328428e3cafd93c86c3b6fb9fe6cf9fe0d3176e42129a37b36cfa",
     "examples/incidents/production-example.json": "dbd62c80e307269a87b9f13a7a7339fc58dfa574b6051c2848384247ea722c23",
     "examples/incidents/replay_agent.py": "6396ccfea569dbd5ad2f28c6aa0f4ac9b3578cbd7dec3f66c07530aa53bdaa57",
-    "docs/production-incidents.md": "a786eb0ab2f1246683a7cc178313498081afe27db789ad0d0c8e7940ec31a123"
+    "docs/production-incidents.md": "c14ecfd8d59b1f0fbba0811ee3af023ebb147f4f416513a99ac492f340715028"
   },
   "files": {
-    "demo.json": "3e3d7d7331ab18a3d5ee2d77be9f68da3093564b104c67b8c48547fb603b2ad3",
-    "redacted-incident.json": "a11650f2160e19df2a3455d10abef7e0a2121c2007da29a512a47c8e8c8b9aa6",
+    "demo.json": "08c224a8f363fa341277cd2e22ca31a38bb26dc1c850907b05b5a6709d7e0322",
+    "redacted-incident.json": "5dfef26e2fa86b8f05379c8ab901f5c7b9db35169697da546e99a82b7f296fc5",
     "production-example.json": "dbd62c80e307269a87b9f13a7a7339fc58dfa574b6051c2848384247ea722c23",
-    "README.md": "a786eb0ab2f1246683a7cc178313498081afe27db789ad0d0c8e7940ec31a123"
+    "README.md": "c14ecfd8d59b1f0fbba0811ee3af023ebb147f4f416513a99ac492f340715028"
   }
 }

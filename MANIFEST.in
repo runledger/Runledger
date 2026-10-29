@@ -8,4 +8,20 @@ include examples/support-agent/verify_adapter.py
 include examples/incidents/production-example.json
 include examples/incidents/replay_agent.py
 include examples/incidents/replay_example.py
+include examples/incident-to-fix/README.md
+include examples/incident-to-fix/verify.py
+include examples/openchatbi-handoff/README.md
+include examples/openchatbi-handoff/capture.py
+include examples/openchatbi-handoff/adapter_bridge.py
+include examples/openchatbi-handoff/manifest.json
+include docs/customer-handoff.md
+include docs/adoption-evidence.md
+include docs/integrations.md
+include docs/developer-trial.md
+include docs/setup-verification.md
+include templates/customer-handoff/README.md
+include templates/customer-handoff/intake.md
+include templates/customer-handoff/scope.md
+include templates/customer-handoff/evidence.md
+include templates/customer-handoff/acceptance.md
 global-exclude *.py[cod] .env .env.*
