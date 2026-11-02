@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Incident `must_call` assertions preserve required tool names through import and redaction, so a schema-valid answer that skipped a required tool still fails its gate.
+- An executable incident-to-fix acceptance example joins historical failure reproduction, an explicit stateful scenario mapping, corrected JSONL policy checks, and a retained regression case with aggregate JSON/JUnit evidence.
+- A repeatable OpenChatBI recipe captures a skipped schema-discovery incident through the actual application graph, imports it locally, and verifies broken/fixed paths under the same required-tool rule.
+- Customer scope, acceptance, effort, ownership, and retention templates, plus a dated audit of maintainer merges, continued CI use, and feedback.
+
 ## [0.3.0] - 2026-10-28
 
 ### Added

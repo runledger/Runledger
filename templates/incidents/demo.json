@@ -26,19 +26,19 @@
     "note": "No originals, lookup table, or redaction key are saved. Review before sharing."
   },
   "incident": {
-    "id": "incident-96372e55d2605785",
+    "id": "incident-a25dca040a2cb2ab",
     "input": {
-      "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+      "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
       "customer": {
-        "name": "<redacted:personal:c48f8ce39a221f894ba168c5e36275c0>",
-        "email": "<redacted:personal:b9457abfa933d157d87a69119ad5ab70>",
-        "phone": "<redacted:personal:38706dcffda6e2710ac391af1c797633>"
+        "name": "<redacted:personal:aa4bdbc0a4f1a3f4c3d9fa590736ee04>",
+        "email": "<redacted:personal:b23dac726429bc15ab13eb4ca148ef48>",
+        "phone": "<redacted:personal:db839505aadc7ce11586a53aabd887e5>"
       },
-      "authorization": "<redacted:secret:dd77604cc6e270bc40af9434048e2176>",
-      "request": "<redacted:freeform:8b2214ffe6a3d2c77082361cd84c576f>",
+      "authorization": "<redacted:secret:020d63e143f5601c980e487cd6fefd07>",
+      "request": "<redacted:freeform:feaa9cf4f7efe452aa39ae2aa6f10175>",
       "retry_keys": [
-        "<redacted:identifier:59193f8951a21b63a1c8a20126ab6452>",
-        "<redacted:identifier:02cd59778707342e8d43c23e91773c6c>"
+        "<redacted:identifier:f4b636c18691978afe789a394ca9a043>",
+        "<redacted:identifier:130107022b7a85c7a2c021ee3b3acff8>"
       ]
     },
     "events": [
@@ -47,7 +47,7 @@
         "call_id": "c1",
         "name": "lookup_order",
         "args": {
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>"
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>"
         }
       },
       {
@@ -55,7 +55,7 @@
         "call_id": "c1",
         "ok": true,
         "result": {
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
           "amount_cents": 4900,
           "currency": "USD"
         },
@@ -66,10 +66,10 @@
         "call_id": "c2",
         "name": "issue_refund",
         "args": {
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
           "amount_cents": 4900,
           "currency": "USD",
-          "idempotency_key": "<redacted:identifier:59193f8951a21b63a1c8a20126ab6452>"
+          "idempotency_key": "<redacted:identifier:f4b636c18691978afe789a394ca9a043>"
         }
       },
       {
@@ -77,8 +77,8 @@
         "call_id": "c2",
         "effect": {
           "type": "refund",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:341a83d340f0c321e89c50597863c473>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:4ce2f26ee8b3587e1cbc140a19d5573e>",
           "amount_cents": 4900,
           "currency": "USD"
         }
@@ -95,10 +95,10 @@
         "call_id": "c3",
         "name": "issue_refund",
         "args": {
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
           "amount_cents": 4900,
           "currency": "USD",
-          "idempotency_key": "<redacted:identifier:02cd59778707342e8d43c23e91773c6c>"
+          "idempotency_key": "<redacted:identifier:130107022b7a85c7a2c021ee3b3acff8>"
         }
       },
       {
@@ -106,8 +106,8 @@
         "call_id": "c3",
         "effect": {
           "type": "refund",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>",
           "amount_cents": 4900,
           "currency": "USD"
         }
@@ -117,7 +117,7 @@
         "call_id": "c3",
         "ok": true,
         "result": {
-          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+          "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>",
           "status": "refunded"
         },
         "error": null
@@ -126,8 +126,8 @@
         "type": "final_output",
         "output": {
           "status": "refunded",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>"
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>"
         }
       }
     ],
@@ -211,23 +211,23 @@
     "effects": [
       {
         "type": "refund",
-        "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-        "refund_id": "<redacted:identifier:341a83d340f0c321e89c50597863c473>",
+        "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+        "refund_id": "<redacted:identifier:4ce2f26ee8b3587e1cbc140a19d5573e>",
         "amount_cents": 4900,
         "currency": "USD"
       },
       {
         "type": "refund",
-        "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-        "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+        "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+        "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>",
         "amount_cents": 4900,
         "currency": "USD"
       }
     ],
     "output": {
       "status": "refunded",
-      "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-      "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>"
+      "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+      "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>"
     },
     "error": null,
     "tool_calls": 3,
@@ -291,23 +291,23 @@
       "effects": [
         {
           "type": "refund",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:341a83d340f0c321e89c50597863c473>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:4ce2f26ee8b3587e1cbc140a19d5573e>",
           "amount_cents": 4900,
           "currency": "USD"
         },
         {
           "type": "refund",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>",
           "amount_cents": 4900,
           "currency": "USD"
         }
       ],
       "output": {
         "status": "refunded",
-        "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-        "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>"
+        "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+        "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>"
       },
       "error": null,
       "tool_calls": 3,
@@ -367,23 +367,23 @@
       "effects": [
         {
           "type": "refund",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:341a83d340f0c321e89c50597863c473>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:4ce2f26ee8b3587e1cbc140a19d5573e>",
           "amount_cents": 4900,
           "currency": "USD"
         },
         {
           "type": "refund",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>",
           "amount_cents": 4900,
           "currency": "USD"
         }
       ],
       "output": {
         "status": "refunded",
-        "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-        "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>"
+        "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+        "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>"
       },
       "error": null,
       "tool_calls": 3,
@@ -396,7 +396,7 @@
         "call_id": "c1",
         "name": "lookup_order",
         "args": {
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>"
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>"
         }
       },
       {
@@ -404,7 +404,7 @@
         "call_id": "c1",
         "ok": true,
         "result": {
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
           "amount_cents": 4900,
           "currency": "USD"
         },
@@ -415,10 +415,10 @@
         "call_id": "c2",
         "name": "issue_refund",
         "args": {
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
           "amount_cents": 4900,
           "currency": "USD",
-          "idempotency_key": "<redacted:identifier:59193f8951a21b63a1c8a20126ab6452>"
+          "idempotency_key": "<redacted:identifier:f4b636c18691978afe789a394ca9a043>"
         }
       },
       {
@@ -426,8 +426,8 @@
         "call_id": "c2",
         "effect": {
           "type": "refund",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:341a83d340f0c321e89c50597863c473>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:4ce2f26ee8b3587e1cbc140a19d5573e>",
           "amount_cents": 4900,
           "currency": "USD"
         }
@@ -444,10 +444,10 @@
         "call_id": "c3",
         "name": "issue_refund",
         "args": {
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
           "amount_cents": 4900,
           "currency": "USD",
-          "idempotency_key": "<redacted:identifier:02cd59778707342e8d43c23e91773c6c>"
+          "idempotency_key": "<redacted:identifier:130107022b7a85c7a2c021ee3b3acff8>"
         }
       },
       {
@@ -455,8 +455,8 @@
         "call_id": "c3",
         "effect": {
           "type": "refund",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>",
           "amount_cents": 4900,
           "currency": "USD"
         }
@@ -466,7 +466,7 @@
         "call_id": "c3",
         "ok": true,
         "result": {
-          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>",
+          "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>",
           "status": "refunded"
         },
         "error": null
@@ -475,8 +475,8 @@
         "type": "final_output",
         "output": {
           "status": "refunded",
-          "order_id": "<redacted:identifier:1d478291f6eda10edc4684172cf8eabf>",
-          "refund_id": "<redacted:identifier:86c8d5eaaf0df1cc5d1cf1ab1ad89348>"
+          "order_id": "<redacted:identifier:11583aa92203c6e3f0848ee8452533e5>",
+          "refund_id": "<redacted:identifier:113c1175a9c00175c2ae15e2f3cca1ae>"
         }
       }
     ],

@@ -115,6 +115,13 @@ def evaluate_incident(incident: dict) -> dict:
             expected = deepcopy(rule["fields"])
             actual = {"missing": missing}
             detail = "All required output fields are present." if passed else "Required output fields are missing."
+        elif kind == "must_call":
+            called = {event["name"] for event in events if event["type"] == "tool_call"}
+            missing = [name for name in rule["tools"] if name not in called]
+            passed = not missing
+            expected = deepcopy(rule["tools"])
+            actual = {"missing": missing}
+            detail = "All required tools were called." if passed else "Required tool calls are missing."
         elif kind == "max_tool_errors":
             passed = tool_errors <= rule["max"]
             expected = rule["max"]

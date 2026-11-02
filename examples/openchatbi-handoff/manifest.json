@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "recipe": "openchatbi-schema-discovery",
+  "upstream": "https://github.com/zhongyu09/openchatbi",
+  "inspected_upstream_revision": "29b04c81e7e09500dc40cb0757df89200f321c00",
+  "case_id": "c21_schema_discovery",
+  "adapter": "evals/runledger/agent/agent.py",
+  "graph": "openchatbi/agent_graph.py",
+  "rule": {"id": "schema-discovery", "type": "must_call", "tools": ["search_schema"]},
+  "effects_complete": false,
+  "scope": "Actual OpenChatBI main LangGraph with its existing scripted-model and cassette-tool adapter. Deliberate test incident, not a captured customer production event.",
+  "excluded": ["live model decisions", "SQL correctness", "live retrieval", "MCP", "memory", "data-analysis sub-agent", "provider effect ledger"],
+  "review_required": true,
+  "anonymity_guaranteed": false
+}
